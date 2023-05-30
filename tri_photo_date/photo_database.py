@@ -11,25 +11,27 @@ from PIL import Image
 #import pyexiv2
 
 #from tri_photo_date.gps import get_image_gps_location
-from tri_photo_date.exif import ExifTags, EXIF_LOCATION_FIELD, NoExifError
+from tri_photo_date.exif import ExifTags, EXIF_LOCATION_FIELD, NoExifError, USEFULL_TAG_DESCRIPTION
 from tri_photo_date.utils.config_paths import IMAGE_DATABASE_PATH
 
-def get_fingerprint(im_path):
+def get_file_fingerprint(im_path):
+
+    with open(im_path, 'rb') as f:
+        md5_file = hashlib.md5()
+        while chunk := f.read(4096):
+            md5_file.update(chunk)
+    return md5_file.hexdigest()
+
+def get_data_fingerprint(im_path):
 
     try:
         with Image.open(im_path) as img:
             md5_data = hashlib.md5()
             while chunk := img.fp.read(4096):
                 md5_data.update(chunk)
-
-        with open(im_path, 'rb') as f:
-            md5_file = hashlib.md5()
-            while chunk := f.read(4096):
-                md5_file.update(chunk)
-
-        return md5_file.hexdigest(), md5_data.hexdigest()
+        return md5_data.hexdigest()
     except PIL.UnidentifiedImageError as e:
-        return None, None
+        return None
 
 #def compare_images(image_path1, image_path2):
 #    # Open the images
@@ -73,7 +75,7 @@ class ImageMetadataDB:
         self.conn = sqlite3.connect(self.db_file)
         c = self.conn.cursor()
         c.execute('''
-            CREATE TABLE IF NOT EXISTS images
+            CREATE TABLE IF NOT EXISTS images_cache
               (
                   md5_file text,
                   md5_data text,
@@ -85,8 +87,37 @@ class ImageMetadataDB:
                   camera text,
                   metadata text,
                   PRIMARY KEY (path)
+            )
+        ''')
+
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS images
+              (
+                  path text,
+                  PRIMARY KEY (path)
               )
         ''')
+
+        c.execute('''
+            CREATE VIEW IF NOT EXISTS
+                images_view AS
+            SELECT
+                images.path,
+                images_cache.md5_file,
+                images_cache.md5_data,
+                images_cache.path,
+                images_cache.folder,
+                images_cache.filename,
+                images_cache.extentions,
+                images_cache.date,
+                images_cache.camera,
+                images_cache.metadata
+            FROM
+                images
+            JOIN
+                images_cache
+            ON images.path = images_cache.path;''')
+
 
         c.execute('''
             CREATE TABLE IF NOT EXISTS tri_preview
@@ -98,7 +129,7 @@ class ImageMetadataDB:
                 location text,
                 groups text,
                 date text,
-                FOREIGN KEY (path, filename) REFERENCES images(path, filename)
+                FOREIGN KEY (path, filename) REFERENCES images_view(path, filename)
             )''')
 
         c.execute('''
@@ -124,7 +155,7 @@ class ImageMetadataDB:
         md5_file, md5_data = get_fingerprint(im_path)
         c.execute(
             '''SELECT EXISTS(
-                SELECT 1 FROM images WHERE md5_file=? LIMIT 1
+                SELECT 1 FROM images_view WHERE md5_file=? LIMIT 1
             )''',
             (md5_file,))
         res = c.fetchone()
@@ -170,7 +201,7 @@ class ImageMetadataDB:
         c = self.conn.cursor()
         c.execute('''
             UPDATE
-                images
+                images_view
             SET
                 metadata = ?
             WHERE
@@ -224,7 +255,7 @@ class ImageMetadataDB:
         res = c.fetchone()
         date_fmt = r"%Y:%m:%d %H:%M:%S"
 
-        if res[0] is  None:
+        if res is None or res[0] is None:
             return None
         return datetime.strptime(res[0], date_fmt)
 
@@ -250,7 +281,7 @@ class ImageMetadataDB:
 
         c= self.conn.cursor()
         c.execute(
-            '''SELECT metadata FROM images WHERE path=?''',
+            '''SELECT metadata FROM images_view WHERE path=?''',
             (im_path,)
         )
         res = c.fetchone()
@@ -263,7 +294,7 @@ class ImageMetadataDB:
     def scan_dest(self, im_str):
 
         # new file md5s
-        md5_file, md5_data = get_fingerprint(im_str)
+        #md5_file, md5_data = get_fingerprint(im_str)
 
         # Check database
         c = self.conn.cursor()
@@ -280,12 +311,14 @@ class ImageMetadataDB:
 
         if res:
             db_md5_file, db_md5_data = res
+            md5_file = get_file_fingerprint(im_str)
 
             if db_md5_file == md5_file and db_md5_data == md5_data:
                 # md5 hash has not changed, do not update the row
                 return
 
-            elif db_md5_data == md5_data:
+            md5_data = get_data_fingerprint(im_str)
+            if db_md5_data == md5_data:
                 # md5 hash has changed, update the row
                 with ExifTags(im_str) as exifs:
                     metadata = exifs.copy()
@@ -311,6 +344,8 @@ class ImageMetadataDB:
                     (md5_file, md5_data, json.dumps(metadata), im_str)
                 )
         else:
+            md5_file = get_file_fingerprint(im_str)
+            md5_data = get_data_fingerprint(im_str)
             c.execute('''
                 INSERT INTO
                     scan_dest
@@ -319,12 +354,15 @@ class ImageMetadataDB:
                 (md5_file, md5_data, im_str)
             )
 
+        self.conn.commit()
+
     def clean_all_table(self):
 
         c = self.conn.cursor()
         c.execute("DELETE FROM images")
         c.execute("DELETE FROM tri_preview")
         c.execute("DELETE FROM scan_dest")
+        self.conn.commit()
 
     def clean_dest_table(self):
 
@@ -377,22 +415,21 @@ class ImageMetadataDB:
         #res = c.fetchall()
         # Group the dates by 6-day intervals
         date_fmt = r"%Y:%m:%d %H:%M:%S"
-        prev_date = None
+        prev_date = datetime.strptime('1900:01:01 00:00:00', date_fmt)#None
         grp_date = None
 
         for path, date_str in c.fetchall():
             if date_str is None:
                 continue
-            date =datetime.strptime(date_str, date_fmt)
+            date = datetime.strptime(date_str, date_fmt)
             if prev_date is None:
-                prev_date = date
                 grp_date = date
-                self.set_group_preview(path, datetime.strftime(grp_date, date_fmt))
             elif (date - prev_date).days < n:
-                self.set_group_preview(path, datetime.strftime(grp_date, date_fmt))
+                pass
             else:
-                self.set_group_preview(path, datetime.strftime(date, date_fmt))
                 grp_date = date
+            self.set_group_preview(path, datetime.strftime(grp_date, date_fmt))
+            prev_date = date
 
     def set_group_preview(self, path, date):
 
@@ -412,16 +449,15 @@ class ImageMetadataDB:
 
     def add_image(self, im_str):
 
-        # new file md5s
-        md5_file, md5_data = get_fingerprint(im_str)
+        c = self.conn.cursor()
+        c.execute('''INSERT INTO images VALUES (?)''', (im_str,))
 
         # Check database
-        c = self.conn.cursor()
         c.execute('''
             SELECT
                 md5_file, md5_data
             FROM
-                images
+                images_cache
             WHERE
                 path = ?''',
             (im_str,)
@@ -429,19 +465,26 @@ class ImageMetadataDB:
         res = c.fetchone()
 
         if res:
+
+            # new file md5s
+            md5_file = get_file_fingerprint(im_str)
             db_md5_file, db_md5_data = res
 
-            if db_md5_file == md5_file and db_md5_data == md5_data:
+            if db_md5_file == md5_file:
                 # md5 hash has not changed, do not update the row
                 return
 
-            elif db_md5_data == md5_data:
+            md5_data = get_data_fingerprint(im_str)
+            if db_md5_data == md5_data:
                 # md5 hash has changed, update the row
-                with ExifTags(im_str) as exifs:
-                    metadata = exifs.copy()
+                try:
+                    with ExifTags(im_str) as exifs:
+                        metadata = {k:v for k,v in exifs.items() if k in USEFULL_TAG_DESCRIPTION.keys()}
+                except NoExifError as e:
+                    metadata = {}
                 c.execute('''
                     UPDATE
-                        images
+                        images_cache
                     SET
                         md5_file = ?, metadata = ?
                     WHERE
@@ -450,30 +493,42 @@ class ImageMetadataDB:
                 )
 
             else: # Photo itself had changed, but waht to do????
-                with ExifTags(im_str) as exifs:
-                    metadata = exifs.copy()
+                try:
+                    with ExifTags(im_str) as exifs:
+                        metadata = {k:v for k,v in exifs.items() if k in USEFULL_TAG_DESCRIPTION.keys()}
+
+                    date = metadata.get('Exif.Photo.DateTimeOriginal', None)
+                    camera = metadata.get('Exif.Image.Model', None)
+
+                except NoExifError as e:
+                    metadata = {}
+                    date = None
+                    camera = None
+
                 c.execute('''
                     UPDATE
-                        images
+                        images_cache
                     SET
-                        md5_file = ?, md5_data = ?, metadata = ?
+                        md5_file = ?, md5_data = ?, metadata = ?, date = ?, camera = ?
                     WHERE path = ?''',
-                    (md5_file, md5_data, json.dumps(metadata), im_str)
+                    (md5_file, md5_data, json.dumps(metadata), date, camera, im_str)
                 )
                 pass
         else:
 
             # md5 hash does not exist in the database, insert a new row
+            md5_file = get_file_fingerprint(im_str)
+            md5_data = get_data_fingerprint(im_str)
             folder = str(Path(im_str).parent)
             filename = Path(im_str).name
             extention = im_str.split('.')[-1].lower()
 
             try :
                 with ExifTags(im_str) as exifs:
-                    metadata = exifs.copy()
+                    metadata = {k:v for k,v in exifs.items() if k in USEFULL_TAG_DESCRIPTION.keys()}
 
-                date = metadata.get('Exif.Photo.DateTimeOriginal')
-                camera = metadata.get('Exif.Image.Model')
+                date = metadata.get('Exif.Photo.DateTimeOriginal', None)
+                camera = metadata.get('Exif.Image.Model', None)
 
             except NoExifError as e:
                 metadata = {}
@@ -486,7 +541,7 @@ class ImageMetadataDB:
             #preview_tuple = (
             #    im_str, filename, None, None, None
             #)
-            c.execute("INSERT INTO images VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", image_tuple)
+            c.execute("INSERT INTO images_cache VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", image_tuple)
             #c.execute("INSERT INTO tri_preview VALUES (?, ?, ?, ?, ?)", preview_tuple)
 
         self.conn.commit()
@@ -495,7 +550,7 @@ class ImageMetadataDB:
 
         c= self.conn.cursor()
         c.execute(
-            '''SELECT DISTINCT camera FROM images'''
+            '''SELECT DISTINCT camera FROM images_view'''
         )
         res = c.fetchall()
         if not res:
@@ -506,7 +561,7 @@ class ImageMetadataDB:
 
         c= self.conn.cursor()
         c.execute(
-            '''SELECT metadata FROM images'''
+            '''SELECT metadata FROM images_view'''
         )
 
         exifs_all = set()
@@ -514,7 +569,7 @@ class ImageMetadataDB:
             exifs_all.update(list(json.loads(row[0]).keys()))
 
         c.execute(
-            '''SELECT metadata FROM images'''
+            '''SELECT metadata FROM images_view'''
         )
 
         exifs_common = set()
@@ -527,7 +582,7 @@ class ImageMetadataDB:
 
         c= self.conn.cursor()
         c.execute(
-            '''SELECT DISTINCT extentions FROM images'''
+            '''SELECT DISTINCT extentions FROM images_view'''
         )
         res = c.fetchall()
         return [r[0] for r in res]
@@ -562,7 +617,7 @@ class ImageMetadataDB:
             SELECT
                 md5_data
             FROM
-                images
+                images_view
             WHERE
                 path = ?''',
             (in_str,)
@@ -587,11 +642,11 @@ class ImageMetadataDB:
         src_dir = str(src_dir)
 
         if not duplicate_md5_data and not duplicate_md5_file:
-            cmd = 'SELECT path, md5_file FROM images'
+            cmd = 'SELECT path, md5_file FROM images_view'
         elif duplicate_md5_file:
-            cmd = "SELECT path, md5_file, MAX(path) FROM images "
+            cmd = "SELECT path, md5_file, MAX(path) FROM images_view"
         elif duplicate_md5_data:
-            cmd = "SELECT path, md5_data, MAX(path) FROM images"
+            cmd = "SELECT path, md5_data, MAX(path) FROM images_view"
 
         if not recursive:
             cmd += " " + "WHERE folder = ? AND path LIKE '%' || ? || '%'"

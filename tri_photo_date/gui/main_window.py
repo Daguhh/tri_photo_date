@@ -345,6 +345,7 @@ class LabelNLineEdit(QHBoxLayout):
 
         #callback = lambda e:self.textBox.setText(combo.currentText())
         combo.currentIndexChanged.connect(callback)
+        combo.editTextChanged.connect(callback)
 
         # Set default values (need to load values from textBox intead of config at MainTab.__init__)
         if CFG['gui_mode'] == GUI_SIMPLIFIED:
@@ -496,7 +497,7 @@ class MainTab(QWidget):
         #btn_layout.addWidget(self.previewBtn)
 
         self.populateBtn = QPushButton(_("1. Scanner"))
-        self.populateBtn.setToolTip(_("Scanne les repertoires <b>source</b> et <b>destination</b><br>et met à jour l'onglet <b>outils</b>"))
+        self.populateBtn.setToolTip(_("A utliser lors du changement des repertoires <b>source</b> et/ou <b>destination</b> ou si les fichiers ont été modifiés/déplacés par un autre programme.<br>Scanne les dossier, calcule les empreintes, recupère les metadonnées et met à jour l'onglet <b>outils</b>"))
         btn_layout.addWidget(self.populateBtn)
         self.populateBtn.clicked.connect(self.populate_act)
 
@@ -506,7 +507,7 @@ class MainTab(QWidget):
         self.stopBtn0.setHidden(True)
 
         self.previewBtn = QPushButton(_("2. Pré-calculer"))
-        self.previewBtn.setToolTip(_("A partir des fichiers trouvés pendant le scan, \nGenere les nouveaux chemins pour les images et affiche un aperçu"))
+        self.previewBtn.setToolTip(_("A utiliser après un changement de paramètre.\nA partir des fichiers trouvés pendant le scan, \ngenere les nouveaux chemins pour les images et affiche un aperçu"))
         btn_layout.addWidget(self.previewBtn)
         self.previewBtn.clicked.connect(self.preview_act)
 
@@ -516,7 +517,7 @@ class MainTab(QWidget):
         self.stopBtn1.setHidden(True)
 
         self.executeBtn = QPushButton(_("3. Executer"))
-        self.executeBtn.setToolTip(_("A partir des chemins pré-calculés, déplace les fichiers,\ninscrit les nouvelles métadonnées si besoin"))
+        self.executeBtn.setToolTip(_("A partir des chemins pré-calculés , déplace/copie les fichiers,\ninscrit les nouvelles métadonnées si besoin\n(pensez bien a executer '2. Pré-calculer' après tout changement de paramètre)"))
         btn_layout.addWidget(self.executeBtn)
         self.executeBtn.clicked.connect(self.run_act)
 

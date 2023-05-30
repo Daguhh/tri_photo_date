@@ -27,7 +27,9 @@ from tri_photo_date.utils.config_loader import CONFIG as CFG
 from tri_photo_date.utils.config_loader import FILE_SIMULATE, FILE_COPY, FILE_MOVE
 from tri_photo_date.gps import add_tags_to_image, get_image_gps_location
 from tri_photo_date.photo_database import ImageMetadataDB
+#from tri_photo_date.gui import GROUP_PLACEHOLDER
 
+GROUP_PLACEHOLDER = r"{group}"
 #####################
 
 class COUNTERS:
@@ -305,7 +307,7 @@ def populate_db(loop_stop=None, counterWdg=None, update_text_on_button=None):
     i = 0; j = 0
     with ImageMetadataDB() as db:
 
-        #db.clean_all_table()
+        db.clean_all_table()
         COUNTERS.reset()
 
         for folder, _, filenames in os.walk(in_dir):
@@ -432,13 +434,13 @@ def compute(progbar=cli_progbar, counterWdg=False, loop_stop=None):
             out_str = ExifTags.format_ym(date_str, out_str)
 
             ############ Try to group by day floating ##########
-            if is_group_floating_days:
-                db.group_by_n_floating_days(group_floating_days_nb)
-                group_date = db.get_date_group(in_str)
-                if group_date is not None:
-                    group_regex = re.compile(r'{Group}')
-                    group_str = group_date.strftime(group_floating_days_fmt)
-                    out_str = group_regex.sub(group_str, out_str)
+            #if is_group_floating_days:
+            #    db.group_by_n_floating_days(group_floating_days_nb)
+            #    group_date = db.get_date_group(in_str)
+            #    if group_date is not None:
+            #        group_regex = re.compile(GROUP_PLACEHOLDER)
+            #        group_str = group_date.strftime(group_floating_days_fmt)
+            #        out_str = group_regex.sub(group_str, out_str)
 
 
             #################### Format gps ####################
@@ -453,6 +455,8 @@ def compute(progbar=cli_progbar, counterWdg=False, loop_stop=None):
             ################ Format others tags ################
             placeholder_regex = re.compile(r'[{<]([^}>]+)[}>]')
             for placeholder in placeholder_regex.findall(out_str):
+                if placeholder == "group" :
+                    continue
                 tag_value = metadatas.get(placeholder, '')
                 out_str = ExifTags.format_tag(out_str, placeholder, tag_value)
             # Rename file with increment if name is duplicate ##
@@ -464,6 +468,26 @@ def compute(progbar=cli_progbar, counterWdg=False, loop_stop=None):
             progbar.update(i, f"{i} / {nb_files} {Path(in_str).name}")
             COUNTERS.nb_files += 1
             if counterWdg : counterWdg.update(COUNTERS)
+
+        ############ Try to group by day floating ##########
+        if is_group_floating_days:
+            db.group_by_n_floating_days(group_floating_days_nb)
+
+            COUNTERS.reset()
+            #progbar.init(nb_files)
+
+            for i, in_str in enumerate(db.list_files(**list_files_params)):
+                group_date = db.get_date_group(in_str)
+                if group_date is not None:
+                    group_regex = re.compile(GROUP_PLACEHOLDER)
+                    group_str = group_date.strftime(group_floating_days_fmt)
+                    out_str = os.path.join(*db.get_out_str(in_str))
+                    out_str = group_regex.sub(group_str, out_str)
+                    db.add_out_path(in_str, out_str)
+
+                progbar.update(i, f"{i} / {nb_files} {Path(in_str).name} - Grouping images by date")
+                COUNTERS.nb_files += 1
+                if counterWdg : counterWdg.update(COUNTERS)
 
     if loop_stop is not None : loop_stop.stop_signal = True
 

@@ -16,16 +16,18 @@ MEDIA_FORMATS = {
 REL_PATH_FORMATS = {
     _(r"{Année/Année-Mois}") : r"%Y/%Y-%m",
     _(r"{Année/Mois}") : r"%Y/%m",
+    _(r"{Appareil}") : "<Exif.Image.Model>",
     _(r"{Appareil/Année-Mois}") : "<Exif.Image.Model>/%Y-%m",
     _(r"{Année-Mois - Pays}") : "%Y-%m - <Iptc.Application2.CountryName>",
     _(r"{Année-Mois - Ville}") : r"%Y-%m - <Iptc.Application2.City>",
+    _(r"{Année-Mois-Jour}") : r"%Y-%m-%d",
     _(r"{Année-Mois-Jour - Ville}") : r"%Y-%m-%d - <Iptc.Application2.City>",
     _(r"{Année-Mois-Jour - Pays - Ville}") : r"%Y-%m-%d - <Iptc.Application2.CountryName> - <Iptc.Application2.City>",
+    _(r"{Ville}") : r"<Iptc.Application2.City>",
+    _(r"{Pays}") : r"<Iptc.Application2.CountryName>",
     _(r"{Garder le nom de fichier}") : "",
+    _(r"{Grouper par date}") : "{group}"
 }
-
-#REL_PATH_GROUP_FORMATS = {
-#    _(r"{Group}") :
 
 
 MAIN_TAB_WIDGETS = {
@@ -56,13 +58,13 @@ MAIN_TAB_WIDGETS = {
         'label' : _("Chemin relatif"),
         'tooltip' : "\n".join((_("Format du chemin relatif au dossier précédent!"), _("Utilisez des Tags de métadonnées (onglet Metadata)"), _("ou des codes de formatage des dates (onglet Date)"),"",_("Pour utiliser un tag de métadonnée, il suffit d'ajouter dans le chemin un tag entre crochets :"),"    <tag>",_("ou"),r"   {tag}",)),
         'placeholder' : "%Y/%Y-%m",
-        'combobox_options' : [_("{Année/Année-Mois}"), _("{Année/Mois}"), _(r"{Appareil/Année-Mois}"), _(r"{Année-Mois - Pays}"), _(r"{Année-Mois - Ville}")]
+        'combobox_options' : [_("{Année/Année-Mois}"), _("{Année/Mois}"), _(r"{Appareil}"), _(r"{Appareil/Année-Mois}"), _(r"{Année-Mois - Pays}"), _(r"{Année-Mois - Ville}"), _("{Grouper par date}")]
     },
     'filename': {
         'label' : _("Nom du fichier"),
         'tooltip' : _("Nom à donner aux fichiers, supporte les mêmes formats que 'Chemin relatif'"),
         'placeholder' : "<Iptc.Application2.City>",
-        'combobox_options' : [_(r"{Garder le nom de fichier}"),_(r"{Année-Mois-Jour - Ville}"),_(r"{Année-Mois-Jour - Pays - Ville}")]
+        'combobox_options' : [_(r"{Garder le nom de fichier}"), _(r"{Année-Mois-Jour}"), _(r"{Année-Mois-Jour - Ville}"),_(r"{Année-Mois-Jour - Pays - Ville}"), _(r"{Ville}"), _(r"{Pays}")]
     },
     'guess_date_from_name': {
         'checkbox' : True,
@@ -74,7 +76,7 @@ MAIN_TAB_WIDGETS = {
     'group_by_floating_days': {
         'checkbox' : True,
         'spinbox' : _('jours'),
-        'label' : _("format"),
+        'label' : _("Grouper | format"),
         'tooltip' : _("Groupe les photos par une fenetre de <b>jours</b> glissants selon le <b>format</b> défini.<br>Utiliser le texte de remplacement <b>{group}</b> pour ajuster le chemin relatif et le nom du fichier"),
         'placeholder' : _(r'Sortie du %Y%m%d'),
         'combobox_options' : [r'%Y%m%d', r'%y%m%d', r'%Y-%m-%d']
