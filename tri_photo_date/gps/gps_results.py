@@ -1,0 +1,21 @@
+example1 = {
+    "place_id": 121335039,
+    "licence": "Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright",
+    "osm_type": "way",
+    "osm_id": 62094497,
+    "lat": "42.98323515",
+    "lon": "-81.24341224733087",
+    "display_name": "Convention Center, Wellington Street, London, Southwestern Ontario, Ontario, N6A 3N7, Canada",
+    "address": {
+        "amenity": "Convention Center",
+        "road": "Wellington Street",
+        "city": "London",
+        "state_district": "Southwestern Ontario",
+        "state": "Ontario",
+        "ISO3166-2-lvl4": "CA-ON",
+        "postcode": "N6A 3N7",
+        "country": "Canada",
+        "country_code": "ca",
+    },
+    "boundingbox": ["42.9828833", "42.9836915", "-81.2442111", "-81.2426134"],
+}

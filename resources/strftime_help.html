@@ -1,0 +1,194 @@
+<h1 id="strftime-formats">Strftime formats</h1>
+<p>pyformat at
+https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes</p>
+<table>
+<colgroup>
+<col style="width: 37%" />
+<col style="width: 29%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Directive</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>%a</td>
+<td>Sun</td>
+<td>Weekday as locale’s abbreviated name.</td>
+</tr>
+<tr class="even">
+<td>%A</td>
+<td>Sunday</td>
+<td>Weekday as locale’s full name.</td>
+</tr>
+<tr class="odd">
+<td>%w</td>
+<td>0</td>
+<td>Weekday as a decimal number, where 0 is Sunday and 6 is
+Saturday.</td>
+</tr>
+<tr class="even">
+<td>%d</td>
+<td>08</td>
+<td>Day of the month as a zero-padded decimal number.</td>
+</tr>
+<tr class="odd">
+<td>%-d</td>
+<td>8</td>
+<td>Day of the month as a decimal number. (Platform specific)</td>
+</tr>
+<tr class="even">
+<td>%b</td>
+<td>Sep</td>
+<td>Month as locale’s abbreviated name.</td>
+</tr>
+<tr class="odd">
+<td>%B</td>
+<td>September</td>
+<td>Month as locale’s full name.</td>
+</tr>
+<tr class="even">
+<td>%m</td>
+<td>09</td>
+<td>Month as a zero-padded decimal number.</td>
+</tr>
+<tr class="odd">
+<td>%-m</td>
+<td>9</td>
+<td>Month as a decimal number. (Platform specific)</td>
+</tr>
+<tr class="even">
+<td>%y</td>
+<td>13</td>
+<td>Year without century as a zero-padded decimal number.</td>
+</tr>
+<tr class="odd">
+<td>%Y</td>
+<td>2013</td>
+<td>Year with century as a decimal number.</td>
+</tr>
+<tr class="even">
+<td>%H</td>
+<td>07</td>
+<td>Hour (24-hour clock) as a zero-padded decimal number.</td>
+</tr>
+<tr class="odd">
+<td>%-H</td>
+<td>7</td>
+<td>Hour (24-hour clock) as a decimal number. (Platform specific)</td>
+</tr>
+<tr class="even">
+<td>%I</td>
+<td>07</td>
+<td>Hour (12-hour clock) as a zero-padded decimal number.</td>
+</tr>
+<tr class="odd">
+<td>%-I</td>
+<td>7</td>
+<td>Hour (12-hour clock) as a decimal number. (Platform specific)</td>
+</tr>
+<tr class="even">
+<td>%p</td>
+<td>AM</td>
+<td>Locale’s equivalent of either AM or PM.</td>
+</tr>
+<tr class="odd">
+<td>%M</td>
+<td>06</td>
+<td>Minute as a zero-padded decimal number.</td>
+</tr>
+<tr class="even">
+<td>%-M</td>
+<td>6</td>
+<td>Minute as a decimal number. (Platform specific)</td>
+</tr>
+<tr class="odd">
+<td>%S</td>
+<td>05</td>
+<td>Second as a zero-padded decimal number.</td>
+</tr>
+<tr class="even">
+<td>%-S</td>
+<td>5</td>
+<td>Second as a decimal number. (Platform specific)</td>
+</tr>
+<tr class="odd">
+<td>%f</td>
+<td>000000</td>
+<td>Microsecond as a decimal number, zero-padded to 6 digits.</td>
+</tr>
+<tr class="even">
+<td>%z</td>
+<td>+0000</td>
+<td>UTC offset in the form ±HHMM[SS[.ffffff]] (empty string if the
+object is naive).</td>
+</tr>
+<tr class="odd">
+<td>%Z</td>
+<td>UTC</td>
+<td>Time zone name (empty string if the object is naive).</td>
+</tr>
+<tr class="even">
+<td>%j</td>
+<td>251</td>
+<td>Day of the year as a zero-padded decimal number.</td>
+</tr>
+<tr class="odd">
+<td>%-j</td>
+<td>251</td>
+<td>Day of the year as a decimal number. (Platform specific)</td>
+</tr>
+<tr class="even">
+<td>%U</td>
+<td>36</td>
+<td>Week number of the year (Sunday as the first day of the week) as a
+zero-padded decimal number. All days in a new year preceding the first
+Sunday are considered to be in week 0.</td>
+</tr>
+<tr class="odd">
+<td>%-U</td>
+<td>36</td>
+<td>Week number of the year (Sunday as the first day of the week) as a
+decimal number. All days in a new year preceding the first Sunday are
+considered to be in week 0. (Platform specific)</td>
+</tr>
+<tr class="even">
+<td>%W</td>
+<td>35</td>
+<td>Week number of the year (Monday as the first day of the week) as a
+zero-padded decimal number. All days in a new year preceding the first
+Monday are considered to be in week 0.</td>
+</tr>
+<tr class="odd">
+<td>%-W</td>
+<td>35</td>
+<td>Week number of the year (Monday as the first day of the week) as a
+decimal number. All days in a new year preceding the first Monday are
+considered to be in week 0. (Platform specific)</td>
+</tr>
+<tr class="even">
+<td>%c</td>
+<td>Sun Sep 8 07:06:05 2013</td>
+<td>Locale’s appropriate date and time representation.</td>
+</tr>
+<tr class="odd">
+<td>%x</td>
+<td>09/08/13</td>
+<td>Locale’s appropriate date representation.</td>
+</tr>
+<tr class="even">
+<td>%X</td>
+<td>07:06:05</td>
+<td>Locale’s appropriate time representation.</td>
+</tr>
+<tr class="odd">
+<td>%%</td>
+<td>%</td>
+<td>A literal ‘%’ character.</td>
+</tr>
+</tbody>
+</table>

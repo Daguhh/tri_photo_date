@@ -1,0 +1,10 @@
+
+- add tab to set custom tag
+- create folder following pattern
+- Interup while running
+- save/load a config file (cli & gui) to make custom profiles
+- add preview tab
+- create sqlite intead of dict
+- permit to custom presets
+- parameter to group by date (if less than 6 days diff)
+
