@@ -271,7 +271,7 @@ msgid ""
 "pour ajuster le chemin relatif et le nom du fichier"
 msgstr ""
 "Group photos using a window over floating <b>days</b> following defined "
-"<b>format</b>.<br>Use the placeholder <b>group</b> to adjust relative path a,"
+"<b>format</b>.<br>Use the placeholder <b>{group}</b> to adjust relative path a,"
 "d file name"
 
 #: tri_photo_date/gui/human_text.py:79
