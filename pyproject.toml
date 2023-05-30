@@ -10,13 +10,12 @@ packages = [{include = "tri_photo_date"}]
 include = ["resources/acknowledgments.md", "resources/icon.ico", "LICENSE", "README.md", "about.md"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.9"
 PyQt5 = "^5.15.9"
 geopy = "^2.3.0"
 pyexiv2 = "^2.8.1"
 certifi = "^2023.5.7"
-pillow = "^9.5.0"
-
+Pillow = "^9.2.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,6 +1,7 @@
-python3 -m venv venv
-source venv/bin/activate
-poetry install
+python3 -m venv build_env
+source build_env/bin/activate
+python3 -m pip install poetry
+poetry install --no-root
 python3 -m pip install pyinstaller
 pyinstaller \
     --onefile \
@@ -16,5 +17,6 @@ pyinstaller \
     --add-data "tri_photo_date/locales/en/LC_MESSAGES/base.mo:./locales/en/LC_MESSAGES/" \
     --noconfirm \
     --additional-hooks-dir=hooks \
+    --name tri_photo_date \
     tri_photo_date/run.py
 

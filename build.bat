@@ -1,9 +1,10 @@
 @ECHO OFF
 IF NOT EXIST venv\Scripts\activate.bat (
-    python -m venv venv
+    python -m venv build_env
 )
-call venv\Scripts\activate.bat
-poetry install
+call build_env\Scripts\activate.bat
+python -m pip install poetry
+python -m poetry install --no-root
 python -m pip install pyinstaller
 pyinstaller ^
     --onefile ^
