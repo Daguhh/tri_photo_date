@@ -489,6 +489,7 @@ class ImageMetadataDB:
             c.execute("INSERT INTO images VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", image_tuple)
             #c.execute("INSERT INTO tri_preview VALUES (?, ?, ?, ?, ?)", preview_tuple)
 
+        self.conn.commit()
 
     def get_camera_list(self):
 

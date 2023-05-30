@@ -305,7 +305,7 @@ def populate_db(loop_stop=None, counterWdg=None, update_text_on_button=None):
     i = 0; j = 0
     with ImageMetadataDB() as db:
 
-        db.clean_all_table()
+        #db.clean_all_table()
         COUNTERS.reset()
 
         for folder, _, filenames in os.walk(in_dir):
