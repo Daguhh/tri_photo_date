@@ -1,14 +1,20 @@
 
 Functionnalities:
+- Permit to stop process and start it again (maybe add a bool column in images table for processed files) : show a popup at start : "do you want to continue your processing or drop it all?"
 - add tab to set custom tag
 - create folder/filter following pattern ie: move only images like "IMG_XXXX-XX-XX.jpg" 
+- allow filters with regex
 - save/load a config file (cli & gui) to make custom profiles
 - permit to custom presets
 - option to delet metadata from exported files
+- partial hash big files
+- skip files based on their size more or less than X
+- remove empty folders after moving
 
 Code bugs and major lacks:
 - cli
 - command for package install (poetry)
+- actually only check one datetime field
 
 Duplicates:
 - more control over duplicates : just rename / move in specific folder

@@ -19,9 +19,12 @@ extentions = jpg,png,jpeg
 cameras =
 is_recursive = 1
 
+# parse date from file name
 is_guess_date_from_name = 0
 guess_date_from_name =
+date_from_filesystem = 1
 
+# group files by floating window over days
 is_group_floating_days = 0
 group_floating_days_nb = 0
 group_floating_days_fmt =
@@ -32,12 +35,16 @@ out_path_str = %Y/%Y-%m
 filename = fichier
 
 # Options
-file_action = 0
-control_hash = 2
-hash_populate = 2
-hash_reset = 2
+# FILE_SIMULATE = 0, FILE_COPY = 1, FILE_MOVE = 2
+file_action = 1
 gps = 0
 verbose = 0
+
+# Duplicates options
+is_control_duplicates = 0
+# DUP_MD5_FILE = 0, DUP_MD5_DATA = 1, DUP_DATETIME = 2
+dup_mode = 1
+dup_is_scan_dest = 1
 
 # GPS
 gps_debug = 0
@@ -47,9 +54,10 @@ gps_wait = 5
 
 # GUI
 gui_size = 1
-gui_mode = 0
-lang = fr
+gui_mode = 1
+gui_lang = fr
 
+# Misc
 exif_user_tags =
 unidecode = 0
 non_def = non_def
@@ -60,22 +68,23 @@ accepted_formats = jpg, jpeg, png, webp, bmp, ico, tiff, heif, heic, svg, raw, a
 
 LANG_LIST = ['fr', 'en']
 
-FILE_SIMULATE = 0
-FILE_COPY = 1
-FILE_MOVE = 2
+FILE_SIMULATE = 1
+FILE_COPY = 2
+FILE_MOVE = 3
 
-GUI_SIMPLIFIED = 0
-GUI_NORMAL = 1
-GUI_ADVANCED = 2
+GUI_SIMPLIFIED = 1
+GUI_NORMAL = 2
+GUI_ADVANCED = 3
 
-STRING = ("non_def", "filename", "out_path_str", "exif_user_tags",'gui_size','guess_date_from_name','lang','group_floating_days_fmt')
+DUP_MD5_FILE = 1
+DUP_MD5_DATA = 2
+DUP_DATETIME = 3
+
+STRING = ("non_def", "filename", "out_path_str", "exif_user_tags",'gui_size','guess_date_from_name','gui_lang','group_floating_days_fmt')
 PATH = ("in_dir", "out_dir")
-INTEGER = ("gps_wait", "gui_mode", "file_action", "group_floating_days_nb")
+INTEGER = ("gps_wait", "gui_mode", "file_action", "group_floating_days_nb", 'dup_mode')
 BOOLEAN = (
     "gps",
-    "control_hash",
-    "hash_populate",
-    "hash_reset",
     "gps_debug",
     "gps_simulate",
     "unidecode",
@@ -83,6 +92,9 @@ BOOLEAN = (
     "verbose",
     "is_recursive",
     "is_group_floating_days",
+    "is_control_duplicates",
+    "dup_is_scan_dest",
+    "date_from_filesystem",
 )
 LISTE = ("extentions",'cameras','accepted_formats')
 FLOAT = ("gps_accuracy",)

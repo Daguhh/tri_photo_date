@@ -1,7 +1,7 @@
 
 from tri_photo_date.utils.config_loader import CONFIG
 from tri_photo_date.utils.config_paths import LOCALES_DIR
-lang = CONFIG['lang']
+lang = CONFIG['gui_lang']
 
 import gettext
 trad = gettext.translation('base', localedir=LOCALES_DIR, languages=[lang])
@@ -87,30 +87,50 @@ MAIN_TAB_WIDGETS = {
 MENU_TOOL_BUTTON = [
             ("verbose", "Debug", _("Affiche les étapes du programme dans le terminal")),
 ]
-MAIN_TAB_BUTTONS = [
-            (
-                "gps",
-                "GPS",
-                _("Essaie de determiner le lieu de prise de vue à partir des metadonnées gps\nBécessite une connection internet\n/!\\ Peut grandement ralentir l'execution du prgramme"),
-            ),
-            (
-                "is_recursive",
-                _("Recherche récursive"),
-                _("Cherche dans les sous dossier du dossier 'Source'"),
-            ),
-            ("NEW_LINE", "", 0),
-            ("control_hash", _("Dupliqués"), _("Ne copie pas les fichiers dupliqués")),
-            (
-                "hash_populate",
-                "Scan dest",
-                _("Empeche la copie de fichiers lorsqu'ils sont déjà présent dans le dossier de destinaion"),
-            ),
-            (
-                "hash_reset",
-                "Reset",
-                _("Oublie les fichiers déjà déplacés entre deux exécutions du programme"),
-            ),
-        ]
+
+MAIN_TAB_BUTTONS = {
+    "gps" : {
+        'label' : "GPS",
+        'tooltip' : _("Essaie de determiner le lieu de prise de vue à partir des metadonnées gps\nBécessite une connection internet\n/!\\ Peut grandement ralentir l'execution du prgramme"),
+    },
+    "is_recursive" : {
+        'label' : _("Recherche récursive"),
+        "tooltip" : _("Cherche dans les sous dossier du dossier 'Source'")
+    },
+    'dup_is_scan_dest' : {
+        'label' : _("scan dest"),
+        "tooltip" : _("Scanne le dossier destination à la recherche de fichiers dupliqués"),
+    },
+}
+
+ACTION_BUTTONS = {
+    "populate" : {
+        "label" : _("1. Scanner"),
+        "tooltip" : _("A utliser lors du changement des repertoires <b>source</b> et/ou <b>destination</b> ou si les fichiers ont été modifiés/déplacés par un autre programme.<br>Scanne les dossier, calcule les empreintes, recupère les metadonnées et met à jour l'onglet <b>outils</b>"),
+    },
+    "calculate" : {
+        "label" : _("2. Pré-calculer"),
+        "tooltip" : _("A utiliser après un changement de paramètre.\nA partir des fichiers trouvés pendant le scan, \ngenere les nouveaux chemins pour les images et affiche un aperçu"),
+    },
+    "execute" : {
+        "label" : _("3. Executer"),
+        "tooltip" : _("A partir des chemins pré-calculés , déplace/copie les fichiers,\ninscrit les nouvelles métadonnées si besoin\n(pensez bien a executer '2. Pré-calculer' après tout changement de paramètre)"),
+    },
+}
+#            ),
+#            ("NEW_LINE", "", 0),
+#            ("control_hash", _("Dupliqués"), _("Ne copie pas les fichiers dupliqués")),
+#            (
+#                "hash_populate",
+#                "Scan dest",
+#                _("Empeche la copie de fichiers lorsqu'ils sont déjà présent dans le dossier de destinaion"),
+#            ),
+#            (
+#                "hash_reset",
+#                "Reset",
+#                _("Oublie les fichiers déjà déplacés entre deux exécutions du programme"),
+#            ),
+#        ]
 
 GPS_HELP_TEXT = "\n".join((
     _("Résolution des noms de rue, ville, region, pays :"),

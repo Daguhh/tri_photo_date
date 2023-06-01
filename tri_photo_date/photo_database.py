@@ -13,44 +13,10 @@ from PIL import Image
 #from tri_photo_date.gps import get_image_gps_location
 from tri_photo_date.exif import ExifTags, EXIF_LOCATION_FIELD, NoExifError, USEFULL_TAG_DESCRIPTION
 from tri_photo_date.utils.config_paths import IMAGE_DATABASE_PATH
+from tri_photo_date.utils.config_loader import DUP_MD5_FILE, DUP_MD5_DATA, DUP_DATETIME
+from tri_photo_date.utils.fingerprint import get_data_fingerprint, get_file_fingerprint
 
-def get_file_fingerprint(im_path):
 
-    with open(im_path, 'rb') as f:
-        md5_file = hashlib.md5()
-        while chunk := f.read(4096):
-            md5_file.update(chunk)
-    return md5_file.hexdigest()
-
-def get_data_fingerprint(im_path):
-
-    try:
-        with Image.open(im_path) as img:
-            md5_data = hashlib.md5()
-            while chunk := img.fp.read(4096):
-                md5_data.update(chunk)
-        return md5_data.hexdigest()
-    except PIL.UnidentifiedImageError as e:
-        return None
-
-#def compare_images(image_path1, image_path2):
-#    # Open the images
-#    image1 = Image.open(image_path1)
-#    image2 = Image.open(image_path2)
-#
-#    # Get the raw byte data for each image
-#    data1 = image1.tobytes()
-#    data2 = image2.tobytes()
-#
-#    # Calculate a hash of the byte data for each image
-#    hash1 = hashlib.md5(data1).hexdigest()
-#    hash2 = hashlib.md5(data2).hexdigest()
-#
-#    # Compare the hashes to determine if the images are the same
-#    if hash1 == hash2:
-#        print("The images are the same.")
-#    else:
-#        print("The images are different.")
 #
 #def image_exic_cache(func):
 #    @wraps(func)
@@ -145,6 +111,7 @@ class ImageMetadataDB:
 
     def __exit__(self, exc_type, exc_value, traceback):
         # Close the database connection
+        print('EXIT DATABASE')
         self.conn.commit()
         #self.conn.close()
         self.conn.close()
@@ -201,7 +168,7 @@ class ImageMetadataDB:
         c = self.conn.cursor()
         c.execute('''
             UPDATE
-                images_view
+                images_cache
             SET
                 metadata = ?
             WHERE
@@ -450,9 +417,16 @@ class ImageMetadataDB:
     def add_image(self, im_str):
 
         c = self.conn.cursor()
-        c.execute('''INSERT INTO images VALUES (?)''', (im_str,))
+        #c.execute('''INSERT INTO images VALUES (?)''', (im_str,))
 
-        # Check database
+#        CHECK_CONTENT = 1
+#        CHECK_DATETIME = 0
+#        if what_to_check = CHECK_CONTENT:
+#            self.add_image_check_content(im_str)
+#
+#        elif what_to_check = CHECK_DATETIME:
+#            self.add_image_check_datetime(im_str)
+#
         c.execute('''
             SELECT
                 md5_file, md5_data
@@ -466,13 +440,12 @@ class ImageMetadataDB:
 
         if res:
 
-            # new file md5s
-            md5_file = get_file_fingerprint(im_str)
             db_md5_file, db_md5_data = res
 
+            md5_file = get_file_fingerprint(im_str)
             if db_md5_file == md5_file:
                 # md5 hash has not changed, do not update the row
-                return
+                pass
 
             md5_data = get_data_fingerprint(im_str)
             if db_md5_data == md5_data:
@@ -543,6 +516,9 @@ class ImageMetadataDB:
             #)
             c.execute("INSERT INTO images_cache VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", image_tuple)
             #c.execute("INSERT INTO tri_preview VALUES (?, ?, ?, ?, ?)", preview_tuple)
+
+        # Add after in case of user interuption during 'add_image'
+        c.execute('''INSERT INTO images VALUES (?)''', (im_str,))
 
         self.conn.commit()
 
@@ -637,16 +613,24 @@ class ImageMetadataDB:
 
         return bool(c.fetchone())
 
-    def list_files(self, src_dir='', extentions=[], cameras=[], recursive=True, duplicate_md5_file=False, duplicate_md5_data=False, filter_txt=''):
+    def list_files(self, src_dir='', extentions=[], cameras=[], recursive=True, filter_txt='', dup_mode=False):
 
         src_dir = str(src_dir)
 
-        if not duplicate_md5_data and not duplicate_md5_file:
+        print(f"{dup_mode=}")
+        if not dup_mode:
+            print("No dup mode")
             cmd = 'SELECT path, md5_file FROM images_view'
-        elif duplicate_md5_file:
+        elif dup_mode == DUP_MD5_FILE:
+            print("check file only")
             cmd = "SELECT path, md5_file, MAX(path) FROM images_view"
-        elif duplicate_md5_data:
-            cmd = "SELECT path, md5_data, MAX(path) FROM images_view"
+        elif dup_mode == DUP_MD5_DATA:
+            print("checkdata")
+            # Prevent missing md5_data
+            cmd = "SELECT path, COALESCE(md5_data, md5_file), MAX(path) FROM images_view"
+        elif dup_mode == DUP_DATETIME:
+            print("check metadata")
+            cmd = "SELECT path, date, MAX(path) FROM images_view"
 
         if not recursive:
             cmd += " " + "WHERE folder = ? AND path LIKE '%' || ? || '%'"
@@ -654,26 +638,34 @@ class ImageMetadataDB:
             cmd += " " + "WHERE folder LIKE ? || '%' AND path LIKE '%' || ? || '%'"
         tup = (src_dir, filter_txt)
 
-
-        cmd += " " + f"AND extentions IN ({','.join('?' for _ in extentions)})"
-        tup += (*extentions,)
+        print(f"{extentions=}")
+        if extentions and extentions[0]:
+            cmd += " " + f"AND extentions IN ({','.join('?' for _ in extentions)})"
+            tup += (*extentions,)
 
         if cameras and cameras[0]:
             cmd += " " + f"AND camera IN ({','.join('?' for _ in cameras)})"
             tup += (*cameras,)
 
-        if not duplicate_md5_data and not duplicate_md5_file:
+        if not dup_mode:
             pass
-            #cmd = ' ' + 'GROUP BY md5_data'
-        elif duplicate_md5_file:
+        elif dup_mode == DUP_MD5_FILE:
             cmd += ' ' + 'GROUP BY md5_file'
-        elif duplicate_md5_data:
-            cmd += ' ' + 'GROUP BY md5_data'
+        elif dup_mode == DUP_MD5_DATA:
+            cmd += ' ' + 'GROUP BY COALESCE(md5_data, md5_file)'
+        elif dup_mode == DUP_DATETIME:
+            cmd += ' ' + 'GROUP BY date'
+
+        print(cmd)
+        print(tup)
 
         c= self.conn.cursor()
         c.execute(cmd, tup)
         #res = c.fetchall()
         l = c.fetchall()
+        #l = [(x[-15:-1], y) for x,y,*z in l]
+        from pprint import pprint
+        pprint(l)
         for row in l:
         #while (row := c.fetchone()) is not None:
             yield row[0]
@@ -696,6 +688,8 @@ class ImageMetadataDB:
         res = c.fetchone()
         if res:
             return res
+        else:
+            print(in_str)
 
 #    def populate_database(self):
 #        # Loop through each image in the images directory

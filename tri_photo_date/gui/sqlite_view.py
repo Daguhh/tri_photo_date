@@ -28,14 +28,14 @@ class DatabaseViewer(QWidget):
 
         self.update_table()
 
-    def update_table(self, src_dir='', extentions=[], cameras=[], recursive=True, duplicate_md5_file=False, duplicate_md5_data=False, filter_text=''):
+    def update_table(self, src_dir='', extentions=[], cameras=[], recursive=True, filter_text='', dup_mode=False):
 
         #filter_text = self.filter_edit.text()
         #conn = sqlite3.connect(self.db_file)
         #cursor = conn.cursor()
 
         with ImageMetadataDB() as db:
-            files_to_process = db.list_files(src_dir, extentions, cameras, recursive, duplicate_md5_file, duplicate_md5_data, filter_text)
+            files_to_process = db.list_files(src_dir, extentions, cameras, recursive, filter_text, dup_mode)
 
             rows = db.get_preview(files_to_process)
 

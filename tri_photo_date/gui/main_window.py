@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python1
 
 from configparser import ConfigParser
 import sys, os
@@ -50,13 +50,13 @@ from tri_photo_date.gui.menu import WindowMenu
 
 # Constants
 from tri_photo_date.exif import TAG_DESCRIPTION, USEFULL_TAG_DESCRIPTION, EXIF_LOCATION_FIELD
-from tri_photo_date.utils.config_loader import FILE_SIMULATE, FILE_COPY, FILE_MOVE, GUI_SIMPLIFIED, GUI_NORMAL, GUI_ADVANCED
+from tri_photo_date.utils.config_loader import FILE_SIMULATE, FILE_COPY, FILE_MOVE, GUI_SIMPLIFIED, GUI_NORMAL, GUI_ADVANCED, DUP_MD5_FILE, DUP_MD5_DATA, DUP_DATETIME
 from tri_photo_date.gui.strftime_help import DATE_STRFTIME_FORMAT
-from tri_photo_date.gui.human_text import MAIN_TAB_WIDGETS, MAIN_TAB_BUTTONS, GPS_HELP_TEXT, MEDIA_FORMATS, REL_PATH_FORMATS
+from tri_photo_date.gui.human_text import MAIN_TAB_WIDGETS, MAIN_TAB_BUTTONS, GPS_HELP_TEXT, MEDIA_FORMATS, REL_PATH_FORMATS, ACTION_BUTTONS
 from tri_photo_date.utils.config_paths import STRFTIME_HELP_PATH, ICON_PATH, LOCALES_DIR, IMAGE_DATABASE_PATH
 
 
-lang = CFG['lang']
+lang = CFG['gui_lang']
 import gettext
 trad = gettext.translation('base', localedir=LOCALES_DIR, languages=[lang])
 trad.install()
@@ -209,8 +209,9 @@ class MainWindow(QMainWindow):
         if not timer.isActive():
 
             filter_text = self.preview_wdg.filter_edit.text()
-            tup = (CFG['in_dir'], CFG['extentions'], CFG['cameras'], CFG['is_recursive'], 0, CFG['control_hash'], filter_text)
+            tup = (CFG['in_dir'], CFG['extentions'], CFG['cameras'], CFG['is_recursive'], filter_text, CFG['dup_is_scan_dest'])
             self.preview_wdg.update_table(*tup)
+            self.update_selection_tabs()
 
     def update_selection_tabs(self):
 
@@ -253,7 +254,7 @@ class LabelNLineEdit(QHBoxLayout):
             self.widget_list += [self.combo]
         self.widget_list += [self.textBox]
 
-        self.textBox.textChanged.connect(self.parent.get_config)
+        #self.textBox.textChanged.connect(self.parent.get_config)
 
         if spinbox:
             roll_box = self.add_spinbox(spinbox)
@@ -345,7 +346,7 @@ class LabelNLineEdit(QHBoxLayout):
 
         #callback = lambda e:self.textBox.setText(combo.currentText())
         combo.currentIndexChanged.connect(callback)
-        combo.editTextChanged.connect(callback)
+        #combo.editTextChanged.connect(callback)
 
         # Set default values (need to load values from textBox intead of config at MainTab.__init__)
         if CFG['gui_mode'] == GUI_SIMPLIFIED:
@@ -432,30 +433,38 @@ class MainTab(QWidget):
         layout.addLayout(guess_date_from_name_Wdg)
 
         group_by_floating_days_Wdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['group_by_floating_days'])
-        self.textWdg['group_floating_days_fmt'] = group_by_floating_days_Wdg.textBox
         self.boxWdg['is_group_floating_days'] = group_by_floating_days_Wdg.checkBox
+        self.textWdg['group_floating_days_fmt'] = group_by_floating_days_Wdg.textBox
         self.spinWdg['group_floating_days_nb'] = group_by_floating_days_Wdg.spinBox
         layout.addLayout(group_by_floating_days_Wdg)
 
-        for prop, label, tooltip in MAIN_TAB_BUTTONS:
-            if prop == "NEW_LINE":
-                layout.addLayout(sub_layout)
-                sub_layout = QHBoxLayout()
-            elif isinstance(prop, str):
-                ckb = QCheckBox()
-                ckb.setText(label)
-                ckb.setToolTip(tooltip)
-                sub_layout.addWidget(ckb)
-                self.boxWdg[prop] = ckb
-
+        sub_layout = QHBoxLayout()
+        self.boxWdg['gps'] = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['gps'])
+        self.boxWdg['is_recursive'] = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['is_recursive'])
+        #self.boxWdg['gps'] = QCheckBox(sub_layout, **MAIN_TAB_BUTTONS['gps']
+        #self.boxWdg['gps'] = QCheckBox(sub_layout, **MAIN_TAB_BUTTONS['gps']
+        layout.addLayout(sub_layout)
+#        for prop, label, tooltip in MAIN_TAB_BUTTONS:
+#            if prop == "NEW_LINE":
+#                layout.addLayout(sub_layout)
+#                sub_layout = QHBoxLayout()
+#            elif isinstance(prop, str):
+#                ckb = QCheckBox()
+#                ckb.setText(label)
+#                ckb.setToolTip(tooltip)
+#                sub_layout.addWidget(ckb)
+#                self.boxWdg[prop] = ckb
+#
                 # callback
         for prop, ckb in self.boxWdg.items():
             ckb.setCheckState(CFG[prop])
             ckb.stateChanged.connect(self.get_config)
 
-        self.boxWdg["control_hash"].clicked.connect(self.toogle_hash)
-
         layout.addLayout(sub_layout)
+
+        #sub_layout = QHBoxLayout()
+        layout.addLayout(DuplicateWdg(self))
+
         frame.setLayout(layout)
         main_layout.addWidget(frame)
         if CFG['gui_mode'] == GUI_SIMPLIFIED:
@@ -463,68 +472,31 @@ class MainTab(QWidget):
 
         ########## Save & Run ##########
         frame = MyFrame("", "red")
-
         layout = QVBoxLayout()
+        layout.addLayout(fileActionWdg(self))
 
-        sub_layout = QHBoxLayout()
-
-        ckb_grp = QButtonGroup(self)
-        ckb_grp.buttonClicked[int].connect(self.set_file_action)
-        file_action_Btns = {}
-        file_action_Btns[FILE_SIMULATE] = QRadioButton(_('Simuler'), self)
-        file_action_Btns[FILE_COPY] = QRadioButton(_('Copier'), self)
-        file_action_Btns[FILE_MOVE] = QRadioButton(_('Déplacer'), self)
-
-        ckb_grp.addButton(file_action_Btns[FILE_SIMULATE], FILE_SIMULATE)
-        ckb_grp.addButton(file_action_Btns[FILE_COPY], FILE_COPY)
-        ckb_grp.addButton(file_action_Btns[FILE_MOVE], FILE_MOVE)
-
-        file_action_Btns[CFG['file_action']].setChecked(True)
-
-        sub_layout.addWidget(file_action_Btns[FILE_SIMULATE])
-        sub_layout.addWidget(file_action_Btns[FILE_COPY])
-        sub_layout.addWidget(file_action_Btns[FILE_MOVE])
-        layout.addLayout(sub_layout)
-
-        # Buttons
         btn_layout = QHBoxLayout()
 
-        #btn = QPushButton(_("Sauvegarder la configuration"))
-        #btn_layout.addWidget(btn)
-        #btn.clicked.connect(self.save_act)
+        self.populateBtn = simplePushButton(
+            btn_layout,
+            self.populate_act,
+            **ACTION_BUTTONS['populate']
+        )
+        self.stopBtn0 = simpleStopButton(btn_layout, self.stop)
 
-        #self.previewBtn = QPushButton(_("update preview"))
-        #btn_layout.addWidget(self.previewBtn)
+        self.previewBtn = simplePushButton(
+            btn_layout,
+            self.preview_act,
+            **ACTION_BUTTONS['calculate']
+        )
+        self.stopBtn1 = simpleStopButton(btn_layout, self.stop)
 
-        self.populateBtn = QPushButton(_("1. Scanner"))
-        self.populateBtn.setToolTip(_("A utliser lors du changement des repertoires <b>source</b> et/ou <b>destination</b> ou si les fichiers ont été modifiés/déplacés par un autre programme.<br>Scanne les dossier, calcule les empreintes, recupère les metadonnées et met à jour l'onglet <b>outils</b>"))
-        btn_layout.addWidget(self.populateBtn)
-        self.populateBtn.clicked.connect(self.populate_act)
-
-        self.stopBtn0 = QPushButton(_("Interrompre"))
-        btn_layout.addWidget(self.stopBtn0)
-        self.stopBtn0.clicked.connect(self.stop)
-        self.stopBtn0.setHidden(True)
-
-        self.previewBtn = QPushButton(_("2. Pré-calculer"))
-        self.previewBtn.setToolTip(_("A utiliser après un changement de paramètre.\nA partir des fichiers trouvés pendant le scan, \ngenere les nouveaux chemins pour les images et affiche un aperçu"))
-        btn_layout.addWidget(self.previewBtn)
-        self.previewBtn.clicked.connect(self.preview_act)
-
-        self.stopBtn1 = QPushButton(_("Interrompre"))
-        btn_layout.addWidget(self.stopBtn1)
-        self.stopBtn1.clicked.connect(self.stop)
-        self.stopBtn1.setHidden(True)
-
-        self.executeBtn = QPushButton(_("3. Executer"))
-        self.executeBtn.setToolTip(_("A partir des chemins pré-calculés , déplace/copie les fichiers,\ninscrit les nouvelles métadonnées si besoin\n(pensez bien a executer '2. Pré-calculer' après tout changement de paramètre)"))
-        btn_layout.addWidget(self.executeBtn)
-        self.executeBtn.clicked.connect(self.run_act)
-
-        self.stopBtn2 = QPushButton(_("Interrompre"))
-        btn_layout.addWidget(self.stopBtn2)
-        self.stopBtn2.clicked.connect(self.stop)
-        self.stopBtn2.setHidden(True)
+        self.executeBtn = simplePushButton(
+            btn_layout,
+            self.run_act,
+            **ACTION_BUTTONS['execute']
+        )
+        self.stopBtn2 = simpleStopButton(btn_layout, self.stop)
 
         # Progress bar
         self.progress_bar = MyProgressBar()
@@ -555,14 +527,6 @@ class MainTab(QWidget):
             self.get_config()
         else:
             self.set_config()
-        self.toogle_hash(self.boxWdg["control_hash"].checkState())
-
-    def set_file_action(self, id):
-        CFG['file_action'] = id
-
-    def toogle_hash(self, is_checked):
-        self.boxWdg["hash_populate"].setDisabled(not is_checked)
-        self.boxWdg["hash_reset"].setDisabled(not is_checked)
 
     def populate_act(self):
         logging.info("Starting processing files...")
@@ -671,6 +635,99 @@ class MainTab(QWidget):
 
         for cfg_name, wdg in self.boxWdg.items():
             CFG[cfg_name] = 2 * int(wdg.isChecked())
+
+class simplePushButton(QPushButton):
+    def __init__(self, layout, callback, label="", tooltip=""):
+        super().__init__()
+
+        self.setText(label)
+        self.setToolTip(tooltip)
+        layout.addWidget(self)
+        self.clicked.connect(callback)
+
+class simpleStopButton(QPushButton):
+    def __init__(self, layout, callback):
+        super().__init__()
+
+        self.setText(_("Interrompre"))
+        layout.addWidget(self)
+        self.clicked.connect(callback)
+        self.setHidden(True)
+
+class simpleCheckBox(QCheckBox):
+    def __init__(self, parent_layout=None, label='',tooltip=''):
+        super().__init__()
+        self.setText(label)
+        self.setToolTip(tooltip)
+        parent_layout.addWidget(self)
+
+
+class DuplicateWdg(QHBoxLayout):
+
+    def __init__(self, parent):
+        super().__init__()
+
+        ckbBtn = QCheckBox('Dupliqués : ')
+
+        self.dup_grp = QButtonGroup(parent)
+        dup_mode_Btns = {}
+        dup_mode_Btns[DUP_MD5_FILE] = QRadioButton(_('Fichier'), parent)
+        dup_mode_Btns[DUP_MD5_DATA] = QRadioButton(_('Données'), parent)
+        dup_mode_Btns[DUP_DATETIME] = QRadioButton(_('Date'), parent)
+
+        self.dup_grp.addButton(dup_mode_Btns[DUP_MD5_FILE], DUP_MD5_FILE)
+        self.dup_grp.addButton(dup_mode_Btns[DUP_MD5_DATA], DUP_MD5_DATA)
+        self.dup_grp.addButton(dup_mode_Btns[DUP_DATETIME], DUP_DATETIME)
+
+        dup_mode_Btns[CFG['dup_mode']].setChecked(True)
+
+        ckbBtn.stateChanged.connect(self.set_dup_toggle)
+        self.dup_grp.buttonClicked[int].connect(self.set_dup_mode)
+        ckbBtn.stateChanged.emit(CFG['is_control_duplicates'])
+        parent.boxWdg['is_control_duplicates'] = ckbBtn
+        ckbBtn.setCheckState(CFG['is_control_duplicates'])
+
+        self.addWidget(ckbBtn)
+        self.addWidget(dup_mode_Btns[DUP_MD5_FILE])
+        self.addWidget(dup_mode_Btns[DUP_MD5_DATA])
+        self.addWidget(dup_mode_Btns[DUP_DATETIME])
+        scandestBtn = simpleCheckBox(self, **MAIN_TAB_BUTTONS['dup_is_scan_dest'])
+        scandestBtn.setCheckState(CFG['dup_is_scan_dest'])
+        parent.boxWdg['dup_is_scan_dest'] = scandestBtn
+
+    def set_dup_mode(self, val):
+        CFG['dup_mode'] = val
+
+    def set_dup_toggle(self, val):
+        CFG['is_control_duplicates'] = val
+        for btn in self.dup_grp.buttons():
+            btn.setDisabled(not val)
+
+class fileActionWdg(QHBoxLayout):
+
+    def __init__(self, parent):
+        super().__init__()
+
+        ckb_grp = QButtonGroup(parent)
+        ckb_grp.buttonClicked[int].connect(self.set_file_action)
+        file_action_Btns = {}
+        file_action_Btns[FILE_SIMULATE] = QRadioButton(_('Simuler'), parent)
+        file_action_Btns[FILE_COPY] = QRadioButton(_('Copier'), parent)
+        file_action_Btns[FILE_MOVE] = QRadioButton(_('Déplacer'), parent)
+
+        ckb_grp.addButton(file_action_Btns[FILE_SIMULATE], FILE_SIMULATE)
+        ckb_grp.addButton(file_action_Btns[FILE_COPY], FILE_COPY)
+        ckb_grp.addButton(file_action_Btns[FILE_MOVE], FILE_MOVE)
+
+        file_action_Btns[CFG['file_action']].setChecked(True)
+
+        self.addWidget(file_action_Btns[FILE_SIMULATE])
+        self.addWidget(file_action_Btns[FILE_COPY])
+        self.addWidget(file_action_Btns[FILE_MOVE])
+
+    def set_file_action(self, val):
+        CFG['file_action'] = val
+
 
 class GPSTab(QWidget):
     def __init__(self):

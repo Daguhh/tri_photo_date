@@ -117,8 +117,11 @@ def _convert_to_degress(value):
 
 @DEBUG
 def frac2int(frac: str) -> int:
-    num, den = [int(x) for x in frac.split("/")]
-    return num / den
+    try:
+        num, den = [int(x) for x in frac.split("/")]
+        return num / den
+    except ZeroDivisionError as e:
+        raise NoGpsDataError("Invalid GPS data : ", frac)
 
 @DEBUG
 def exifgps2degree(exif_value):

@@ -95,7 +95,11 @@ class ExifTags(dict):
 
         if match:
             date_str = match.group(0)
-            date = datetime.strptime(date_str, date_fmt).date()
+            try:
+                date = datetime.strptime(date_str, date_fmt).date()
+            except ValueError as e:
+                #logging.WARNING("Wrong format for parsing date from filename :", in_str)
+                return ''
             date_str = date.strftime(out_fmt)
 
         return date_str

@@ -12,7 +12,7 @@ from tri_photo_date.utils.config_loader import GUI_ADVANCED, GUI_NORMAL, GUI_SIM
 from tri_photo_date.ordonate_photos import CFG
 from tri_photo_date.gui.human_text import MENU_TOOL_BUTTON
 
-lang = CFG['lang']
+lang = CFG['gui_lang']
 import gettext
 trad = gettext.translation('base', localedir=LOCALES_DIR, languages=[lang])
 trad.install()
@@ -96,7 +96,7 @@ class WindowMenu(QMenuBar):
         lang_group.triggered.connect(self.set_language)
 
         for action in lang_group.actions():
-            if action.data() == CFG['lang']:
+            if action.data() == CFG['gui_lang']:
                 action.setChecked(True)
 
         view_menu.addMenu(mode_menu)
@@ -158,10 +158,10 @@ class WindowMenu(QMenuBar):
 
     def set_language(self, lang):
 
-        if CFG['lang'] == lang.data():
+        if CFG['gui_lang'] == lang.data():
             return
 
-        CFG['lang'] = lang.data()
+        CFG['gui_lang'] = lang.data()
 
         self.show_message_box()
 
