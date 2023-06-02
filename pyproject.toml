@@ -22,4 +22,4 @@ build-backend = "poetry.core.masonry.api"
 #build = "poetry run pyinstaller main.py --collect-submodules application --onefile --name myapi"
 
 [tool.poetry.scripts]
-tri_photo_date_cli = 'tri_photo_date.run:main'
+tri_photo_date = 'tri_photo_date.run:main'

@@ -35,14 +35,14 @@ out_path_str = %Y/%Y-%m
 filename = fichier
 
 # Options
-# FILE_SIMULATE = 0, FILE_COPY = 1, FILE_MOVE = 2
+# FILE_SIMULATE = 1, FILE_COPY = 2, FILE_MOVE = 3
 file_action = 1
 gps = 0
 verbose = 0
 
 # Duplicates options
-is_control_duplicates = 0
-# DUP_MD5_FILE = 0, DUP_MD5_DATA = 1, DUP_DATETIME = 2
+is_control_duplicates = 1
+# DUP_MD5_FILE = 1, DUP_MD5_DATA = 2, DUP_DATETIME = 3
 dup_mode = 1
 dup_is_scan_dest = 1
 
@@ -54,8 +54,8 @@ gps_wait = 5
 
 # GUI
 gui_size = 1
-gui_mode = 1
-gui_lang = fr
+gui_mode = 3
+gui_lang = en
 
 # Misc
 exif_user_tags =
