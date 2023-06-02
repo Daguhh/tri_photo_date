@@ -52,7 +52,7 @@ from tri_photo_date.gui.menu import WindowMenu
 from tri_photo_date.exif import TAG_DESCRIPTION, USEFULL_TAG_DESCRIPTION, EXIF_LOCATION_FIELD
 from tri_photo_date.utils.config_loader import FILE_SIMULATE, FILE_COPY, FILE_MOVE, GUI_SIMPLIFIED, GUI_NORMAL, GUI_ADVANCED, DUP_MD5_FILE, DUP_MD5_DATA, DUP_DATETIME
 from tri_photo_date.gui.strftime_help import DATE_STRFTIME_FORMAT
-from tri_photo_date.gui.human_text import MAIN_TAB_WIDGETS, MAIN_TAB_BUTTONS, GPS_HELP_TEXT, MEDIA_FORMATS, REL_PATH_FORMATS, ACTION_BUTTONS
+from tri_photo_date.gui.human_text import MAIN_TAB_WIDGETS, MAIN_TAB_BUTTONS, GPS_HELP_TEXT, MEDIA_FORMATS, REL_PATH_FORMATS, ACTION_BUTTONS, DUP_RADIO_BUTTONS
 from tri_photo_date.utils.config_paths import STRFTIME_HELP_PATH, ICON_PATH, LOCALES_DIR, IMAGE_DATABASE_PATH
 
 
@@ -690,21 +690,27 @@ class simpleCheckBox(QCheckBox):
         super().__init__()
         self.setText(label)
         self.setToolTip(tooltip)
-        parent_layout.addWidget(self)
+        if parent_layout is not None:
+            parent_layout.addWidget(self)
 
+class MyRadioButton(QRadioButton):
+    def __init__(self, parent, label='', tooltip=''):
+        super().__init__(parent)
+        self.setText(label)
+        self.setToolTip(tooltip)
 
 class DuplicateWdg(QHBoxLayout):
 
     def __init__(self, parent):
         super().__init__()
 
-        ckbBtn = QCheckBox('Dupliqués : ')
+        ckbBtn = simpleCheckBox(**DUP_RADIO_BUTTONS['duplicate']) #QCheckBox('Dupliqués : ')
 
         self.dup_grp = QButtonGroup(parent)
         dup_mode_Btns = {}
-        dup_mode_Btns[DUP_MD5_FILE] = QRadioButton(_('Fichier'), parent)
-        dup_mode_Btns[DUP_MD5_DATA] = QRadioButton(_('Données'), parent)
-        dup_mode_Btns[DUP_DATETIME] = QRadioButton(_('Date'), parent)
+        dup_mode_Btns[DUP_MD5_FILE] = MyRadioButton(parent, **DUP_RADIO_BUTTONS['file']) #QRadioButton(_('Fichier'), parent)
+        dup_mode_Btns[DUP_MD5_DATA] = MyRadioButton(parent, **DUP_RADIO_BUTTONS['data'])#QRadioButton(_('Données'), parent)
+        dup_mode_Btns[DUP_DATETIME] = MyRadioButton(parent, **DUP_RADIO_BUTTONS['date'])#QRadioButton(_('Date'), parent)
 
         self.dup_grp.addButton(dup_mode_Btns[DUP_MD5_FILE], DUP_MD5_FILE)
         self.dup_grp.addButton(dup_mode_Btns[DUP_MD5_DATA], DUP_MD5_DATA)

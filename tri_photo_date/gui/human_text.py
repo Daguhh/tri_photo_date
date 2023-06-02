@@ -117,6 +117,25 @@ ACTION_BUTTONS = {
         "tooltip" : _("A partir des chemins pré-calculés , déplace/copie les fichiers,\ninscrit les nouvelles métadonnées si besoin\n(pensez bien a executer '2. Pré-calculer' après tout changement de paramètre)"),
     },
 }
+
+DUP_RADIO_BUTTONS = {
+    "duplicate" : {
+        "label" : _("Dupliqués"),
+        "tooltip" : _("Activez pour ne pas déplacer les doubles.\nIgnore simplement les fichiers si un a déjà été déplacé")
+    },
+    "file" : {
+        "label" : _("Fichier"),
+        "tooltip" : _("Compare les sommes md5 des fichiers")
+    },
+    "data" : {
+        "label": _("Données"),
+        "tooltip" : _("Compare les md5 des données brutes à l'interieur des fichiers média.\nUtile pour les fichiers dont les métanonnées ont changées")
+    },
+    "date" : {
+        "label" :_('Date'),
+        "tooltip" : _("Compare la date des fichiers pour reperer les doubles")
+    }
+}
 #            ),
 #            ("NEW_LINE", "", 0),
 #            ("control_hash", _("Dupliqués"), _("Ne copie pas les fichiers dupliqués")),
