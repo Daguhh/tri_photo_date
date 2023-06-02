@@ -370,6 +370,8 @@ def compute(progbar=cli_progbar, LoopCallBack=None):
     LoopCallBack.stopped = True
 
 def execute(progbar=cli_progbar, LoopCallBack=None):
+    
+    is_gps = CFG['gps']
 
     with ImageMetadataDB() as db:
 
@@ -406,7 +408,7 @@ def execute(progbar=cli_progbar, LoopCallBack=None):
     FILE_ACTION_TXT[c].format(Path(d).name, limited_string(Path(e).parent.name))
 ))
 
-            progbar.update(i, progbar_text_execute(bytes_moved, total_size,CFG['file_action'],in_str, out_str))
+            progbar.update(bytes_moved, progbar_text_execute(bytes_moved, total_size,CFG['file_action'],in_str, out_str))
 
     progbar.update(bytes_moved, "Fait! {} fichiers ont été déplacés soit un total de {}".format(i, bytes2human(bytes_moved)))
 

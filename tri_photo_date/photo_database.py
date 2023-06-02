@@ -392,7 +392,6 @@ class ImageMetadataDB:
 
         c = self.conn.cursor()
 
-        print(f"{dup_mode=}")
         if dup_mode == DUP_MD5_FILE:
             query = "SELECT  md5_file FROM images_view WHERE path = ?"
         elif dup_mode == DUP_MD5_DATA:
@@ -693,7 +692,7 @@ class ImageMetadataDB:
         c.execute(query)
 
         while row := c.fetchone():
-            yield row
+            yield row[0]
 
     def get_preview(self, filter_txt=''):#, paths):
 
