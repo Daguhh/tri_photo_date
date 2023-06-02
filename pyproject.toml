@@ -15,7 +15,6 @@ PyQt5 = "^5.15.9"
 geopy = "^2.3.0"
 pyexiv2 = "^2.8.1"
 certifi = "^2023.5.7"
-Pillow = "^9.2.0"
 
 [build-system]
 requires = ["poetry-core"]

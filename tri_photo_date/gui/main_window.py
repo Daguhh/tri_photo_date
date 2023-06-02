@@ -64,13 +64,46 @@ _ = trad.gettext # Greek
 
 os.environ['QT_SCALE_FACTOR'] = CFG['gui_size']
 
-class InterupHolder():
-    stop_signal = False
-
 from PyQt5.QtCore import Qt, pyqtSignal, QPoint, QRect
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QSplitterHandle, QPushButton
 
+class loopCallBack_status():
+    stop_signal = False
+
+def loopCallback(stop=False):
+    loop = QEventLoop()
+    QTimer.singleShot(0, loop.quit)
+    loop.exec_()
+    if stop:
+        loopCallBack_status.stop_signal = True
+    if loopCallBack_status.stop_signal:
+        return True
+    return False
+
+class LoopCallBack:
+    stopped = False
+
+    def __init__(self):
+        pass
+
+    @classmethod
+    def run(cls):
+
+        loop = QEventLoop()
+        QTimer.singleShot(0, loop.quit)
+        loop.exec_()
+        if cls.stopped:
+            return True
+        return False
+
+    @classmethod
+    def stop(cls):
+        cls.stopped = True
+
+    @classmethod
+    def start(cls):
+        cls.status = False
 
 class CustomSplitterHandle(QSplitterHandle):
     clicked = pyqtSignal()
@@ -209,8 +242,7 @@ class MainWindow(QMainWindow):
         if not timer.isActive():
 
             filter_text = self.preview_wdg.filter_edit.text()
-            tup = (CFG['in_dir'], CFG['extentions'], CFG['cameras'], CFG['is_recursive'], filter_text, CFG['dup_is_scan_dest'])
-            self.preview_wdg.update_table(*tup)
+            self.preview_wdg.update_table(filter_text)
             self.update_selection_tabs()
 
     def update_selection_tabs(self):
@@ -535,20 +567,16 @@ class MainTab(QWidget):
         self.populateBtn.setHidden(True)
         self.stopBtn0.setHidden(False)
 
-        InterupHolder.stop_signal = False
+        #loopCallBack_status.stop_signal = False
+        LoopCallBack.stopped = False
         self.timer = QTimer()
 
-        import itertools
-
-        def waiting_animation():
-            animation = itertools.cycle(['|', '/', '-', '\\'])
-            while True:
-                yield 'Interrompre ' + next(animation)
-        loop_text = waiting_animation()
-
         self.timer.timeout.connect(lambda : self.run_function(
-            ordonate_photos.populate_db, InterupHolder, self.couterWdg, lambda : self.stopBtn0.setText(loop_text.__next__())
+            ordonate_photos.populate_db, self.progress_bar, LoopCallBack
         ))
+        #self.timer.timeout.connect(lambda : self.run_function(
+            #ordonate_photos.populate_db, self.progress_bar, loopCallBack_status, self.couterWdg, lambda : self.stopBtn0.setText(loop_text.__next__())
+        #))
         self.timer.timeout.connect(self.parent.update_preview)
         self.timer.start(1000)  # waits for 1 second
 
@@ -561,10 +589,10 @@ class MainTab(QWidget):
         self.previewBtn.setHidden(True)
         self.stopBtn1.setHidden(False)
 
-        InterupHolder.stop_signal = False
+        LoopCallBack.stopped = False
         self.timer = QTimer()
         self.timer.timeout.connect(lambda : self.run_function(
-            ordonate_photos.compute, self.progress_bar, self.couterWdg, InterupHolder
+            ordonate_photos.compute, self.progress_bar, LoopCallBack
         ))
         self.timer.timeout.connect(self.parent.update_preview)
         self.timer.start(1000)  # waits for 1 second
@@ -576,19 +604,21 @@ class MainTab(QWidget):
         self.executeBtn.setHidden(True)
         self.stopBtn2.setHidden(False)
 
-        InterupHolder.stop_signal = False
+        LoopCallBack.stopped = False
         self.timer = QTimer()
         self.timer.timeout.connect(lambda : self.run_function(
-            ordonate_photos.execute, self.progress_bar, self.couterWdg, InterupHolder
+            ordonate_photos.execute, self.progress_bar, LoopCallBack
         ))
         self.timer.start(1000)  # waits for 1 second
 
-        #self.start(ordonate_photos.main, self.progress_bar, self.couterWdg, InterupHolder)
+        #self.start(ordonate_photos.main, self.progress_bar, self.couterWdg, loopCallBack_status)
 
     def run_function(self, func, *args, **kwargs):
-        if not InterupHolder.stop_signal:
+        #if not loopCallBack_status.stop_signal:
+        if not LoopCallBack.stopped:
             func(*args, **kwargs)
-        if InterupHolder.stop_signal:
+        #if loopCallBack_status.stop_signal:
+        if LoopCallBack.stopped:
             self.timer.stop()
             self.populateBtn.setHidden(False)
             self.executeBtn.setHidden(False)
@@ -600,7 +630,8 @@ class MainTab(QWidget):
 
     def stop(self):
         self.timer.stop()
-        InterupHolder.stop_signal = True
+        LoopCallBack.stopped = True
+        #loopCallBack_status.stop_signal = True
         self.populateBtn.setHidden(False)
         self.executeBtn.setHidden(False)
         self.previewBtn.setHidden(False)
@@ -681,11 +712,10 @@ class DuplicateWdg(QHBoxLayout):
 
         dup_mode_Btns[CFG['dup_mode']].setChecked(True)
 
-        ckbBtn.stateChanged.connect(self.set_dup_toggle)
         self.dup_grp.buttonClicked[int].connect(self.set_dup_mode)
-        ckbBtn.stateChanged.emit(CFG['is_control_duplicates'])
-        parent.boxWdg['is_control_duplicates'] = ckbBtn
+        ckbBtn.stateChanged.connect(self.set_dup_toggle)
         ckbBtn.setCheckState(CFG['is_control_duplicates'])
+        ckbBtn.stateChanged.emit(CFG['is_control_duplicates'])
 
         self.addWidget(ckbBtn)
         self.addWidget(dup_mode_Btns[DUP_MD5_FILE])
@@ -693,6 +723,8 @@ class DuplicateWdg(QHBoxLayout):
         self.addWidget(dup_mode_Btns[DUP_DATETIME])
         scandestBtn = simpleCheckBox(self, **MAIN_TAB_BUTTONS['dup_is_scan_dest'])
         scandestBtn.setCheckState(CFG['dup_is_scan_dest'])
+
+        parent.boxWdg['is_control_duplicates'] = ckbBtn
         parent.boxWdg['dup_is_scan_dest'] = scandestBtn
 
     def set_dup_mode(self, val):
@@ -1129,6 +1161,7 @@ class MyProgressBar(QProgressBar):
         super().__init__()
         self.setGeometry(50, 50, 200, 20)
         self.setContentsMargins(0, 0, 0, 0)
+        self._progbar_nb_val = 1
 
     def add_label(self):
         self.text_label = QLabel("")

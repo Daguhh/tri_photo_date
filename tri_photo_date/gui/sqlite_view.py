@@ -12,7 +12,7 @@ class DatabaseViewer(QWidget):
 
         self.filter_edit = QLineEdit()
         self.filter_edit.setPlaceholderText('Entrez une chaine de caractères pour filtrer')
-        #self.filter_edit.textChanged.connect(self.update_table)
+        self.filter_edit.textChanged.connect(self.update_table_act)
 
         self.table = QTableWidget()
         self.table.setColumnCount(7)
@@ -26,18 +26,22 @@ class DatabaseViewer(QWidget):
         layout.addWidget(self.table)
         self.setLayout(layout)
 
-        self.update_table()
+        self.update_table('')
 
-    def update_table(self, src_dir='', extentions=[], cameras=[], recursive=True, filter_text='', dup_mode=False):
+    def update_table_act(self, e):
+
+        self.update_table(self.filter_edit.text())
+
+    def update_table(self, filter_text=''):#, src_dir='', extentions=[], cameras=[], recursive=True, filter_text='', dup_mode=False, from_compute='update_table'):
 
         #filter_text = self.filter_edit.text()
         #conn = sqlite3.connect(self.db_file)
         #cursor = conn.cursor()
 
         with ImageMetadataDB() as db:
-            files_to_process = db.list_files(src_dir, extentions, cameras, recursive, filter_text, dup_mode)
+            #files_to_process = db.list__preview_files()
 
-            rows = db.get_preview(files_to_process)
+            rows = list(db.get_preview(filter_text))#files_to_process)
 
         self.table.setRowCount(len(rows))
         for i, row in enumerate(rows):

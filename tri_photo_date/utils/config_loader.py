@@ -68,6 +68,11 @@ accepted_formats = jpg, jpeg, png, webp, bmp, ico, tiff, heif, heic, svg, raw, a
 
 LANG_LIST = ['fr', 'en']
 
+FILE_ACTION_TXT = {
+    1 : "Simulation du déplacement de {} vers {}",
+    2 : "Copie du fichier {} vers {}",
+    3 : "Déplacement du fichier {} vers {}"
+}
 FILE_SIMULATE = 1
 FILE_COPY = 2
 FILE_MOVE = 3

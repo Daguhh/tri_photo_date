@@ -58,6 +58,16 @@ class ExifTags(dict):
         self.im.modify_iptc(address_dct)
 
     @staticmethod
+    def add_location_to_iptc(im_str, address_dct):
+
+        with ExifTags(out_str) as im_exif:
+            try:
+                im_exif.add_localisation(location)
+            except NoExifError as e:
+                print("Issue while loading gps, skipping", e)
+
+
+    @staticmethod
     def format_tag(out_fmt, placeholder, value=''):
         # import ipdb; ipdb.set_trace()
         #out_fmt = out_fmt.replace(tag_key, tag_value)

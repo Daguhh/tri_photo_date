@@ -5,9 +5,8 @@ import os
 import sqlite3
 from pathlib import Path
 from datetime import datetime
+import re
 
-import PIL
-from PIL import Image
 #import pyexiv2
 
 #from tri_photo_date.gps import get_image_gps_location
@@ -17,20 +16,6 @@ from tri_photo_date.utils.config_loader import DUP_MD5_FILE, DUP_MD5_DATA, DUP_D
 from tri_photo_date.utils.fingerprint import get_data_fingerprint, get_file_fingerprint
 
 
-#
-#def image_exic_cache(func):
-#    @wraps(func)
-#
-#    def wrapper(*args, **kwargs):
-#
-#        im_path = args
-#
-#        with ImageMetadataDB() as im_db:
-#            if im_db.exist(im_path):
-#                return im_db.get_exifs(im_path)
-#            else:
-#                return im_db.add_image(im_path)
-#
 class ImageMetadataDB:
     def __init__(self):
         self.db_file = str(IMAGE_DATABASE_PATH)
@@ -39,6 +24,20 @@ class ImageMetadataDB:
     def __enter__(self):
         # Connect to the SQLite database and create the images table
         self.conn = sqlite3.connect(self.db_file)
+
+        def regexp(filename, item):
+            path = Path(filename)
+            reg = re.compile(
+                path.stem + r"(?:\s\([0-9]+\))?" + path.suffix.lower()
+            )
+            return reg.search(item) is not None
+
+        self.conn.create_function(
+            "REGEXP",
+            2,
+            regexp
+        )
+
         c = self.conn.cursor()
         c.execute('''
             CREATE TABLE IF NOT EXISTS images_cache
@@ -111,217 +110,9 @@ class ImageMetadataDB:
 
     def __exit__(self, exc_type, exc_value, traceback):
         # Close the database connection
-        print('EXIT DATABASE')
         self.conn.commit()
         #self.conn.close()
         self.conn.close()
-
-    def exist(self, im_path):
-
-        c= self.conn.cursor()
-        md5_file, md5_data = get_fingerprint(im_path)
-        c.execute(
-            '''SELECT EXISTS(
-                SELECT 1 FROM images_view WHERE md5_file=? LIMIT 1
-            )''',
-            (md5_file,))
-        res = c.fetchone()
-
-        return res[0]
-
-    def get_file_list_preview(self):
-        c = self.conn.cursor()
-        c.execute('''
-                SELECT new_folder, new_filename FROM tri_preview
-                '''
-                  )
-        return c.fetchall()
-
-    def exist_in_preview(self, im_path):
-
-        new_folder = str(im_path.parent)
-        new_filename = str(im_path.name)
-
-        c= self.conn.cursor()
-        c.execute(
-            '''SELECT EXISTS(
-                SELECT 1 FROM
-                    tri_preview
-                WHERE
-                    new_folder = ?
-                  AND
-                    new_filename = ?
-                LIMIT 1
-            )''',
-            (new_folder, new_filename)
-        )
-
-        v = bool(c.fetchone()[0])
-        return v
-
-    def add_location(self, im_str, location_metadata):
-
-        c = self.conn.cursor()
-        # Update all metadatas in images
-        metadatas = self.get_exifs(im_str)
-        metadatas.update(location_metadata)
-        c = self.conn.cursor()
-        c.execute('''
-            UPDATE
-                images_cache
-            SET
-                metadata = ?
-            WHERE
-                path = ?''',
-            (json.dumps(metadatas), im_str)
-
-        )
-
-        disp_name = location_metadata[EXIF_LOCATION_FIELD["display_name"]]
-        # Put in preview windows
-        c.execute('''
-            UPDATE
-                tri_preview
-            SET
-                location = ?
-            WHERE
-                path = ?''',
-            (json.dumps(disp_name), im_str)
-        )
-
-    def get_location(self, im_str):
-
-        c = self.conn.cursor()
-
-        c.execute('''
-            SELECT
-                location
-            FROM
-                tri_preview
-            WHERE
-                path = ?''',
-            (im_str,)
-        )
-        res = c.fetchone()
-        if res is not None and res[0] is not None:
-            return json.loads(res[0])
-
-    def get_date_group(self, im_str):
-
-        c = self.conn.cursor()
-
-        c.execute('''
-            SELECT
-                groups
-            FROM
-                tri_preview
-            WHERE
-                path = ?''',
-            (im_str,)
-        )
-        res = c.fetchone()
-        date_fmt = r"%Y:%m:%d %H:%M:%S"
-
-        if res is None or res[0] is None:
-            return None
-        return datetime.strptime(res[0], date_fmt)
-
-    def add_out_path(self, in_str, out_str):
-
-        out_path = Path(out_str)
-        new_folder = str(out_path.parent)
-        new_filename = str(out_path.name)
-
-        c = self.conn.cursor()
-        c.execute('''
-            UPDATE
-                tri_preview
-            SET
-                new_folder = ?, new_filename = ?
-            WHERE
-                path = ?''',
-            (new_folder, new_filename, in_str)
-        )
-        self.conn.commit()
-
-    def get_exifs(self, im_path):
-
-        c= self.conn.cursor()
-        c.execute(
-            '''SELECT metadata FROM images_view WHERE path=?''',
-            (im_path,)
-        )
-        res = c.fetchone()
-        return json.loads(res[0])
-
-    def get_metadatas(self, im_path):
-
-        return self.get_exifs(im_path)
-
-    def scan_dest(self, im_str):
-
-        # new file md5s
-        #md5_file, md5_data = get_fingerprint(im_str)
-
-        # Check database
-        c = self.conn.cursor()
-        c.execute('''
-            SELECT
-                md5_file, md5_data
-            FROM
-                scan_dest
-            WHERE
-                path = ?''',
-            (im_str,)
-        )
-        res = c.fetchone()
-
-        if res:
-            db_md5_file, db_md5_data = res
-            md5_file = get_file_fingerprint(im_str)
-
-            if db_md5_file == md5_file and db_md5_data == md5_data:
-                # md5 hash has not changed, do not update the row
-                return
-
-            md5_data = get_data_fingerprint(im_str)
-            if db_md5_data == md5_data:
-                # md5 hash has changed, update the row
-                with ExifTags(im_str) as exifs:
-                    metadata = exifs.copy()
-                c.execute('''
-                    UPDATE
-                        scan_dest
-                    SET
-                        md5_file = ?
-                    WHERE
-                        path = ?''',
-                    (md5_file, json.dumps(metadata), im_str)
-                )
-            else: # Photo itself had changed, but waht to do????
-                with ExifTags(im_str) as exifs:
-                    metadata = exifs.copy()
-                c.execute('''
-                    UPDATE
-                        scan_dest
-                    SET
-                        md5_file = ?, md5_data = ?
-                    WHERE
-                        path = ?''',
-                    (md5_file, md5_data, json.dumps(metadata), im_str)
-                )
-        else:
-            md5_file = get_file_fingerprint(im_str)
-            md5_data = get_data_fingerprint(im_str)
-            c.execute('''
-                INSERT INTO
-                    scan_dest
-                VALUES
-                    (?, ?, ?)''',
-                (md5_file, md5_data, im_str)
-            )
-
-        self.conn.commit()
 
     def clean_all_table(self):
 
@@ -331,88 +122,10 @@ class ImageMetadataDB:
         c.execute("DELETE FROM scan_dest")
         self.conn.commit()
 
-    def clean_dest_table(self):
+    def clean_preview_table(self):
 
         c = self.conn.cursor()
         c.execute("DELETE FROM tri_preview")
-
-    def add_image_to_preview(self, im_str):
-
-        c = self.conn.cursor()
-        filename = Path(im_str).name
-
-        preview_tuple = (
-            im_str, filename, None, None, None, None, None
-        )
-
-        c.execute("""
-            INSERT INTO
-                tri_preview
-            VALUES
-                (?, ?, ?, ?, ?, ?, ?)""",
-            preview_tuple
-        )
-
-    def add_date_to_preview(self, in_str,  date_str):
-
-        c = self.conn.cursor()
-
-        c.execute("""
-            UPDATE
-                tri_preview
-            SET
-                date = ?
-            WHERE
-                path = ?
-            """,
-            (date_str, in_str)
-        )
-
-    def group_by_n_floating_days(self, n=6):
-
-        c = self.conn.cursor()
-
-        c.execute("""
-            SELECT
-                path, date
-            FROM
-                tri_preview
-            ORDER BY
-                date""")
-        #res = c.fetchall()
-        # Group the dates by 6-day intervals
-        date_fmt = r"%Y:%m:%d %H:%M:%S"
-        prev_date = datetime.strptime('1900:01:01 00:00:00', date_fmt)#None
-        grp_date = None
-
-        for path, date_str in c.fetchall():
-            if date_str is None:
-                continue
-            date = datetime.strptime(date_str, date_fmt)
-            if prev_date is None:
-                grp_date = date
-            elif (date - prev_date).days < n:
-                pass
-            else:
-                grp_date = date
-            self.set_group_preview(path, datetime.strftime(grp_date, date_fmt))
-            prev_date = date
-
-    def set_group_preview(self, path, date):
-
-        c = self.conn.cursor()
-
-        c.execute("""
-            UPDATE
-                tri_preview
-            SET
-                groups = ?
-            WHERE
-                path = ?
-            """,
-            (date, path)
-        )
-        self.conn.commit()
 
     def add_image(self, im_str):
 
@@ -522,6 +235,413 @@ class ImageMetadataDB:
 
         self.conn.commit()
 
+    def scan_dest(self, im_str):
+
+        # new file md5s
+        #md5_file, md5_data = get_fingerprint(im_str)
+
+        # Check database
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT
+                md5_file, md5_data
+            FROM
+                scan_dest
+            WHERE
+                path = ?''',
+            (im_str,)
+        )
+        res = c.fetchone()
+
+        if res:
+            db_md5_file, db_md5_data = res
+            md5_file = get_file_fingerprint(im_str)
+
+            if db_md5_file == md5_file and db_md5_data == md5_data:
+                # md5 hash has not changed, do not update the row
+                return
+
+            md5_data = get_data_fingerprint(im_str)
+            if db_md5_data == md5_data:
+                # md5 hash has changed, update the row
+                with ExifTags(im_str) as exifs:
+                    metadata = exifs.copy()
+                c.execute('''
+                    UPDATE
+                        scan_dest
+                    SET
+                        md5_file = ?
+                    WHERE
+                        path = ?''',
+                    (md5_file, json.dumps(metadata), im_str)
+                )
+            else: # Photo itself had changed, but waht to do????
+                with ExifTags(im_str) as exifs:
+                    metadata = exifs.copy()
+                c.execute('''
+                    UPDATE
+                        scan_dest
+                    SET
+                        md5_file = ?, md5_data = ?
+                    WHERE
+                        path = ?''',
+                    (md5_file, md5_data, json.dumps(metadata), im_str)
+                )
+        else:
+            md5_file = get_file_fingerprint(im_str)
+            md5_data = get_data_fingerprint(im_str)
+            c.execute('''
+                INSERT INTO
+                    scan_dest
+                VALUES
+                    (?, ?, ?)''',
+                (md5_file, md5_data, im_str)
+            )
+
+        self.conn.commit()
+
+    def exist(self, im_path):
+
+        c= self.conn.cursor()
+        md5_file, md5_data = get_fingerprint(im_path)
+        c.execute(
+            '''SELECT EXISTS(
+                SELECT 1 FROM images_view WHERE md5_file=? LIMIT 1
+            )''',
+            (md5_file,))
+        res = c.fetchone()
+
+        return res[0]
+
+    def count(self, *args, **kwargs):
+
+        nb_files = 0
+        nb_bytes = 0
+
+        for f in self.list_files(*args, **kwargs):
+            nb_files += 1
+            nb_bytes += Path(f).stat().st_size
+
+        return nb_files, nb_bytes
+
+    def count_preview(self):
+
+        nb_files = 0
+        nb_bytes = 0
+
+        c = self.conn.cursor()
+
+        c.execute('''
+        SELECT
+            path
+        FROM
+            tri_preview
+        ''')
+        rows = c.fetchall()
+        for row in rows:
+            f = row[0]
+            nb_files += 1
+            nb_bytes += Path(f).stat().st_size
+
+        return nb_files, nb_bytes
+
+    def list_files(self, src_dir='', extentions=[], cameras=[], recursive=True, filter_txt='', dup_mode=False):
+
+        src_dir = str(src_dir)
+
+        if not dup_mode:
+            cmd = 'SELECT path, md5_file FROM images_view'
+        elif dup_mode == DUP_MD5_FILE:
+            cmd = "SELECT path, md5_file, MAX(path) FROM images_view"
+        elif dup_mode == DUP_MD5_DATA:
+            # Prevent missing md5_data
+            cmd = "SELECT path, COALESCE(md5_data, md5_file), MAX(path) FROM images_view"
+        elif dup_mode == DUP_DATETIME:
+            cmd = "SELECT path, date, MAX(path) FROM images_view"
+
+        if not recursive:
+            cmd += " " + "WHERE folder = ? AND path LIKE '%' || ? || '%'"
+        else:
+            cmd += " " + "WHERE folder LIKE ? || '%' AND path LIKE '%' || ? || '%'"
+        tup = (src_dir, filter_txt)
+
+        if extentions and extentions[0]:
+            cmd += " " + f"AND extentions IN ({','.join('?' for _ in extentions)})"
+            tup += (*extentions,)
+
+        if cameras and cameras[0]:
+            cmd += " " + f"AND camera IN ({','.join('?' for _ in cameras)})"
+            tup += (*cameras,)
+
+        if not dup_mode:
+            pass
+        elif dup_mode == DUP_MD5_FILE:
+            cmd += ' ' + 'GROUP BY md5_file'
+        elif dup_mode == DUP_MD5_DATA:
+            cmd += ' ' + 'GROUP BY COALESCE(md5_data, md5_file)'
+        elif dup_mode == DUP_DATETIME:
+            cmd += ' ' + 'GROUP BY date'
+
+        c= self.conn.cursor()
+        c.execute(cmd, tup)
+
+        while row := c.fetchone():
+            yield row[0]
+
+    def exist_in_dest(self, in_str, dup_mode):
+
+        c = self.conn.cursor()
+
+        print(f"{dup_mode=}")
+        if dup_mode == DUP_MD5_FILE:
+            query = "SELECT  md5_file FROM images_view WHERE path = ?"
+        elif dup_mode == DUP_MD5_DATA:
+            # Prevent missing md5_data
+            query = "SELECT COALESCE(md5_data, md5_file) FROM images_view WHERE path = ?"
+        elif dup_mode == DUP_DATETIME:
+            query = "SELECT date FROM images_view WHERE path = ?"
+
+        c.execute(query, (in_str,))
+        res = c.fetchone()
+
+        if dup_mode == DUP_MD5_FILE:
+            query = "SELECT * FROM scan_dest WHERE md5_file = ?"
+        elif dup_mode == DUP_MD5_DATA:
+            # Prevent missing md5_dat
+            query = "SELECT * FROM scan_dest WHERE COALESCE(md5_data, md5_file) = ?"
+        elif dup_mode == DUP_DATETIME:
+            query = "SELECT * FROM scan_dest WHERE date = ?"
+
+        c.execute(query, res)
+
+        return bool(c.fetchone())
+
+    def add_image_to_preview(self, in_str, out_str, location, date_str):
+
+        c = self.conn.cursor()
+
+        path = in_str
+        filename = Path(in_str).name
+
+        out_path = Path(out_str)
+        new_folder = str(out_path.parent)
+        new_filename = str(out_path.name)
+
+        if location is not None:
+            disp_name = location[EXIF_LOCATION_FIELD["display_name"]]
+        else:
+            disp_name = None
+
+        if not date_str:
+            date_str=None
+
+        preview_tuple = (
+            in_str, filename, new_folder, new_filename, disp_name, None, date_str
+        )
+
+        c.execute("""
+            INSERT INTO
+                tri_preview
+            VALUES
+                (?, ?, ?, ?, ?, ?, ?)""",
+            preview_tuple
+        )
+
+        self.conn.commit()
+
+    def get_exifs(self, im_path):
+
+        c= self.conn.cursor()
+        c.execute(
+            '''SELECT metadata FROM images_view WHERE path=?''',
+            (im_path,)
+        )
+        res = c.fetchone()
+        return json.loads(res[0])
+
+    def add_date_to_preview(self, in_str,  date_str):
+
+        c = self.conn.cursor()
+
+        c.execute("""
+            UPDATE
+                tri_preview
+            SET
+                date = ?
+            WHERE
+                path = ?
+            """,
+            (date_str, in_str)
+        )
+
+    def add_location(self, im_str, location_metadata):
+
+        c = self.conn.cursor()
+        # Update all metadatas in images
+        metadatas = self.get_exifs(im_str)
+        metadatas.update(location_metadata)
+        c = self.conn.cursor()
+        c.execute('''
+            UPDATE
+                images_cache
+            SET
+                metadata = ?
+            WHERE
+                path = ?''',
+            (json.dumps(metadatas), im_str)
+
+        )
+        self.conn.commit()
+
+#        disp_name = location_metadata[EXIF_LOCATION_FIELD["display_name"]]
+#        # Put in preview windows
+#        c.execute('''
+#            UPDATE
+#                tri_preview
+#            SET
+#                location = ?
+#            WHERE
+#                path = ?''',
+#            (json.dumps(disp_name), im_str)
+#        )
+
+    def exist_in_preview(self, im_path):
+
+        new_folder = str(im_path.parent)
+        new_filename = str(im_path.name)
+
+        c= self.conn.cursor()
+
+        query = 'SELECT new_filename FROM tri_preview WHERE new_folder = ? AND new_filename REGEXP ?'
+
+        c.execute(query, (new_folder, new_filename,))
+
+        #return [row[0] for row in c.fetchall()]
+        while row := c.fetchone() :
+            yield row[0]
+
+    def add_out_path(self, in_str, out_str):
+
+        out_path = Path(out_str)
+        new_folder = str(out_path.parent)
+        new_filename = str(out_path.name)
+
+        c = self.conn.cursor()
+        c.execute('''
+            UPDATE
+                tri_preview
+            SET
+                new_folder = ?, new_filename = ?
+            WHERE
+                path = ?''',
+            (new_folder, new_filename, in_str)
+        )
+        self.conn.commit()
+
+    def group_by_n_floating_days(self, n=6):
+
+        c = self.conn.cursor()
+
+        c.execute("""
+            SELECT
+                path, date
+            FROM
+                tri_preview
+            ORDER BY
+                date""")
+        #res = c.fetchall()
+        # Group the dates by 6-day intervals
+        date_fmt = r"%Y:%m:%d %H:%M:%S"
+        prev_date = datetime.strptime('1900:01:01 00:00:00', date_fmt)#None
+        grp_date = None
+
+        for path, date_str in c.fetchall():
+            if date_str is None:
+                continue
+            date = datetime.strptime(date_str, date_fmt)
+            if prev_date is None:
+                grp_date = date
+            elif (date - prev_date).days < n:
+                pass
+            else:
+                grp_date = date
+            self.set_group_preview(path, datetime.strftime(grp_date, date_fmt))
+            prev_date = date
+
+    def get_date_group(self, im_str):
+
+        c = self.conn.cursor()
+
+        c.execute('''
+            SELECT
+                groups
+            FROM
+                tri_preview
+            WHERE
+                path = ?''',
+            (im_str,)
+        )
+        res = c.fetchone()
+        date_fmt = r"%Y:%m:%d %H:%M:%S"
+
+        if res is None or res[0] is None:
+            return None
+        return datetime.strptime(res[0], date_fmt)
+
+    def get_out_str(self, in_str):
+
+        c = self.conn.cursor()
+
+        c.execute('''
+            SELECT
+                new_folder, new_filename
+            FROM
+                tri_preview
+            WHERE
+                path = ?''',
+            (in_str,)
+        )
+        res = c.fetchone()
+        if res:
+            return res
+
+    def get_metadatas(self, im_path):
+
+        return self.get_exifs(im_path)
+
+    def get_location(self, im_str):
+
+        c = self.conn.cursor()
+
+        c.execute('''
+            SELECT
+                location
+            FROM
+                tri_preview
+            WHERE
+                path = ?''',
+            (im_str,)
+        )
+        res = c.fetchone()
+        if res is not None and res[0] is not None:
+            return json.loads(res[0])
+
+    def set_group_preview(self, path, date):
+
+        c = self.conn.cursor()
+
+        c.execute("""
+            UPDATE
+                tri_preview
+            SET
+                groups = ?
+            WHERE
+                path = ?
+            """,
+            (date, path)
+        )
+        self.conn.commit()
+
     def get_camera_list(self):
 
         c= self.conn.cursor()
@@ -563,133 +683,37 @@ class ImageMetadataDB:
         res = c.fetchall()
         return [r[0] for r in res]
 
-    def count(self, *args, **kwargs):
+    def get_preview_files(self, filter_txt=''):#, paths):
 
-        nb_files = 0
-        nb_bytes = 0
-
-        for f in self.list_files(*args, **kwargs):
-            nb_files += 1
-            nb_bytes += Path(f).stat().st_size
-
-        return nb_files, nb_bytes
-
-    def get_preview(self, paths):
-
-        paths = list(paths)
+        #paths = list(paths)
         c = self.conn.cursor()
-        placeholders = ','.join('?' for _ in paths)
-        query = f"SELECT * FROM tri_preview WHERE path IN ({placeholders})"
-        c.execute(query, paths)
+        #placeholders = ','.join('?' for _ in paths)
+        #query = f"SELECT * FROM tri_preview WHERE path IN ({placeholders})"
+        query = f"SELECT path FROM tri_preview;"
+        c.execute(query)
 
-        res = c.fetchall()
+        while row := c.fetchone():
+            yield row
 
-        return res
+    def get_preview(self, filter_txt=''):#, paths):
 
-    def exist_in_dest(self, in_str):
-
+        #paths = list(paths)
         c = self.conn.cursor()
-        c.execute('''
-            SELECT
-                md5_data
-            FROM
-                images_view
-            WHERE
-                path = ?''',
-            (in_str,)
-        )
+        #placeholders = ','.join('?' for _ in paths)
+        #query = f"SELECT * FROM tri_preview WHERE path IN ({placeholders})"
+        query = f"SELECT * FROM tri_preview WHERE path LIKE '%' || ? || '%';"
+        c.execute(query, (filter_txt,))
 
-        md5_data = c.fetchone()
+        while row := c.fetchone():
+            yield row
 
-        c.execute("""
-            SELECT
-                *
-            FROM
-                scan_dest
-            WHERE
-                md5_data = ?""",
-            md5_data
-        )
-
-        return bool(c.fetchone())
-
-    def list_files(self, src_dir='', extentions=[], cameras=[], recursive=True, filter_txt='', dup_mode=False):
-
-        src_dir = str(src_dir)
-
-        print(f"{dup_mode=}")
-        if not dup_mode:
-            print("No dup mode")
-            cmd = 'SELECT path, md5_file FROM images_view'
-        elif dup_mode == DUP_MD5_FILE:
-            print("check file only")
-            cmd = "SELECT path, md5_file, MAX(path) FROM images_view"
-        elif dup_mode == DUP_MD5_DATA:
-            print("checkdata")
-            # Prevent missing md5_data
-            cmd = "SELECT path, COALESCE(md5_data, md5_file), MAX(path) FROM images_view"
-        elif dup_mode == DUP_DATETIME:
-            print("check metadata")
-            cmd = "SELECT path, date, MAX(path) FROM images_view"
-
-        if not recursive:
-            cmd += " " + "WHERE folder = ? AND path LIKE '%' || ? || '%'"
-        else:
-            cmd += " " + "WHERE folder LIKE ? || '%' AND path LIKE '%' || ? || '%'"
-        tup = (src_dir, filter_txt)
-
-        print(f"{extentions=}")
-        if extentions and extentions[0]:
-            cmd += " " + f"AND extentions IN ({','.join('?' for _ in extentions)})"
-            tup += (*extentions,)
-
-        if cameras and cameras[0]:
-            cmd += " " + f"AND camera IN ({','.join('?' for _ in cameras)})"
-            tup += (*cameras,)
-
-        if not dup_mode:
-            pass
-        elif dup_mode == DUP_MD5_FILE:
-            cmd += ' ' + 'GROUP BY md5_file'
-        elif dup_mode == DUP_MD5_DATA:
-            cmd += ' ' + 'GROUP BY COALESCE(md5_data, md5_file)'
-        elif dup_mode == DUP_DATETIME:
-            cmd += ' ' + 'GROUP BY date'
-
-        print(cmd)
-        print(tup)
-
-        c= self.conn.cursor()
-        c.execute(cmd, tup)
-        #res = c.fetchall()
-        l = c.fetchall()
-        #l = [(x[-15:-1], y) for x,y,*z in l]
-        from pprint import pprint
-        pprint(l)
-        for row in l:
-        #while (row := c.fetchone()) is not None:
-            yield row[0]
-
-    #def move(self, src_dir, extentions, cameras=[], recursive=True, del_duplicates=True):
-
-    def get_out_str(self, in_str):
-
-        c = self.conn.cursor()
-
-        c.execute('''
-            SELECT
-                new_folder, new_filename
-            FROM
-                tri_preview
-            WHERE
-                path = ?''',
-            (in_str,)
-        )
-        res = c.fetchone()
-        if res:
-            return res
-        else:
-            print(in_str)
+#    def get_file_list_preview(self):
+#        c = self.conn.cursor()
+#        c.execute('''
+#                SELECT new_folder, new_filename FROM tri_preview
+#                '''
+#                  )
+#        return c.fetchall()
 
 #    def populate_database(self):
 #        # Loop through each image in the images directory
