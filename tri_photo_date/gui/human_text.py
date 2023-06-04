@@ -50,8 +50,8 @@ MAIN_TAB_WIDGETS = {
     },
     'excluded_dirs' : {
         'label' : (_('Exclure'), _('Inclure')),
-        'tooltip' : _("Liste d'éléments séparés par des virgules.\nLes chemins précisés, relatifs au dossier 'Source', seront ignorés"),
-        'placeholder' : _('Mes/Sauvegardes'),
+        'tooltip' : _("Liste d'éléments à inclure ou exclure séparés par des virgules.\nLes chemins précisés sont relatifs au dossier 'Source'"),
+        'placeholder' : _('chemin/relatif/à/source'),
         'fileselector' : False,
     },
     'out_dir' : {

@@ -12,7 +12,7 @@ import re
 #from tri_photo_date.gps import get_image_gps_location
 from tri_photo_date.exif import ExifTags, EXIF_LOCATION_FIELD, NoExifError, USEFULL_TAG_DESCRIPTION
 from tri_photo_date.utils.config_paths import IMAGE_DATABASE_PATH
-from tri_photo_date.utils.config_loader import DUP_MD5_FILE, DUP_MD5_DATA, DUP_DATETIME
+from tri_photo_date.utils.config_loader import DUP_MD5_FILE, DUP_MD5_DATA, DUP_DATETIME, DIR_EXCLUDE, DIR_INCLUDE
 from tri_photo_date.utils.fingerprint import get_data_fingerprint, get_file_fingerprint
 
 
@@ -378,9 +378,6 @@ class ImageMetadataDB:
             cmd += " " + f"AND camera IN ({','.join('?' for _ in cameras)})"
             tup += (*cameras,)
 
-        DIR_EXCLUDE = 0
-        DIR_INCLUDE = 1
-        print(exclude)
         if exclude['dirs'] and exclude['dirs'][0]:
         #if excluded_dirs and excluded_dirs[0]:
             if not exclude['is_regex']:

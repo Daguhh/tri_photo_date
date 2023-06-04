@@ -88,6 +88,9 @@ DUP_MD5_FILE = 1
 DUP_MD5_DATA = 2
 DUP_DATETIME = 3
 
+DIR_EXCLUDE = 0
+DIR_INCLUDE = 1
+
 STRING = ("non_def", "filename", "out_path_str", "exif_user_tags",'gui_size','guess_date_from_name','gui_lang','group_floating_days_fmt','excluded_dirs')
 PATH = ("in_dir", "out_dir")
 INTEGER = ("gps_wait", "gui_mode", "file_action", "group_floating_days_nb", 'dup_mode', 'exclude_toggle')
@@ -170,7 +173,6 @@ class ConfigDict(dict):
         self.repr_dct = {}
 
         for k, v in self.config["DEFAULT"].items():
-            print(k,v)
             self[k] = v
 
     def save_config(self):

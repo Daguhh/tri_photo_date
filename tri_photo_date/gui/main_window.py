@@ -571,7 +571,6 @@ class LabelNLineEdit(QHBoxLayout):
             wdg.setEnabled(bool(e))
 
     def add_labelbox(self, labels):
-        print(labels)
 
         self.labelbox = QComboBox()
         #self.listbox.setToolTip(tooltip)
