@@ -46,7 +46,6 @@ def main():
     parser.add_argument('--gui', action='store_true', help='run gui')
 
     args, unknown = parser.parse_known_args()
-    print(args)
 
     if args.cli:
         run_cli()

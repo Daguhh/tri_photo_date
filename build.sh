@@ -18,5 +18,5 @@ pyinstaller \
     --noconfirm \
     --additional-hooks-dir=hooks \
     --name tri_photo_date \
-    tri_photo_date/run.py
+    tri_photo_date/__main__.py
 

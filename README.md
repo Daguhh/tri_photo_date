@@ -71,19 +71,22 @@ python3 tri_photo_date
 
 Here is typicals steps users should perform to run the program:
 
-1. Fill source folder and destination folder 
-2. Run **'1. Scan'** : it will search for all medias in those folders and populate the **tools** tab
-3. Go to **tools** tab. In the differents toolboxes, you will find all necessary datas to inform 
-fields **source** and **destination** in **main** tab. 
-Use checkbox when you can or use copy/paste to get placerholders.
-4. Set **options** section, use tootlip to get information on waht to do.
-5. Run **'2. Pre-calculate'** : it will use all parameters to pre-generate path where to move photos.
-It include getting photo metadata, resolving location, replacing placerholders and all options you checked.
-6. On right side click the vertical button "Show preview". It will display a table showing gathered 
-data and calculated folders and filenames for each photos.
-7. Adapt parameters in **main** tab if needed and re-run **2. Pre-calculate** until you fine with the parameters.
-8. Please check if you simulate/copy/move the files and run **3. Execute**. Wait until the process end.
-9. You can quit, parameters are automaticly saved for next section.
+1. Find files, set up filters and fill options
+    1. Fill source folder and destination folder 
+    2. Run **'1. Scan'** : it will search for all medias in those folders, it will also populate the **tools** tab
+    3. Go to **tools** tab. In the differents toolboxes, you will find all necessary datas to inform remaining 
+    fields in sections **source** and **destination** in **main** tab. 
+    Use checkbox when you can or use copy/paste to get placerholders, or fill all manually.
+    4. Set **options** section, use tootlip to get information on waht to do.
+2. Compute new paths for files
+    1. Run **'2. Pre-calculate'** : it will use all parameters to pre-generate path where to move photos.
+    It include getting photo metadata, resolving location, replacing placerholders and all options you checked.
+    2. On right side click the vertical button "Show preview". It will display a table showing gathered 
+    data and calculated folders and filenames for each photos.
+    3. Adapt parameters in **main** tab if needed and re-run **2. Pre-calculate** until you fine with the parameters.
+3. If you're fine with the result, execute
+    1. Please check if you simulate/copy/move the files and run **3. Execute**. Wait until the process end.
+    2. You can quit, parameters are automaticly saved for next section.
 
 
 ## Files
@@ -97,5 +100,19 @@ Tri-photo-date generated files:
 | images.db | APPDATA/triphotodate | Cache for images datas and store datas during process |
 | triphotodate.log | ??????? | program log file |
 
+## Credits
 
+### Embed dependancies
+
+- Interface : [PyQt5](https://www.riverbankcomputing.com/software/pyqt/) -  [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html)
+- Handling Exifs : [pyexiv2](https://github.com/LeoHsiao1/pyexiv2) - [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html)
+- Addresses resolution: [geopy](https://geopy.readthedocs.io/en/stable/) - [MIT](https://opensource.org/license/mit/)
+- SSL certificates : [certifi](https://github.com/certifi/python-certifi) - [MPL](http://mozilla.org/MPL/2.0/)
+
+### Oneline service
+
+This program use the [OpenStreetMap nominatim](https://nominatim.openstreetmap.org/ui/search.html) service for resolving addresses from GPS coordinates:
+- Consult [Copyright](https://www.openstreetmap.org/copyright)
+- Consult [Usage policy](https://operations.osmfoundation.org/policies/nominatim/)
+- Consult [Privacy policy](https://wiki.osmfoundation.org/wiki/Privacy_Policy) du service
 

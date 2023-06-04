@@ -7,7 +7,7 @@ import pkg_resources
 from pathlib import Path
 import os
 
-from tri_photo_date.utils.config_paths import LICENSE_PATH, AKNOLEG_PATH, README_PATH, CONFIG_PATH, ABOUT_PATH, LOCALES_DIR
+from tri_photo_date.utils.config_paths import LICENSE_PATH, AKNOLEG_PATH, README_PATH, CONFIG_PATH, ABOUT_PATH, LOCALES_DIR, HELP_PATH
 from tri_photo_date.utils.config_loader import GUI_ADVANCED, GUI_NORMAL, GUI_SIMPLIFIED, LANG_LIST
 from tri_photo_date.ordonate_photos import CFG
 from tri_photo_date.gui.human_text import MENU_TOOL_BUTTON
@@ -121,8 +121,8 @@ class WindowMenu(QMenuBar):
         # About menu
         about_menu = self.addMenu(_('A propos'))
         about_action = QAction(_('About'), self)
-        about_action.setDisabled(True)
         about_menu.addAction(about_action)
+        about_action.triggered.connect(self.show_about)
 
         license_action = QAction(_('License'), self)
         about_menu.addAction(license_action)
@@ -134,7 +134,7 @@ class WindowMenu(QMenuBar):
 
         help_action = QAction(_('Aide'), self)
         about_menu.addAction(help_action)
-        help_action.triggered.connect(self.show_readme)
+        help_action.triggered.connect(self.show_help)
 
 
     def load(self):
@@ -192,7 +192,7 @@ class WindowMenu(QMenuBar):
         QMessageBox.about(self, _("License"), license_text)
 
     def show_about(self):
-        text = open(ABOUT_PATH).read()
+        text = open(str(ABOUT_PATH).format(lang)).read()
         msgBox = QMessageBox()
         msgBox.setWindowTitle(_("A propos"))
         msgBox.setTextFormat(Qt.MarkdownText)
@@ -200,15 +200,15 @@ class WindowMenu(QMenuBar):
         msgBox.exec_()
 
     def load_acknowledgments(self):
-        text = open(AKNOLEG_PATH).read()
+        text = open(str(AKNOLEG_PATH).format(lang)).read()
         msgBox = QMessageBox()
         msgBox.setWindowTitle(_("README"))
         msgBox.setTextFormat(Qt.MarkdownText)
         msgBox.setText(text)
         msgBox.exec_()
 
-    def show_readme(self):
-        readme_text = open(README_PATH).read()
+    def show_help(self):
+        readme_text = open(str(HELP_PATH).format(lang)).read()
         msgBox = QMessageBox()
         msgBox.setWindowTitle(_("README"))
         msgBox.setTextFormat(Qt.MarkdownText)

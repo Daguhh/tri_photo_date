@@ -26,7 +26,7 @@ def cli_arguments():
 
     parser.add_argument(
         '--cli',
-        help="run in cli, mandatory to use other options",
+        help="run in cli",
         action="store_true",
     )
 
