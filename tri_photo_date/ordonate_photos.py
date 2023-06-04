@@ -2,6 +2,7 @@
 
 import hashlib
 import shutil
+import sys
 import os
 import re
 import time
@@ -9,58 +10,46 @@ from pathlib import Path
 from datetime import datetime, timezone
 import logging
 
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import QEventLoop, QTimer
-
 from tri_photo_date.utils.progressbar import cli_progbar
 from tri_photo_date.exif import ExifTags, EXIF_DATE_FIELD, EXIF_LOCATION_FIELD, EXIF_CAMERA_FIELD, NoExifError
 from tri_photo_date.utils.config_loader import CONFIG as CFG
 from tri_photo_date.utils.config_loader import FILE_SIMULATE, FILE_COPY, FILE_MOVE, FILE_ACTION_TXT
 from tri_photo_date.gps import add_tags_to_image, get_image_gps_location
 from tri_photo_date.photo_database import ImageMetadataDB
+from tri_photo_date.utils.converter import bytes2human, limited_string
 
 GROUP_PLACEHOLDER = r"{group}"
-#####################
 
-#class COUNTERS:
-#    duplicates = 0
-#    nb_files = 0
-#
-#    @classmethod
-#    def reset(cls):
-#        cls.duplicates = 0
-#        cls.nb_files = 0
+class Timer:
+    old_time = None
 
-def limited_string(s, limit=43, prefix=20, suffix=20):
-    if len(s) > limit:
-        return s[:prefix] + '...' + s[-suffix:]
-    else:
-        return s
+    @classmethod
+    def tic(cls):
+        cls.old_time = time.time()
 
-def bytes2human(n, format="%(value)i%(symbol)s"):
-    """
-    >>> bytes2human(10000)
-    '9K'
-    >>> bytes2human(100001221)
-    '95M'
-    """
-    symbols = ('B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
-    prefix = {}
-    for i, s in enumerate(symbols[1:]):
-        prefix[s] = 1 << (i+1)*10
-    for symbol in reversed(symbols[1:]):
-        if n >= prefix[symbol]:
-            value = float(n) / prefix[symbol]
-            return format % locals()
-    return format % dict(symbol=symbols[0], value=n)
+    @classmethod
+    def toc(cls):
+        toc = time.time() - cls.old_time
+        #sys.stdout.flush()
+        sys.stdout.write('{:40}'.format('█'*int(1000*toc)) + '\r')
+        cls.tic()
 
+def gen_regex_index(filename):
+    # get x from 'filename (x).ext'
 
-def gen_regex_for_duplicates(filename):
     path = Path(filename)
     reg = re.compile(
         path.stem + r"(?:\s\(([0-9]+))\)?" + path.suffix.lower()
     )
-    return reg
+
+    def get_ind(s):
+        match = reg.fullmatch(s)
+        if match is not None:
+            return int(match.group(1))
+        else:
+            return 0
+
+    return get_ind
 
 def rename_with_incr(db, out_str):
     # Could be heavy load when lot of files with same name in same folder
@@ -73,53 +62,17 @@ def rename_with_incr(db, out_str):
 
     count = 1
     collidable_files =  db.exist_in_preview(out_path)
-    if collidable_files is not None:
-        reg = gen_regex_for_duplicates(filename)
-        indexes = [int(reg.fullmatch(s).group(1)) for s in collidable_files if reg.fullmatch(s) is not None]
-        #print(collidable_fi)
-        m = max(indexes + [-1])
-        #print(m)
-        filename = f"{stem} ({m+1}){ext}"
 
-    #while filename in collidable_files:
-    #    filename = f"{stem} ({count}){ext}"
-    #    count += 1
+    get_ind = gen_regex_index(filename)
+    indexes = [get_ind(s) for s in collidable_files]
+
+    if indexes: # duplicates found
+        m = max(indexes) + 1
+        filename = f"{stem} ({m}){ext}"
 
     return str(directory / filename)
 
-def list_available_exts(in_path, recursive=True):
-    exts = set()
-
-    #for in_str in list_n_filter(in_path, "", recursive=recursive):
-    #    exts.update((Path(in_str).suffix.lower(),))
-    with ImageMetadataDB() as db:
-        exts = db.get_extention_list()
-
-    logging.info(f"Available extentions:\n{exts}")
-
-    return sorted(exts)
-
-def list_available_tags(in_path, extentions, recursive=True):
-    #exifs_all = set()
-
-    with ImageMetadataDB() as db:
-        exifs_all, exifs_common = db.get_tag_list()
-
-    logging.info(f"all available exifs tags: {exifs_all} all common exifs tags: {exifs_common}")
-
-    return sorted(exifs_all), sorted(exifs_common)
-
-def list_available_camera_model(in_path, extentions, recursive=True):
-    cameras = set()
-
-    with ImageMetadataDB() as db:
-        cameras = db.get_camera_list()
-
-    return sorted(cameras)
-
-
 def move_file(in_str, out_str):
-    logging.info(f"Moving : {in_str}")
 
     in_path = Path(in_str)
     out_path = Path(out_str)
@@ -134,25 +87,27 @@ def move_file(in_str, out_str):
     elif CFG['file_action'] == FILE_MOVE:
         shutil.move(in_path, out_path)
 
-    logging.info(f"     ==> {str(out_path)}")
-
     return True
 
 def create_out_str(in_str, out_path_str, out_filename):
 
     in_path = Path(in_str)
-    out_name = out_filename + in_path.suffix if out_filename else in_path.name
+
+    if out_filename:
+        out_name = out_filename + in_path.suffix
+    else:
+        out_name = in_path.name
+
     out_str = str(Path(out_path_str) / out_name)
 
     return out_str
-
 
 def get_date_from_exifs_or_file(in_str, metadatas):
     date_str = ""
 
     # First start looking at file name (user option)
     if CFG['is_guess_date_from_name']:
-        date_fmt = CFG['guess_date_from_name_str']
+        date_fmt = CFG['guess_date_from_name']
         date_str = ExifTags.get_date_from_name(date_fmt, in_str)
 
     # Try in metadatas
@@ -171,20 +126,6 @@ def get_date_from_exifs_or_file(in_str, metadatas):
 
     return date_str
 
-def loop_control(loop_stop, update_text_on_button):
-
-    # PyQt5 loop control
-    if loop_stop is not None :
-        loop = QEventLoop()
-        QTimer.singleShot(0, loop.quit)
-        loop.exec_()
-        update_text_on_button()
-        if loop_stop.stop_signal:
-            return True
-    return False
-
-
-#def populate_db(progbar=cli_progbar, loop_stop=None, counterWdg=None, update_text_on_button=None):
 def populate_db(progbar=cli_progbar, LoopCallBack=None):
 
     CFG.load_config()
@@ -197,7 +138,6 @@ def populate_db(progbar=cli_progbar, LoopCallBack=None):
     with ImageMetadataDB() as db:
 
         db.clean_all_table()
-
         progbar.update(0, f"Looking for all files in {out_dir} ...")
 
         #### Scanning source folder ####
@@ -209,6 +149,7 @@ def populate_db(progbar=cli_progbar, LoopCallBack=None):
             for filename in filenames:
                 i += 1
 
+                # PyQt5 callback to break loop
                 if LoopCallBack.run():
                     break
 
@@ -216,12 +157,11 @@ def populate_db(progbar=cli_progbar, LoopCallBack=None):
                 #if not filename.lower().endswith(media_extentions):
                 #    continue
 
+                # Add entry to db
                 db.add_image(str(in_path))
 
+                # Some user feedback
                 progbar.update(i, f"{i} / {nb_files} - Calculating hash and loading metadatas ...")
-
-            if LoopCallBack.run() :
-                break
 
         #### Scanning destination folder ####
         nb_files = sum([len(f) for *_,f in os.walk(in_dir)])
@@ -230,14 +170,19 @@ def populate_db(progbar=cli_progbar, LoopCallBack=None):
         i = 0
         for folder, _, filenames in os.walk(out_dir):
             for filename in filenames:
+                i += 1
+
+                if LoopCallBack.run() :
+                    break
 
                 in_path = Path(folder, filename)
-                if not filename.lower().endswith(media_extentions):
-                    continue
+                #if not filename.lower().endswith(media_extentions):
+                #    continue
 
-                i += 1
+                # add entry to db
                 db.scan_dest(str(in_path))
 
+                # Soe user feedback
                 progbar.update(i, f"{i} / {nb_files} - Scanning files in destination folder...")
 
             if LoopCallBack.run() :
@@ -257,6 +202,14 @@ def compute(progbar=cli_progbar, LoopCallBack=None):
     extentions = CFG["extentions"]
     cameras = CFG['cameras']
     #out_dir = CFG['out_dir']
+    excluded_dirs = CFG['excluded_dirs'].split(',')
+    is_exclude_dir_regex = bool(CFG['is_exclude_dir_regex'])
+    exclude_toggle = CFG['exclude_toggle']
+    exclude = {
+        'dirs' : excluded_dirs,
+        'is_regex' : is_exclude_dir_regex,
+        'toggle' : exclude_toggle
+    }
     out_path_str = CFG['out_path_str']
     out_filename = CFG['filename']
     is_gps = CFG['gps']
@@ -272,47 +225,41 @@ def compute(progbar=cli_progbar, LoopCallBack=None):
         'extentions' : extentions,
         'cameras' : cameras,
         'recursive' : recursive,
-        'dup_mode' : dup_mode
+        'dup_mode' : dup_mode,
+        'exclude' : exclude,
     }
 
-    import time; tic = time.time()
     with ImageMetadataDB() as db:
 
         db.clean_preview_table()
 
-        nb_files, total_size = db.count(**list_files_params)#in_dir, extentions, cameras)
-        progbar.init(nb_files) #progbar.init(nb_files)
+        nb_files, total_size = db.count(**list_files_params)
+        progbar.init(nb_files if nb_files else 1)
 
+        Timer.tic()
         for i, in_str in enumerate(db.list_files(**list_files_params)):
+            Timer.toc()
 
-            ############ PyQt5 loop control ############
-            toc = time.time() - tic
-            print('#'*int(1000*toc))
-            tic = time.time()
+            # get source image metadata
+            metadatas = db.get_exifs(in_str)
+
+            # PyQt5 break loop button
             if LoopCallBack.run() :
                 break
 
-            ######## test if file already in dest ######
+            # skip duplicates
             if control_dest_duplicates:
                 if db.exist_in_dest(in_str, dup_mode):
                     continue
 
-            ######## Initiate new file to compute ######
-            #db.add_image_to_preview(in_str)
-
-            # gather "placeholdered" absolute out path #
+            # Generate a path string from user configuration
             out_str = create_out_str(in_str,out_path_str,out_filename)
 
-            metadatas = db.get_exifs(in_str)
-
-            ################ Format date ###############
+            # Get date and format output path string
             date_str = get_date_from_exifs_or_file(in_str, metadatas)
-
-            #if date_str:
-                #db.add_date_to_preview(in_str, date_str)
             out_str = ExifTags.format_ym(date_str, out_str)
 
-            #################### Format gps ####################
+            # Get location from gps, add it to metadatas
             location=None
             if is_gps:
                 location = get_image_gps_location(metadatas)
@@ -320,94 +267,106 @@ def compute(progbar=cli_progbar, LoopCallBack=None):
                     metadatas.update(location)
                     db.add_location(in_str, location)
 
-            ################ Format others tags ################
+            # Format output string with image metadatas
             placeholder_regex = re.compile(r'[{<]([^}>]+)[}>]')
             for tag_key in placeholder_regex.findall(out_str):
-                if tag_key == "group" :
-                    continue
+                if tag_key == "group" : continue # skip group, done separatly in another loop
                 tag_value = metadatas.get(tag_key, '')
-                out_str = ExifTags.format_tag(out_str, tag_key, tag_value)
-            # Rename file with increment if name is duplicate ##
-            out_str = rename_with_incr(db, out_str)
 
-            ##### Save the generated out path to database ######
-            #db.add_out_path(in_str, out_str)
+                out_str = ExifTags.format_tag(out_str, tag_key, tag_value)
+
+            # rename files with duplicates names in same folder
+            if not is_group_floating_days:
+                out_str = rename_with_incr(db, out_str)
+
+            # Update the datas base
             db.add_image_to_preview(in_str, out_str, location, date_str)
+
+            # Give user some feedbacks
             progbar.update(i, f"{i} / {nb_files} - {Path(in_str).name} - Resolving new path...")
 
-        progbar.update(i, "Fait!")
+        progbar.update(nb_files, "Fait!")
 
         # Quit if loop end signal send by user
         if LoopCallBack.run() :
             LoopCallBack.stopped = True
             return
 
-        ############ Try to group by day floating ##########
         if is_group_floating_days :
 
-            progbar.update(i, "Fait! Tri des fichiers pour groupenement par date...")
+            progbar.update(i, "Fait! Tri des fichiers pour groupement par date...")
 
+            # compute group for all files
             db.group_by_n_floating_days(group_floating_days_nb)
 
             #progbar.init(nb_files)
-
+            Timer.tic()
             for i, in_str in enumerate(db.list_files(**list_files_params)):
-                ############ PyQt5 loop control ############
+                Timer.toc()
+
+                # PyQt5 callback to stop loop
                 if LoopCallBack.run() :
                     break
 
+                # Get group and format it following user config
                 group_date = db.get_date_group(in_str)
-                if group_date is not None:
-                    group_regex = re.compile(GROUP_PLACEHOLDER)
-                    group_str = group_date.strftime(group_floating_days_fmt)
-                    out_str = os.path.join(*db.get_out_str(in_str))
-                    out_str = group_regex.sub(group_str, out_str)
-                    db.add_out_path(in_str, out_str)
+                group_str = group_date.strftime(group_floating_days_fmt)
 
+                # Insert it in output path
+                group_regex = re.compile(GROUP_PLACEHOLDER)
+                out_str = os.path.join(*db.get_out_str(in_str))
+                out_str = group_regex.sub(group_str, out_str)
+
+                # rename if needed duplicates names
+                out_str = rename_with_incr(db, out_str)
+
+                # Save to db
+                db.add_out_path(in_str, out_str)
+
+                # SOme user feedbacks
                 progbar.update(i, f"{i} / {nb_files} - {Path(in_str).name} - Group images by date")
 
-    progbar.update(i, " Fait!")
+    progbar.update(0, " Fait!")
+
     LoopCallBack.stopped = True
 
 def execute(progbar=cli_progbar, LoopCallBack=None):
-    
+
     is_gps = CFG['gps']
 
     with ImageMetadataDB() as db:
 
         nb_files, total_size = db.count_preview()
         progbar.init(total_size) #progbar.init(nb_files)
+
         bytes_moved = 0
-
         for i, in_str in enumerate(db.get_preview_files()):
-
             bytes_moved += Path(in_str).stat().st_size
 
             # PyQt5 loop control
             if LoopCallBack.run() :
                 break
 
+            # transform relative path into absolute path given user config
             out_rel_str, out_filename = db.get_out_str(in_str)
             out_str = str(CFG['out_dir'] / out_rel_str / out_filename)
+
+            # SImulate / Move / Copy
             has_moved = move_file(in_str, out_str)
 
+            # Add metadata to new files if needed
             if has_moved and is_gps:
                 metadatas = db.get_metadatas(in_str)
                 location = get_image_gps_location(metadatas)
                 if location:
                     ExifTags.add_location_to_iptc(out_str, location)
-                    #with ExifTags(out_str) as im_exif:
-                    #    try:
-                    #        im_exif.add_localisation(location)
-                    #    except NoExifError as e:
-                    #        print("Issue while loading gps, skipping", e)
 
+            # User feedbacks
             progbar_text_execute = lambda a,b,c,d,e: ''.join((
-    f"{bytes2human(a)}/ {bytes2human(b)}",
-    ' - ',
-    FILE_ACTION_TXT[c].format(Path(d).name, limited_string(Path(e).parent.name))
-))
-
+                f"{bytes2human(a)}/ {bytes2human(b)}",
+                ' - ',
+                FILE_ACTION_TXT[c].format(Path(d).name, limited_string(Path(e).parent.name))
+            ))
             progbar.update(bytes_moved, progbar_text_execute(bytes_moved, total_size,CFG['file_action'],in_str, out_str))
 
     progbar.update(bytes_moved, "Fait! {} fichiers ont été déplacés soit un total de {}".format(i, bytes2human(bytes_moved)))

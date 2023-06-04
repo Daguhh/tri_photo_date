@@ -17,16 +17,19 @@ DEFAULT_CONFIG = """
 out_dir =
 extentions = jpg,png,jpeg
 cameras =
-is_recursive = 1
+is_recursive = 2
+excluded_dirs =
+is_exclude_dir_regex = 2
+exclude_toggle = 0
 
 # parse date from file name
 is_guess_date_from_name = 0
 guess_date_from_name =
-date_from_filesystem = 1
+date_from_filesystem = 2
 
 # group files by floating window over days
 is_group_floating_days = 0
-group_floating_days_nb = 0
+group_floating_days_nb = 1
 group_floating_days_fmt =
 
 # Destination
@@ -41,10 +44,10 @@ gps = 0
 verbose = 0
 
 # Duplicates options
-is_control_duplicates = 1
+is_control_duplicates = 2
 # DUP_MD5_FILE = 1, DUP_MD5_DATA = 2, DUP_DATETIME = 3
 dup_mode = 1
-dup_is_scan_dest = 1
+dup_is_scan_dest = 2
 
 # GPS
 gps_debug = 0
@@ -85,9 +88,9 @@ DUP_MD5_FILE = 1
 DUP_MD5_DATA = 2
 DUP_DATETIME = 3
 
-STRING = ("non_def", "filename", "out_path_str", "exif_user_tags",'gui_size','guess_date_from_name','gui_lang','group_floating_days_fmt')
+STRING = ("non_def", "filename", "out_path_str", "exif_user_tags",'gui_size','guess_date_from_name','gui_lang','group_floating_days_fmt','excluded_dirs')
 PATH = ("in_dir", "out_dir")
-INTEGER = ("gps_wait", "gui_mode", "file_action", "group_floating_days_nb", 'dup_mode')
+INTEGER = ("gps_wait", "gui_mode", "file_action", "group_floating_days_nb", 'dup_mode', 'exclude_toggle')
 BOOLEAN = (
     "gps",
     "gps_debug",
@@ -100,6 +103,7 @@ BOOLEAN = (
     "is_control_duplicates",
     "dup_is_scan_dest",
     "date_from_filesystem",
+    "is_exclude_dir_regex",
 )
 LISTE = ("extentions",'cameras','accepted_formats')
 FLOAT = ("gps_accuracy",)
@@ -166,6 +170,7 @@ class ConfigDict(dict):
         self.repr_dct = {}
 
         for k, v in self.config["DEFAULT"].items():
+            print(k,v)
             self[k] = v
 
     def save_config(self):

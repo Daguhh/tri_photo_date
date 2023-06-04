@@ -48,6 +48,12 @@ MAIN_TAB_WIDGETS = {
         'tooltip' : _('Liste des appareils photos séparés par des virgules\nNe copie que les photos prises par ces appareils\n\nSi le champs est laissé vide, le paramètre est ignoré'),
         'placeholder' : 'DSLR100',
     },
+    'excluded_dirs' : {
+        'label' : (_('Exclure'), _('Inclure')),
+        'tooltip' : _("Liste d'éléments séparés par des virgules.\nLes chemins précisés, relatifs au dossier 'Source', seront ignorés"),
+        'placeholder' : _('Mes/Sauvegardes'),
+        'fileselector' : False,
+    },
     'out_dir' : {
         'label' : _("Dossier"),
         'tooltip' : _("Chemin du dossier où copier les photos"),
@@ -94,13 +100,17 @@ MAIN_TAB_BUTTONS = {
         'tooltip' : _("Essaie de determiner le lieu de prise de vue à partir des metadonnées gps\nBécessite une connection internet\n/!\\ Peut grandement ralentir l'execution du prgramme"),
     },
     "is_recursive" : {
-        'label' : _("Recherche récursive"),
+        'label' : _("Récursif"),
         "tooltip" : _("Cherche dans les sous dossier du dossier 'Source'")
     },
     'dup_is_scan_dest' : {
-        'label' : _("scan dest"),
-        "tooltip" : _("Scanne le dossier destination à la recherche de fichiers dupliqués"),
+        'label' : _("Destination"),
+        "tooltip" : _("Scanne aussi le dossier destination à la recherche de fichiers dupliqués"),
     },
+    'is_exclude_dir_regex' : {
+        "label" : _("Regex"),
+        "tooltip" : _("Utiliser des expressions régulière plutôt que des chemins relatifs")
+    }
 }
 
 ACTION_BUTTONS = {

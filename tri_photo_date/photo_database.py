@@ -16,6 +16,18 @@ from tri_photo_date.utils.config_loader import DUP_MD5_FILE, DUP_MD5_DATA, DUP_D
 from tri_photo_date.utils.fingerprint import get_data_fingerprint, get_file_fingerprint
 
 
+def _colliding(filename, item):
+    path = Path(filename)
+    reg = re.compile(
+        path.stem + r"(?:\s\([0-9]+\))?" + path.suffix.lower()
+    )
+    return reg.search(item) is not None
+
+def _match_reg(reg, item):
+    reg = re.compile('.*' + reg + '.*')
+    match = reg.search(item)
+    return match is not None
+
 class ImageMetadataDB:
     def __init__(self):
         self.db_file = str(IMAGE_DATABASE_PATH)
@@ -25,20 +37,11 @@ class ImageMetadataDB:
         # Connect to the SQLite database and create the images table
         self.conn = sqlite3.connect(self.db_file)
 
-        def regexp(filename, item):
-            path = Path(filename)
-            reg = re.compile(
-                path.stem + r"(?:\s\([0-9]+\))?" + path.suffix.lower()
-            )
-            return reg.search(item) is not None
-
-        self.conn.create_function(
-            "REGEXP",
-            2,
-            regexp
-        )
-
+        self.conn.create_function("COLLIDE",2,_colliding, deterministic=True)
+        self.conn.create_function("MATCH",2,_match_reg, deterministic=True)
         c = self.conn.cursor()
+
+        # Store and cache all scaned file in source folder
         c.execute('''
             CREATE TABLE IF NOT EXISTS images_cache
               (
@@ -55,6 +58,7 @@ class ImageMetadataDB:
             )
         ''')
 
+        # Store path of image to process
         c.execute('''
             CREATE TABLE IF NOT EXISTS images
               (
@@ -63,6 +67,7 @@ class ImageMetadataDB:
               )
         ''')
 
+        # Join the list of images (images) to process and their cached data (images_cache)
         c.execute('''
             CREATE VIEW IF NOT EXISTS
                 images_view AS
@@ -83,7 +88,7 @@ class ImageMetadataDB:
                 images_cache
             ON images.path = images_cache.path;''')
 
-
+        # Store processed data : new image path, location, group
         c.execute('''
             CREATE TABLE IF NOT EXISTS tri_preview
             (
@@ -97,6 +102,8 @@ class ImageMetadataDB:
                 FOREIGN KEY (path, filename) REFERENCES images_view(path, filename)
             )''')
 
+        # Store images fingerprints in destination folder
+        # /!\ missing date for date comparison for finding duplicate
         c.execute('''
             CREATE TABLE IF NOT EXISTS scan_dest
               (
@@ -111,7 +118,6 @@ class ImageMetadataDB:
     def __exit__(self, exc_type, exc_value, traceback):
         # Close the database connection
         self.conn.commit()
-        #self.conn.close()
         self.conn.close()
 
     def clean_all_table(self):
@@ -126,20 +132,20 @@ class ImageMetadataDB:
 
         c = self.conn.cursor()
         c.execute("DELETE FROM tri_preview")
+        self.conn.commit()
 
     def add_image(self, im_str):
+        # Check if file exist in cache
+        # Check if md5 file has changed
+        # Check if md5 data has changed
+        #
+        # Get metadata from cache or image
+        # Get date and camera from metadata
+        #
+        # Insert/update db
 
         c = self.conn.cursor()
-        #c.execute('''INSERT INTO images VALUES (?)''', (im_str,))
 
-#        CHECK_CONTENT = 1
-#        CHECK_DATETIME = 0
-#        if what_to_check = CHECK_CONTENT:
-#            self.add_image_check_content(im_str)
-#
-#        elif what_to_check = CHECK_DATETIME:
-#            self.add_image_check_datetime(im_str)
-#
         c.execute('''
             SELECT
                 md5_file, md5_data
@@ -236,9 +242,7 @@ class ImageMetadataDB:
         self.conn.commit()
 
     def scan_dest(self, im_str):
-
-        # new file md5s
-        #md5_file, md5_data = get_fingerprint(im_str)
+        # Same as add_image but for destination folder
 
         # Check database
         c = self.conn.cursor()
@@ -300,18 +304,18 @@ class ImageMetadataDB:
 
         self.conn.commit()
 
-    def exist(self, im_path):
-
-        c= self.conn.cursor()
-        md5_file, md5_data = get_fingerprint(im_path)
-        c.execute(
-            '''SELECT EXISTS(
-                SELECT 1 FROM images_view WHERE md5_file=? LIMIT 1
-            )''',
-            (md5_file,))
-        res = c.fetchone()
-
-        return res[0]
+#    def exist(self, im_path):
+#
+#        c= self.conn.cursor()
+#        md5_file, md5_data = get_fingerprint(im_path)
+#        c.execute(
+#            '''SELECT EXISTS(
+#                SELECT 1 FROM images_view WHERE md5_file=? LIMIT 1
+#            )''',
+#            (md5_file,))
+#        res = c.fetchone()
+#
+#        return res[0]
 
     def count(self, *args, **kwargs):
 
@@ -345,7 +349,8 @@ class ImageMetadataDB:
 
         return nb_files, nb_bytes
 
-    def list_files(self, src_dir='', extentions=[], cameras=[], recursive=True, filter_txt='', dup_mode=False):
+    def list_files(self, src_dir='', extentions=[], cameras=[], recursive=True, filter_txt='', dup_mode=False, exclude=[]):
+        """List files in src_dir applying user filters"""
 
         src_dir = str(src_dir)
 
@@ -372,6 +377,26 @@ class ImageMetadataDB:
         if cameras and cameras[0]:
             cmd += " " + f"AND camera IN ({','.join('?' for _ in cameras)})"
             tup += (*cameras,)
+
+        DIR_EXCLUDE = 0
+        DIR_INCLUDE = 1
+        print(exclude)
+        if exclude['dirs'] and exclude['dirs'][0]:
+        #if excluded_dirs and excluded_dirs[0]:
+            if not exclude['is_regex']:
+                excluded_dirs = [os.path.join(src_dir, f) for f in exclude['dirs']]
+                for excl in excluded_dirs:
+                    if exclude['toggle'] == DIR_EXCLUDE:
+                        cmd += " " + f"AND folder NOT LIKE ? || '%'"
+                    elif exclude['toggle'] == DIR_INCLUDE:
+                        cmd += " " + f"AND folder LIKE ? || '%'"
+                    tup += ('/' + excl.strip('/'),)
+            else:
+                if exclude['toggle'] == DIR_EXCLUDE:
+                    cmd += " " + 'AND NOT MATCH(?,folder)'
+                elif exclude['toggle'] == DIR_INCLUDE:
+                    cmd += " " + 'AND MATCH(?,folder)'
+                tup += ('|'.join(exclude['dirs']),)
 
         if not dup_mode:
             pass
@@ -409,7 +434,9 @@ class ImageMetadataDB:
             # Prevent missing md5_dat
             query = "SELECT * FROM scan_dest WHERE COALESCE(md5_data, md5_file) = ?"
         elif dup_mode == DUP_DATETIME:
-            query = "SELECT * FROM scan_dest WHERE date = ?"
+            print("Can't check date in destination folder, not implemented yet.")
+            return False
+            #query = "SELECT * FROM scan_dest WHERE date = ?"
 
         c.execute(query, res)
 
@@ -511,7 +538,8 @@ class ImageMetadataDB:
 
         c= self.conn.cursor()
 
-        query = 'SELECT new_filename FROM tri_preview WHERE new_folder = ? AND new_filename REGEXP ?'
+        query = 'SELECT new_filename FROM tri_preview WHERE new_folder = ? AND COLLIDE(?,new_filename)'
+        #query = 'SELECT new_filename FROM tri_preview WHERE new_folder = ? AND new_filename REGEXP ? '
 
         c.execute(query, (new_folder, new_filename,))
 
@@ -551,8 +579,8 @@ class ImageMetadataDB:
         #res = c.fetchall()
         # Group the dates by 6-day intervals
         date_fmt = r"%Y:%m:%d %H:%M:%S"
-        prev_date = datetime.strptime('1900:01:01 00:00:00', date_fmt)#None
-        grp_date = None
+        prev_date = None #datetime.strptime('1900:01:01 00:00:00', date_fmt)#None
+        grp_date = None #datetime.strptime('1900:01:01 00:00:00', date_fmt)#None
 
         for path, date_str in c.fetchall():
             if date_str is None:

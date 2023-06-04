@@ -15,6 +15,7 @@ Code bugs and major lacks:
 - cli
 - command for package install (poetry)
 - actually only check one datetime field
+- program don't compare dates of destination folder
 
 Duplicates:
 - more control over duplicates : just rename / move in specific folder

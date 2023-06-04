@@ -6,7 +6,6 @@ from pathlib import Path
 import logging
 import re
 
-
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QThread, QTimer, QEventLoop, QSize
 from PyQt5.QtGui import QKeySequence, QIcon, QPixmap, QClipboard, QStandardItem, QPixmap, QPainter, QFontMetrics
@@ -47,6 +46,7 @@ from tri_photo_date.gui.sqlite_view import DatabaseViewer
 from tri_photo_date import ordonate_photos
 from tri_photo_date.ordonate_photos import CFG
 from tri_photo_date.gui.menu import WindowMenu
+from tri_photo_date.explore_db import list_available_camera_model, list_available_exts, list_available_tags
 
 # Constants
 from tri_photo_date.exif import TAG_DESCRIPTION, USEFULL_TAG_DESCRIPTION, EXIF_LOCATION_FIELD
@@ -68,19 +68,6 @@ from PyQt5.QtCore import Qt, pyqtSignal, QPoint, QRect
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QSplitterHandle, QPushButton
 
-class loopCallBack_status():
-    stop_signal = False
-
-def loopCallback(stop=False):
-    loop = QEventLoop()
-    QTimer.singleShot(0, loop.quit)
-    loop.exec_()
-    if stop:
-        loopCallBack_status.stop_signal = True
-    if loopCallBack_status.stop_signal:
-        return True
-    return False
-
 class LoopCallBack:
     stopped = False
 
@@ -97,13 +84,13 @@ class LoopCallBack:
             return True
         return False
 
-    @classmethod
-    def stop(cls):
-        cls.stopped = True
-
-    @classmethod
-    def start(cls):
-        cls.status = False
+#    @classmethod
+#    def stop(cls):
+#        cls.stopped = True
+#
+#    @classmethod
+#    def start(cls):
+#        cls.status = False
 
 class CustomSplitterHandle(QSplitterHandle):
     clicked = pyqtSignal()
@@ -168,7 +155,7 @@ class MainWindow(QMainWindow):
         self.tab1 = MainTab(self)
         self.tab2 = ListExtsTab()
         self.tab3 = ListMetaTab()
-        self.tab4 = ListAppsTab()
+        self.tab4 = ListCameraTab()
         self.tab5 = DateTab()
         self.tab6 = GPSTab()
 
@@ -249,7 +236,7 @@ class MainWindow(QMainWindow):
 
         self.tab2.get_ext_list()
         self.tab3.get_tag_list()
-        self.tab4.get_app_list()
+        self.tab4.get_camera_list()
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:
@@ -265,6 +252,283 @@ class MainWindow(QMainWindow):
         self.tab1.save_act()
         super().closeEvent(event)
 
+class MainTab(QWidget):
+    def __init__(self, parent):
+        super().__init__()
+
+        self.parent = parent
+        self.textWdg = {}
+        self.boxWdg = {}
+        self.spinWdg = {}
+        self.comboWdg = {}
+
+        main_layout = QVBoxLayout()
+
+        ########## Source ##########
+        frame = MyFrame(_("Source"), "blue")
+        layout = QVBoxLayout()
+
+        srcWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['in_dir'])
+        recursBtn = simpleCheckBox(srcWdg, **MAIN_TAB_BUTTONS['is_recursive'])
+        extWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['extentions'])
+
+        self.textWdg["in_dir"] = srcWdg.textBox
+        self.boxWdg['is_recursive'] = recursBtn
+        self.textWdg["extentions"] = extWdg.textBox
+
+        layout.addLayout(srcWdg)
+        layout.addLayout(extWdg)
+
+        if not CFG['gui_mode'] == GUI_SIMPLIFIED:
+            camWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['cameras'])
+            self.textWdg["cameras"] = camWdg.textBox
+            layout.addLayout(camWdg)
+
+            excludeDirWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['excluded_dirs'])
+            self.textWdg['excluded_dirs'] = excludeDirWdg.textBox
+
+            is_exclude_dir_regexBtn = simpleCheckBox(excludeDirWdg, **MAIN_TAB_BUTTONS['is_exclude_dir_regex'])
+            self.boxWdg['is_exclude_dir_regex'] = is_exclude_dir_regexBtn
+            self.comboWdg['exclude_toggle'] = excludeDirWdg.labelbox
+            layout.addLayout(excludeDirWdg)
+
+
+        frame.setLayout(layout)
+        main_layout.addWidget(frame)
+
+        ########## Destination ##########
+        frame = MyFrame(_("Destination"), "blue")
+        layout = QVBoxLayout()
+
+        destWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['out_dir'])
+        rel_destWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['out_path_str'])
+        name_destWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['filename'])
+
+        self.textWdg["out_dir"] = destWdg.textBox
+        self.textWdg["out_path_str"] = rel_destWdg.textBox
+        self.textWdg["filename"] = name_destWdg.textBox
+
+        layout.addLayout(destWdg)
+        layout.addLayout(rel_destWdg)
+        layout.addLayout(name_destWdg)
+
+        frame.setLayout(layout)
+        main_layout.addWidget(frame)
+
+        ########## Duplicates ##########
+        frame = MyFrame(_("Dupliqués"), "blue")
+
+        layout = QVBoxLayout()
+
+        dupWdg = DuplicateWdg(self)
+        #ckbBtn.setCheckState(CFG['is_control_duplicates'])
+        self.boxWdg['is_control_duplicates'] = dupWdg.duplicateBtn
+        self.boxWdg['is_control_duplicates'].stateChanged.emit(CFG['is_control_duplicates'])
+        self.boxWdg['dup_is_scan_dest'] = dupWdg.scandestBtn
+        layout.addLayout(dupWdg)
+
+        frame.setLayout(layout)
+        main_layout.addWidget(frame)
+
+        ########## Options ##########
+        frame = MyFrame(_("Options"), "blue")
+
+        layout = QVBoxLayout()
+        sub_layout = QHBoxLayout()
+
+        guess_date_from_name_Wdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['guess_date_from_name'])
+        self.textWdg['guess_date_from_name'] = guess_date_from_name_Wdg.textBox
+        self.boxWdg['is_guess_date_from_name'] = guess_date_from_name_Wdg.checkBox
+        layout.addLayout(guess_date_from_name_Wdg)
+
+        group_by_floating_days_Wdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['group_by_floating_days'])
+        self.boxWdg['is_group_floating_days'] = group_by_floating_days_Wdg.checkBox
+        self.textWdg['group_floating_days_fmt'] = group_by_floating_days_Wdg.textBox
+        self.spinWdg['group_floating_days_nb'] = group_by_floating_days_Wdg.spinBox
+        layout.addLayout(group_by_floating_days_Wdg)
+
+        sub_layout = QHBoxLayout()
+        self.boxWdg['gps'] = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['gps'])
+
+        layout.addLayout(sub_layout)
+
+        for prop, ckb in self.boxWdg.items():
+            ckb.setCheckState(CFG[prop])
+            ckb.stateChanged.connect(self.get_config)
+
+        #layout.addLayout(sub_layout)
+
+        #sub_layout = QHBoxLayout()
+
+        frame.setLayout(layout)
+        main_layout.addWidget(frame)
+        if CFG['gui_mode'] == GUI_SIMPLIFIED:
+            frame.setHidden(True)
+
+        ########## Save & Run ##########
+        frame = MyFrame("", "red")
+        layout = QVBoxLayout()
+        layout.addLayout(fileActionWdg(self))
+
+        btn_layout = QHBoxLayout()
+
+        self.populateBtn = simplePushButton(
+            btn_layout,
+            self.populate_act,
+            **ACTION_BUTTONS['populate']
+        )
+        self.stopBtn0 = simpleStopButton(btn_layout, self.stop)
+
+        self.previewBtn = simplePushButton(
+            btn_layout,
+            self.preview_act,
+            **ACTION_BUTTONS['calculate']
+        )
+        self.stopBtn1 = simpleStopButton(btn_layout, self.stop)
+
+        self.executeBtn = simplePushButton(
+            btn_layout,
+            self.run_act,
+            **ACTION_BUTTONS['execute']
+        )
+        self.stopBtn2 = simpleStopButton(btn_layout, self.stop)
+
+        # Progress bar
+        self.progress_bar = MyProgressBar()
+        progress_bar_label = self.progress_bar.add_label()
+
+        # Counters
+        #self.couterWdg = CounterWdg()
+
+        layout.addLayout(btn_layout)
+        layout.addWidget(progress_bar_label)
+        layout.addWidget(self.progress_bar)
+        #layout.addWidget(self.couterWdg)
+        layout.setContentsMargins(10, 0, 10, 10)
+        frame.setLayout(layout)
+
+        size = frame.sizeHint()
+        frame.setMinimumHeight(size.height())
+
+        main_layout.addWidget(frame)
+
+        size = self.sizeHint()
+        self.setMinimumHeight(size.height())
+
+        self.setLayout(main_layout)
+
+        ########## Get config & init interface ##########
+        if CFG['gui_mode'] == GUI_SIMPLIFIED: # use default values
+            self.get_config()
+        else:
+            self.set_config()
+
+    def populate_act(self):
+        logging.info("Starting processing files...")
+
+        self.save_act()
+        self.populateBtn.setHidden(True)
+        self.stopBtn0.setHidden(False)
+
+        LoopCallBack.stopped = False
+        self.timer = QTimer()
+
+        self.timer.timeout.connect(lambda : self.run_function(
+            ordonate_photos.populate_db, self.progress_bar, LoopCallBack
+        ))
+        #self.timer.timeout.connect(lambda : self.run_function(
+        #))
+        self.timer.timeout.connect(self.parent.update_preview)
+        self.timer.start(1000)  # waits for 1 second
+
+        #ordonate_photos.populate_db()
+
+    def preview_act(self):
+        logging.info("Starting processing files...")
+
+        self.save_act()
+        self.previewBtn.setHidden(True)
+        self.stopBtn1.setHidden(False)
+
+        LoopCallBack.stopped = False
+        self.timer = QTimer()
+        self.timer.timeout.connect(lambda : self.run_function(
+            ordonate_photos.compute, self.progress_bar, LoopCallBack
+        ))
+        self.timer.timeout.connect(self.parent.update_preview)
+        self.timer.start(1000)  # waits for 1 second
+
+    def run_act(self):
+        logging.info("Starting processing files...")
+
+        self.save_act()
+        self.executeBtn.setHidden(True)
+        self.stopBtn2.setHidden(False)
+
+        LoopCallBack.stopped = False
+        self.timer = QTimer()
+        self.timer.timeout.connect(lambda : self.run_function(
+            ordonate_photos.execute, self.progress_bar, LoopCallBack
+        ))
+        self.timer.start(1000)  # waits for 1 second
+
+
+    def run_function(self, func, *args, **kwargs):
+        if not LoopCallBack.stopped:
+            func(*args, **kwargs)
+        if LoopCallBack.stopped:
+            self.timer.stop()
+            self.populateBtn.setHidden(False)
+            self.executeBtn.setHidden(False)
+            self.previewBtn.setHidden(False)
+            self.stopBtn0.setHidden(True)
+            self.stopBtn1.setHidden(True)
+            self.stopBtn2.setHidden(True)
+            self.progress_bar.setValue(100)
+
+    def stop(self):
+        self.timer.stop()
+        LoopCallBack.stopped = True
+        self.populateBtn.setHidden(False)
+        self.executeBtn.setHidden(False)
+        self.previewBtn.setHidden(False)
+        self.stopBtn0.setHidden(True)
+        self.stopBtn1.setHidden(True)
+        self.stopBtn2.setHidden(True)
+        self.progress_bar.setValue(100)
+
+    def save_act(self):
+        logging.info(f"Saving config to {CFG.configfile} ...")
+        self.get_config()
+        CFG.save_config()
+
+    def set_config(self):
+        logging.info("load config")
+        for cfg_name, wdg in self.textWdg.items():
+            wdg.setText(str(CFG.get_repr(cfg_name)))
+
+        for cfg_name, wdg in self.spinWdg.items():
+            wdg.setValue(int(CFG.get_repr(cfg_name)))
+
+        for cfg_name, wdg in self.boxWdg.items():
+            wdg.setCheckState(int(CFG.get_repr(cfg_name)))
+
+        for cfg_name, wdg in self.comboWdg.items():
+            wdg.setCurrentIndex(int(CFG.get_repr(cfg_name)))
+
+    def get_config(self):
+        for cfg_name, wdg in self.textWdg.items():
+            CFG[cfg_name] = wdg.text()
+
+        for cfg_name, wdg in self.spinWdg.items():
+            CFG[cfg_name] = wdg.value()
+
+        for cfg_name, wdg in self.boxWdg.items():
+            CFG[cfg_name] = int(wdg.checkState())
+
+        for cfg_name, wdg in self.comboWdg.items():
+            CFG[cfg_name] = (wdg.currentIndex())
+
 class LabelNLineEdit(QHBoxLayout):
     def __init__(self, parent, label, tooltip, placeholder='', fileselector=False, combobox_options='', checkbox=False, spinbox=False):
         super().__init__()
@@ -275,9 +539,12 @@ class LabelNLineEdit(QHBoxLayout):
         if checkbox:
             self.add_checkbox()
 
-        labelWdg = QLabel(label)
-        self.addWidget(labelWdg)
-        self.widget_list += [labelWdg]
+        if isinstance(label, tuple):
+            self.add_labelbox(label)
+        else:
+            labelWdg = QLabel(label)
+            self.addWidget(labelWdg)
+        #self.widget_list += [labelWdg]
 
         if not combobox_options:
             self.textBox = self.add_lineedit(tooltip, placeholder)
@@ -303,6 +570,19 @@ class LabelNLineEdit(QHBoxLayout):
         for wdg in self.widget_list:
             wdg.setEnabled(bool(e))
 
+    def add_labelbox(self, labels):
+        print(labels)
+
+        self.labelbox = QComboBox()
+        #self.listbox.setToolTip(tooltip)
+        self.addWidget(self.labelbox)
+        self.labelbox.addItems(labels)
+        def callback(val):
+            ind = self.labelbox.currentIndex()
+            CFG['exclude_toggle'] = ind
+
+        self.labelbox.activated.connect(callback)
+
     def add_checkbox(self):
 
         self.checkBox = QCheckBox()
@@ -313,7 +593,7 @@ class LabelNLineEdit(QHBoxLayout):
     def add_spinbox(self, spin_label=False):
 
         self.spinBox = QSpinBox()
-        self.spinBox.setRange(0,100)
+        self.spinBox.setRange(1,100)
         if spin_label:
             self.addWidget(QLabel(spin_label))
         self.addWidget(self.spinBox)
@@ -377,7 +657,8 @@ class LabelNLineEdit(QHBoxLayout):
             self.combo.clearFocus() # prevent combo to capture all signals
 
         #callback = lambda e:self.textBox.setText(combo.currentText())
-        combo.currentIndexChanged.connect(callback)
+        #combo.currentIndexChanged.connect(callback)
+        combo.activated.connect(callback)
         #combo.editTextChanged.connect(callback)
 
         # Set default values (need to load values from textBox intead of config at MainTab.__init__)
@@ -386,9 +667,6 @@ class LabelNLineEdit(QHBoxLayout):
             combo.currentIndexChanged.emit(0)
 
         return self.textBox
-
-
-            #return combo.lineEdit()
 
     def select_directory(self):
         options = QFileDialog.Options()
@@ -399,273 +677,6 @@ class LabelNLineEdit(QHBoxLayout):
 
         if directory:
             self.textBox.setText(directory)
-            logging.info(f"{self.parentWidget().children()[0].text()} directory changed to {directory}")
-
-class MainTab(QWidget):
-    def __init__(self, parent):
-        super().__init__()
-
-        self.parent = parent
-        self.textWdg = {}
-
-        main_layout = QVBoxLayout()
-
-        ########## Source ##########
-        frame = MyFrame(_("Source"), "blue")
-        layout = QVBoxLayout()
-
-        srcWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['in_dir'])
-        extWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['extentions'])
-
-        self.textWdg["in_dir"] = srcWdg.textBox
-        self.textWdg["extentions"] = extWdg.textBox
-
-        layout.addLayout(srcWdg)
-        layout.addLayout(extWdg)
-
-        if not CFG['gui_mode'] == GUI_SIMPLIFIED:
-            camWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['cameras'])
-            self.textWdg["cameras"] = camWdg.textBox
-            layout.addLayout(camWdg)
-
-        frame.setLayout(layout)
-        main_layout.addWidget(frame)
-
-        ########## Destination ##########
-        frame = MyFrame(_("Destination"), "blue")
-        layout = QVBoxLayout()
-
-        destWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['out_dir'])
-        rel_destWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['out_path_str'])
-        name_destWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['filename'])
-
-        self.textWdg["out_dir"] = destWdg.textBox
-        self.textWdg["out_path_str"] = rel_destWdg.textBox
-        self.textWdg["filename"] = name_destWdg.textBox
-
-        layout.addLayout(destWdg)
-        layout.addLayout(rel_destWdg)
-        layout.addLayout(name_destWdg)
-
-        frame.setLayout(layout)
-        main_layout.addWidget(frame)
-
-        ########## Options ##########
-        frame = MyFrame(_("Options"), "blue")
-
-        layout = QVBoxLayout()
-        sub_layout = QHBoxLayout()
-
-        self.boxWdg = {}
-        self.spinWdg = {}
-
-        guess_date_from_name_Wdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['guess_date_from_name'])
-        self.textWdg['guess_date_from_name'] = guess_date_from_name_Wdg.textBox
-        self.boxWdg['is_guess_date_from_name'] = guess_date_from_name_Wdg.checkBox
-        layout.addLayout(guess_date_from_name_Wdg)
-
-        group_by_floating_days_Wdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['group_by_floating_days'])
-        self.boxWdg['is_group_floating_days'] = group_by_floating_days_Wdg.checkBox
-        self.textWdg['group_floating_days_fmt'] = group_by_floating_days_Wdg.textBox
-        self.spinWdg['group_floating_days_nb'] = group_by_floating_days_Wdg.spinBox
-        layout.addLayout(group_by_floating_days_Wdg)
-
-        sub_layout = QHBoxLayout()
-        self.boxWdg['gps'] = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['gps'])
-        self.boxWdg['is_recursive'] = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['is_recursive'])
-        #self.boxWdg['gps'] = QCheckBox(sub_layout, **MAIN_TAB_BUTTONS['gps']
-        #self.boxWdg['gps'] = QCheckBox(sub_layout, **MAIN_TAB_BUTTONS['gps']
-        layout.addLayout(sub_layout)
-#        for prop, label, tooltip in MAIN_TAB_BUTTONS:
-#            if prop == "NEW_LINE":
-#                layout.addLayout(sub_layout)
-#                sub_layout = QHBoxLayout()
-#            elif isinstance(prop, str):
-#                ckb = QCheckBox()
-#                ckb.setText(label)
-#                ckb.setToolTip(tooltip)
-#                sub_layout.addWidget(ckb)
-#                self.boxWdg[prop] = ckb
-#
-                # callback
-        for prop, ckb in self.boxWdg.items():
-            ckb.setCheckState(CFG[prop])
-            ckb.stateChanged.connect(self.get_config)
-
-        layout.addLayout(sub_layout)
-
-        #sub_layout = QHBoxLayout()
-        layout.addLayout(DuplicateWdg(self))
-
-        frame.setLayout(layout)
-        main_layout.addWidget(frame)
-        if CFG['gui_mode'] == GUI_SIMPLIFIED:
-            frame.setHidden(True)
-
-        ########## Save & Run ##########
-        frame = MyFrame("", "red")
-        layout = QVBoxLayout()
-        layout.addLayout(fileActionWdg(self))
-
-        btn_layout = QHBoxLayout()
-
-        self.populateBtn = simplePushButton(
-            btn_layout,
-            self.populate_act,
-            **ACTION_BUTTONS['populate']
-        )
-        self.stopBtn0 = simpleStopButton(btn_layout, self.stop)
-
-        self.previewBtn = simplePushButton(
-            btn_layout,
-            self.preview_act,
-            **ACTION_BUTTONS['calculate']
-        )
-        self.stopBtn1 = simpleStopButton(btn_layout, self.stop)
-
-        self.executeBtn = simplePushButton(
-            btn_layout,
-            self.run_act,
-            **ACTION_BUTTONS['execute']
-        )
-        self.stopBtn2 = simpleStopButton(btn_layout, self.stop)
-
-        # Progress bar
-        self.progress_bar = MyProgressBar()
-        progress_bar_label = self.progress_bar.add_label()
-
-        # Counters
-        self.couterWdg = CounterWdg()
-
-        layout.addLayout(btn_layout)
-        layout.addWidget(progress_bar_label)
-        layout.addWidget(self.progress_bar)
-        layout.addWidget(self.couterWdg)
-        layout.setContentsMargins(0, 0, 0, 0)
-        frame.setLayout(layout)
-
-        size = frame.sizeHint()
-        frame.setMinimumHeight(size.height())
-
-        main_layout.addWidget(frame)
-
-        size = self.sizeHint()
-        self.setMinimumHeight(size.height())
-
-        self.setLayout(main_layout)
-
-        ########## Get config & init interface ##########
-        if CFG['gui_mode'] == GUI_SIMPLIFIED: # use default values
-            self.get_config()
-        else:
-            self.set_config()
-
-    def populate_act(self):
-        logging.info("Starting processing files...")
-
-        self.save_act()
-        self.populateBtn.setHidden(True)
-        self.stopBtn0.setHidden(False)
-
-        #loopCallBack_status.stop_signal = False
-        LoopCallBack.stopped = False
-        self.timer = QTimer()
-
-        self.timer.timeout.connect(lambda : self.run_function(
-            ordonate_photos.populate_db, self.progress_bar, LoopCallBack
-        ))
-        #self.timer.timeout.connect(lambda : self.run_function(
-            #ordonate_photos.populate_db, self.progress_bar, loopCallBack_status, self.couterWdg, lambda : self.stopBtn0.setText(loop_text.__next__())
-        #))
-        self.timer.timeout.connect(self.parent.update_preview)
-        self.timer.start(1000)  # waits for 1 second
-
-        #ordonate_photos.populate_db()
-
-    def preview_act(self):
-        logging.info("Starting processing files...")
-
-        self.save_act()
-        self.previewBtn.setHidden(True)
-        self.stopBtn1.setHidden(False)
-
-        LoopCallBack.stopped = False
-        self.timer = QTimer()
-        self.timer.timeout.connect(lambda : self.run_function(
-            ordonate_photos.compute, self.progress_bar, LoopCallBack
-        ))
-        self.timer.timeout.connect(self.parent.update_preview)
-        self.timer.start(1000)  # waits for 1 second
-
-    def run_act(self):
-        logging.info("Starting processing files...")
-
-        self.save_act()
-        self.executeBtn.setHidden(True)
-        self.stopBtn2.setHidden(False)
-
-        LoopCallBack.stopped = False
-        self.timer = QTimer()
-        self.timer.timeout.connect(lambda : self.run_function(
-            ordonate_photos.execute, self.progress_bar, LoopCallBack
-        ))
-        self.timer.start(1000)  # waits for 1 second
-
-        #self.start(ordonate_photos.main, self.progress_bar, self.couterWdg, loopCallBack_status)
-
-    def run_function(self, func, *args, **kwargs):
-        #if not loopCallBack_status.stop_signal:
-        if not LoopCallBack.stopped:
-            func(*args, **kwargs)
-        #if loopCallBack_status.stop_signal:
-        if LoopCallBack.stopped:
-            self.timer.stop()
-            self.populateBtn.setHidden(False)
-            self.executeBtn.setHidden(False)
-            self.previewBtn.setHidden(False)
-            self.stopBtn0.setHidden(True)
-            self.stopBtn1.setHidden(True)
-            self.stopBtn2.setHidden(True)
-            self.progress_bar.setValue(100)
-
-    def stop(self):
-        self.timer.stop()
-        LoopCallBack.stopped = True
-        #loopCallBack_status.stop_signal = True
-        self.populateBtn.setHidden(False)
-        self.executeBtn.setHidden(False)
-        self.previewBtn.setHidden(False)
-        self.stopBtn0.setHidden(True)
-        self.stopBtn1.setHidden(True)
-        self.stopBtn2.setHidden(True)
-        self.progress_bar.setValue(100)
-
-    def save_act(self):
-        print("SAVING")
-        logging.info(f"Saving config to {CFG.configfile} ...")
-        self.get_config()
-        CFG.save_config()
-
-    def set_config(self):
-        logging.info("load config")
-        for cfg_name, wdg in self.textWdg.items():
-            wdg.setText(str(CFG.get_repr(cfg_name)))
-
-        for cfg_name, wdg in self.spinWdg.items():
-            wdg.setValue(int(CFG.get_repr(cfg_name)))
-
-        for cfg_name, wdg in self.boxWdg.items():
-            wdg.setCheckState(2 * int(CFG[cfg_name]))
-
-    def get_config(self):
-        for cfg_name, wdg in self.textWdg.items():
-            CFG[cfg_name] = wdg.text()
-
-        for cfg_name, wdg in self.spinWdg.items():
-            CFG[cfg_name] = wdg.value()
-
-        for cfg_name, wdg in self.boxWdg.items():
-            CFG[cfg_name] = 2 * int(wdg.isChecked())
 
 class simplePushButton(QPushButton):
     def __init__(self, layout, callback, label="", tooltip=""):
@@ -704,7 +715,7 @@ class DuplicateWdg(QHBoxLayout):
     def __init__(self, parent):
         super().__init__()
 
-        ckbBtn = simpleCheckBox(**DUP_RADIO_BUTTONS['duplicate']) #QCheckBox('Dupliqués : ')
+        self.duplicateBtn = simpleCheckBox(self, **DUP_RADIO_BUTTONS['duplicate']) #QCheckBox('Dupliqués : ')
 
         self.dup_grp = QButtonGroup(parent)
         dup_mode_Btns = {}
@@ -719,25 +730,26 @@ class DuplicateWdg(QHBoxLayout):
         dup_mode_Btns[CFG['dup_mode']].setChecked(True)
 
         self.dup_grp.buttonClicked[int].connect(self.set_dup_mode)
-        ckbBtn.stateChanged.connect(self.set_dup_toggle)
-        ckbBtn.setCheckState(CFG['is_control_duplicates'])
-        ckbBtn.stateChanged.emit(CFG['is_control_duplicates'])
+        self.duplicateBtn.stateChanged.connect(self.set_dup_toggle)
+        #ckbBtn.setCheckState(CFG['is_control_duplicates'])
+        #ckbBtn.stateChanged.emit(CFG['is_control_duplicates'])
 
-        self.addWidget(ckbBtn)
+        #iself.addWidget(ckbBtn)
         self.addWidget(dup_mode_Btns[DUP_MD5_FILE])
         self.addWidget(dup_mode_Btns[DUP_MD5_DATA])
         self.addWidget(dup_mode_Btns[DUP_DATETIME])
-        scandestBtn = simpleCheckBox(self, **MAIN_TAB_BUTTONS['dup_is_scan_dest'])
-        scandestBtn.setCheckState(CFG['dup_is_scan_dest'])
+        self.scandestBtn = simpleCheckBox(self, **MAIN_TAB_BUTTONS['dup_is_scan_dest'])
+        self.scandestBtn.setCheckState(CFG['dup_is_scan_dest'])
 
-        parent.boxWdg['is_control_duplicates'] = ckbBtn
-        parent.boxWdg['dup_is_scan_dest'] = scandestBtn
+        #parent.boxWdg['is_control_duplicates'] = ckbBtn
+        #parent.boxWdg['dup_is_scan_dest'] = scandestBtn
 
     def set_dup_mode(self, val):
         CFG['dup_mode'] = val
 
     def set_dup_toggle(self, val):
         CFG['is_control_duplicates'] = val
+        self.scandestBtn.setDisabled(not val)
         for btn in self.dup_grp.buttons():
             btn.setDisabled(not val)
 
@@ -989,7 +1001,7 @@ class ListExtsTab(MyFrame):
 
     def get_ext_list(self):
         self.listextWdg.clear()
-        exts = ordonate_photos.list_available_exts(CFG["in_dir"], recursive=CFG["is_recursive"])
+        exts = list_available_exts(CFG["in_dir"], recursive=CFG["is_recursive"])
         for ext in exts:
             # item = QListWidgetItem(ext)
             item = ItemWidget(ext)
@@ -999,7 +1011,7 @@ class ListExtsTab(MyFrame):
             self.listextWdg.addItem(item)
         self.listextWdg.repaint()
 
-class ListAppsTab(MyFrame):
+class ListCameraTab(MyFrame):
     def __init__(self):
         super().__init__(_("Appareil"), 'blue')
         ######## Appareil ##############
@@ -1016,7 +1028,7 @@ class ListAppsTab(MyFrame):
         self.listappWdg.setSizePolicy(size_policy)
 
         #list_btn = QPushButton(_("Charger depuis les Fichiers"))
-        #list_btn.clicked.connect(self.get_app_list)
+        #list_btn.clicked.connect(self.get_camera_list)
         #list_layout.addWidget(list_btn)
         list_layout.addWidget(list_widget)
         self.setLayout(list_layout)
@@ -1036,10 +1048,10 @@ class ListAppsTab(MyFrame):
         self.user_choice_cameras = ",".join(user_choice_cameras)
         logging.info(f"User extention selection : {self.user_choice_cameras}")
 
-    def get_app_list(self):
+    def get_camera_list(self):
 
         self.listappWdg.clear()
-        cameras = ordonate_photos.list_available_camera_model(CFG["in_dir"], CFG['extentions'], recursive=CFG['is_recursive'])
+        cameras = list_available_camera_model(CFG["in_dir"], CFG['extentions'], recursive=CFG['is_recursive'])
         for camera in cameras:
             # item = QListWidgetItem(ext)
             item = ItemWidget(camera)
@@ -1081,7 +1093,7 @@ class ListMetaTab(MyFrame):
 
     def get_tag_list(self):
 
-        self.exifs_lists = ordonate_photos.list_available_tags(
+        self.exifs_lists = list_available_tags(
             CFG["in_dir"], CFG["extentions"], recursive=CFG['is_recursive']
         )
 
@@ -1138,7 +1150,7 @@ class ListMetaDataTab_old(QWidget):
 
     def get_tag_list(self):
 
-        self.exifs_lists = ordonate_photos.list_available_tags(
+        self.exifs_lists = list_available_tags(
             CFG["in_dir"], CFG["extentions"], recursive=CFG['is_recursive']
         )
 
