@@ -19,24 +19,27 @@ geopy.geocoders.options.default_ssl_context = ctx
 from geopy.geocoders import Nominatim
 from geopy.distance import distance as GEODistance
 
-if 0:#try:
-    from exif import ExifTags, EXIF_LOCATION_FIELD, EXIF_GPS_FIELD
-    from utils.config_loader import CONFIG_DIR, CONFIG
-    from .gps_constants import LOCATION_TYPES
-if 1:#except ModuleNotFoundError:
-    from tri_photo_date.exif import ExifTags, EXIF_LOCATION_FIELD, EXIF_GPS_FIELD
-    from tri_photo_date.utils.config_loader import CONFIG_DIR, CONFIG
-    from tri_photo_date.gps.gps_constants import LOCATION_TYPES
+from tri_photo_date.exif import ExifTags, EXIF_LOCATION_FIELD, EXIF_GPS_FIELD
+from tri_photo_date.utils.config_paths import CONFIG_DIR
+from tri_photo_date.gps.gps_constants import LOCATION_TYPES
 # except ImportError:
 #     from tri_photo_date.exif import ExifTags, EXIF_LOCATION_FIELD, EXIF_GPS_FIELD
 #     from tri_photo_date.utils.config_loader import CONFIG_DIR, CONFIG
 #     from tri_photo_date.gps.gps_constants import LOCATION_TYPES
 
+def set_global_config(CONFIG):
 
-IS_DEBUG = CONFIG["gps_debug"] # False
-GPS_SIMULATE = CONFIG['gps_simulate'] # False
-GPS_ACCURACY = CONFIG['gps_accuracy'] # 2 km
-GPS_WAIT = CONFIG['gps_wait'] # in seconds
+    global IS_DEBUG
+    IS_DEBUG = CONFIG["gps_debug"] # False
+
+    global GPS_SIMULATE
+    GPS_SIMULATE = CONFIG['gps_simulate'] # False
+
+    global GPS_ACCURACY
+    GPS_ACCURACY = CONFIG['gps_accuracy'] # 2 km
+
+    global GPS_WAIT
+    GPS_WAIT = CONFIG['gps_wait'] # in seconds
 
 SQLITE_CACHE_PATH = CONFIG_DIR / "gps_cache.db"
 

@@ -1,9 +1,10 @@
 
 from tri_photo_date.utils.config_loader import CONFIG
 from tri_photo_date.utils.config_paths import LOCALES_DIR
-lang = CONFIG['gui_lang']
 
 import gettext
+
+lang = CONFIG['gui_lang']
 trad = gettext.translation('base', localedir=LOCALES_DIR, languages=[lang])
 trad.install()
 _ = trad.gettext # Greek
@@ -39,13 +40,13 @@ MAIN_TAB_WIDGETS = {
     },
     'extentions': {
         'label' : _("Extensions"),
-        'tooltip' : _("Liste des extentions séparées par des virgules\nVoir onglet Extentions"),
+                    'tooltip' : _("Liste des extentions séparées par des virgules\n\n  1. Definissez les dossiers à analyser\n  2. Scannez : bouton '1. Scanner'\n  3. Selectionnez les extentions via 'Outils >  Extentions'\n"),
         'placeholder' : "jpg, jpeg, png",
         'combobox_options' : ["jpg", "jpg, jpeg, png", "jpg, raw, arw", _(r'{media_photos}'),_(r'{media_videos}')]
     },
     'cameras' : {
         'label' : _('Appareils photo'),
-        'tooltip' : _('Liste des appareils photos séparés par des virgules\nNe copie que les photos prises par ces appareils\n\nSi le champs est laissé vide, le paramètre est ignoré'),
+        'tooltip' : _("Liste des appareils photos séparés par des virgules\nNe copie que les photos prises par ces appareils\n\nSi le champs est laissé vide, le paramètre est ignoré\n\n  1. Definissez les dossiers à analyser\n  2. Scannez : bouton '1. Scanner'\n  3. Selectionnez les appareils via 'Outils >  Appareils'\n"),
         'placeholder' : 'DSLR100',
     },
     'excluded_dirs' : {
@@ -62,7 +63,7 @@ MAIN_TAB_WIDGETS = {
     },
     'out_path_str' : {
         'label' : _("Chemin relatif"),
-        'tooltip' : "\n".join((_("Format du chemin relatif au dossier précédent!"), _("Utilisez des Tags de métadonnées (onglet Metadata)"), _("ou des codes de formatage des dates (onglet Date)"),"",_("Pour utiliser un tag de métadonnée, il suffit d'ajouter dans le chemin un tag entre crochets :"),"    <tag>",_("ou"),r"   {tag}",)),
+        'tooltip' : "\n".join((_(" Format du chemin relatif au dossier précédent! "), _(" Ce chemin peut être personnalisté via des tags de métadonnés "), _("ou des codes de formatage des dates"),"",_("Formats:\n  - métadonnées : {tag} ou <tag>\n  - date : %x\n"), "Voir 'Outils > Métadonnées' et 'Outils > Date' pour la liste\ncomplète et les définitions des chaines de remplacement possibles\n",)),
         'placeholder' : "%Y/%Y-%m",
         'combobox_options' : [_("{Année/Année-Mois}"), _("{Année/Mois}"), _(r"{Appareil}"), _(r"{Appareil/Année-Mois}"), _(r"{Année-Mois - Pays}"), _(r"{Année-Mois - Ville}"), _("{Grouper par date}")]
     },
@@ -110,7 +111,15 @@ MAIN_TAB_BUTTONS = {
     'is_exclude_dir_regex' : {
         "label" : _("Regex"),
         "tooltip" : _("Utiliser des expressions régulière plutôt que des chemins relatifs")
-    }
+    },
+    'is_delete_metadatas': {
+        "label" : _("Effacer metadonnées"),
+        "tooltip" : _("Supprimer les métadonnées dans le fichier copié")
+    },
+    "is_date_from_filesystem" : {
+        "label" : _("Date fichier"),
+        "tooltip" : _("Prendre la date de création du fichier plutôt que de chercher dans les métadonnées"),
+    },
 }
 
 ACTION_BUTTONS = {

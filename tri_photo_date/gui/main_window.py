@@ -349,7 +349,8 @@ class MainTab(QWidget):
 
         sub_layout = QHBoxLayout()
         self.boxWdg['gps'] = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['gps'])
-
+        self.boxWdg['is_delete_metadatas'] = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['is_delete_metadatas'])
+        self.boxWdg['is_date_from_filesystem'] = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['is_date_from_filesystem'])
         layout.addLayout(sub_layout)
 
         for prop, ckb in self.boxWdg.items():
@@ -1185,6 +1186,7 @@ class MyProgressBar(QProgressBar):
         return self.text_label
 
     def init(self, n):
+        n = n if n else 1 # prevent no files founded
         self._progbar_nb_val = n
 
     def update(self, v, text='', text2=''):

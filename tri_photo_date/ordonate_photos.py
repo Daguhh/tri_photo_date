@@ -10,18 +10,30 @@ from pathlib import Path
 from datetime import datetime, timezone
 import logging
 
-from tri_photo_date.utils.progressbar import cli_progbar
+from tri_photo_date.cli.progressbar import cli_progbar
 from tri_photo_date.exif import ExifTags, EXIF_DATE_FIELD, EXIF_LOCATION_FIELD, EXIF_CAMERA_FIELD, NoExifError
 from tri_photo_date.utils.config_loader import CONFIG as CFG
+#from tri_photo_date.utils.config_paths import CONFIG_PATH
 from tri_photo_date.utils.config_loader import FILE_SIMULATE, FILE_COPY, FILE_MOVE, FILE_ACTION_TXT
-from tri_photo_date.gps import add_tags_to_image, get_image_gps_location
+from tri_photo_date import gps
 from tri_photo_date.photo_database import ImageMetadataDB
 from tri_photo_date.utils.converter import bytes2human, limited_string
 
 GROUP_PLACEHOLDER = r"{group}"
 
+class fake_LoopCallBack:
+    stopped = False
+
+    def __init__(self):
+        pass
+
+    @classmethod
+    def run(cls):
+        return False
+
 class Timer:
     old_time = None
+    on = True
 
     @classmethod
     def tic(cls):
@@ -29,10 +41,21 @@ class Timer:
 
     @classmethod
     def toc(cls):
-        toc = time.time() - cls.old_time
-        #sys.stdout.flush()
-        sys.stdout.write('{:40}'.format('█'*int(1000*toc)) + '\r')
-        cls.tic()
+        if cls.on:
+            toc = time.time() - cls.old_time
+            #sys.stdout.flush()
+            sys.stdout.write('{:40}'.format('█'*int(1000*toc)) + '\r')
+            cls.tic()
+
+    @classmethod
+    def on(cls):
+        cls.on = True
+
+    @classmethod
+    def off(cls):
+        cls.on = False
+
+Timer.off()
 
 def gen_regex_index(filename):
     # get x from 'filename (x).ext'
@@ -110,6 +133,12 @@ def get_date_from_exifs_or_file(in_str, metadatas):
         date_fmt = CFG['guess_date_from_name']
         date_str = ExifTags.get_date_from_name(date_fmt, in_str)
 
+    if not date_str and CFG['is_date_from_filesystem']:
+        timestamp = Path(in_str).stat().st_mtime
+        date = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+        out_fmt = "%Y:%m:%d %H:%M:%S"
+        date_str = date.strftime(out_fmt)
+
     # Try in metadatas
     if not date_str:
         for date_tag in EXIF_DATE_FIELD.values():
@@ -118,15 +147,9 @@ def get_date_from_exifs_or_file(in_str, metadatas):
                 break
 
     # Finally get last modification date (user set option)
-    if not date_str and CFG['date_from_filesystem']:
-        timestamp = Path(in_str).stat().st_mtime
-        date = datetime.fromtimestamp(timestamp, tz=timezone.utc)
-        out_fmt = "%Y:%m:%d %H:%M:%S"
-        date_str = date.strftime(out_fmt)
-
     return date_str
 
-def populate_db(progbar=cli_progbar, LoopCallBack=None):
+def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
     CFG.load_config()
 
@@ -164,7 +187,7 @@ def populate_db(progbar=cli_progbar, LoopCallBack=None):
                 progbar.update(i, f"{i} / {nb_files} - Calculating hash and loading metadatas ...")
 
         #### Scanning destination folder ####
-        nb_files = sum([len(f) for *_,f in os.walk(in_dir)])
+        nb_files = sum([len(f) for *_,f in os.walk(out_dir)])
         progbar.init(nb_files)
 
         i = 0
@@ -192,8 +215,9 @@ def populate_db(progbar=cli_progbar, LoopCallBack=None):
 
     LoopCallBack.stopped = True
 
-def compute(progbar=cli_progbar, LoopCallBack=None):
+def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
+    gps.set_global_config(CFG)
     is_control_hash = CFG['is_control_duplicates']
     control_dest_duplicates = CFG['dup_is_scan_dest']
     duplicate_ctrl_mode = CFG['dup_mode']
@@ -262,7 +286,7 @@ def compute(progbar=cli_progbar, LoopCallBack=None):
             # Get location from gps, add it to metadatas
             location=None
             if is_gps:
-                location = get_image_gps_location(metadatas)
+                location = gps.get_image_gps_location(metadatas)
                 if location:
                     metadatas.update(location)
                     db.add_location(in_str, location)
@@ -330,9 +354,10 @@ def compute(progbar=cli_progbar, LoopCallBack=None):
 
     LoopCallBack.stopped = True
 
-def execute(progbar=cli_progbar, LoopCallBack=None):
+def execute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
     is_gps = CFG['gps']
+    is_delete_metadatas = CFG['is_delete_metadatas']
 
     with ImageMetadataDB() as db:
 
@@ -357,9 +382,12 @@ def execute(progbar=cli_progbar, LoopCallBack=None):
             # Add metadata to new files if needed
             if has_moved and is_gps:
                 metadatas = db.get_metadatas(in_str)
-                location = get_image_gps_location(metadatas)
+                location = gps.get_image_gps_location(metadatas)
                 if location:
                     ExifTags.add_location_to_iptc(out_str, location)
+
+            if has_moved and is_delete_metadatas:
+                ExifTags.clear_all_metadatas(out_str)
 
             # User feedbacks
             progbar_text_execute = lambda a,b,c,d,e: ''.join((

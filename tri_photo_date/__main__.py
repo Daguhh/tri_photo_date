@@ -6,14 +6,7 @@ import argparse
 import logging
 from logging.handlers import RotatingFileHandler
 
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication
-
-
-try:
-    from utils.config_paths import CONFIG_DIR
-except ModuleNotFoundError:
-    from tri_photo_date.utils.config_paths import CONFIG_DIR
+from tri_photo_date.utils.config_paths import CONFIG_DIR
 
 ##### Set log file #####
 print('log file : ', str(CONFIG_DIR/'tri_photo_date.log'))
@@ -26,20 +19,19 @@ handler.setLevel(logging.INFO)
 # Add the handler to the root logger
 logging.basicConfig(level=logging.INFO, handlers=[handler])
 
-try:
-    from gui import MainWindow
-except ModuleNotFoundError:
-    from tri_photo_date.gui import MainWindow
-try:
-    import ordonate_photos
-except ModuleNotFoundError:
-    from tri_photo_date import ordonate_photos
 
 def run_cli():
 
-    ordonate_photos.main()
+    from tri_photo_date.cli.cli import cli_run
+    cli_run()
+    #ordonate_photos.main()
 
 def run_gui():
+
+    from PyQt5.QtGui import QIcon
+    from PyQt5.QtWidgets import QApplication
+
+    from tri_photo_date.gui import MainWindow
 
     app = QApplication(sys.argv)
     ex = MainWindow()
@@ -48,12 +40,13 @@ def run_gui():
 
 def main():
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=False)
 
     parser.add_argument('--cli', action='store_true', help='run cli')
     parser.add_argument('--gui', action='store_true', help='run gui')
 
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
+    print(args)
 
     if args.cli:
         run_cli()

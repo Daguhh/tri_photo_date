@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 from pathlib import Path
 from configparser import ConfigParser
 import logging
@@ -7,9 +8,8 @@ import logging
 #try:
 #    from .config_paths import CONFIG_DIR, APP_NAME
 #except ModuleNotFoundError:
-from tri_photo_date.utils.config_paths import CONFIG_DIR, APP_NAME
-
-CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+from tri_photo_date.cli.cli_argparser import cli_arguments,CLI_DUMP,CLI_DUMP_DEFAULT,CLI_LOAD
+from tri_photo_date.utils.config_paths import CONFIG_PATH, APP_NAME
 
 DEFAULT_CONFIG = """
 [DEFAULT]
@@ -25,7 +25,7 @@ exclude_toggle = 0
 # parse date from file name
 is_guess_date_from_name = 0
 guess_date_from_name =
-date_from_filesystem = 2
+is_date_from_filesystem = 0
 
 # group files by floating window over days
 is_group_floating_days = 0
@@ -42,6 +42,7 @@ filename = fichier
 file_action = 1
 gps = 0
 verbose = 0
+is_delete_metadatas = 0
 
 # Duplicates options
 is_control_duplicates = 2
@@ -68,6 +69,24 @@ non_def = non_def
 # accepted_formats
 accepted_formats = jpg, jpeg, png, webp, bmp, ico, tiff, heif, heic, svg, raw, arw, cr2, nrw, k25, apng, avif, gif, svg, webm, mkv, flv, ogg, gif, avi, mov, asf, mp4, m4v, mpg, mp2, mpeg, mpv, 3gp, 3g2, flv
 """
+
+cli_mode, config_path = cli_arguments()
+
+if cli_mode == CLI_DUMP:
+    shutil.copy(CONFIG_PATH, config_path)
+    sys.exit(0)
+
+if cli_mode == CLI_DUMP_DEFAULT:
+    with open(str(config_path), 'w') as f:
+        f.write(DEFAULT_CONFIG)
+    sys.exit(0)
+
+if cli_mode == CLI_LOAD:
+    CONFIG_PATH = config_path
+
+
+CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+
 
 LANG_LIST = ['fr', 'en']
 
@@ -105,8 +124,9 @@ BOOLEAN = (
     "is_group_floating_days",
     "is_control_duplicates",
     "dup_is_scan_dest",
-    "date_from_filesystem",
+    "is_date_from_filesystem",
     "is_exclude_dir_regex",
+    "is_delete_metadatas",
 )
 LISTE = ("extentions",'cameras','accepted_formats')
 FLOAT = ("gps_accuracy",)
@@ -129,12 +149,25 @@ def repr2value(k,v):
 
     return k, v
 
+class NoConfigFileError(Exception):
+
+    def __str__(self):
+        print(
+            'There is no configuration file for path you gave',
+            "Please run 'tri_photo_date --cli --dump <path>' to start from actual configuration"
+        )
+        sys.exit(1)
 
 class ConfigDict(dict):
-    def __init__(self):
+    def __init__(self, config_path=None):
         super(ConfigDict, self).__init__()
 
-        self.configfile = CONFIG_DIR / "config.ini"
+        if config_path is not None:
+            self.configfile = Path(config_path)
+            if not self.configfile.exists():
+                raise NoConfigFileError
+        else:
+            self.configfile = CONFIG_PATH
 
         if not self.configfile.exists():
             logging.info("No configfile found, generationg one")

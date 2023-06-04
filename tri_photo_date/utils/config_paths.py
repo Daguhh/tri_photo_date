@@ -45,7 +45,7 @@ if os.name == "nt":
 else:
     CONFIG_DIR = Path.home() / ".config" / APP_NAME
 
-CONFIG_PATH = CONFIG_DIR / "config.ini"
 CONFIG_DIR = CONFIG_DIR.resolve()
+CONFIG_PATH = CONFIG_DIR / "config.ini"
 IMAGE_DATABASE_PATH = CONFIG_DIR / "images.db"
-IMAGE_DATABASE_PATH = IMAGE_DATABASE_PATH.resolve()
+#IMAGE_DATABASE_PATH = IMAGE_DATABASE_PATH.resolve()

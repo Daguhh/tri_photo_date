@@ -6,9 +6,11 @@ class CliProgressBar:
 
     def __init__(self, width=40):
         self.width = width
+        self.init(0)
 
     def init(self, n):
 
+        n = n if n else 1
         self._progbar_nb_val = n
 
     def update(self, v, text='', text2=''):

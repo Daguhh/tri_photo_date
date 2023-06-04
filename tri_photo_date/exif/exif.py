@@ -51,10 +51,24 @@ class ExifTags(dict):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+
         self.im.close()
 
-    def add_localisation(self, address_dct):
+    def _clear_all_metadatas(self):
 
+        self.im.clear_exif()
+        self.im.clear_iptc()
+        self.im.clear_xmp()
+        self.im.clear_comment()
+        self.im.clear_icc()
+        self.im.clear_thumbnail()
+
+    @staticmethod
+    def clear_all_metadatas(out_str):
+        with ExifTags(out_str) as im_exif:
+            im_exif._clear_all_metadatas()
+
+    def _add_location_to_iptc(self, address_dct):
         self.im.modify_iptc(address_dct)
 
     @staticmethod
@@ -62,7 +76,7 @@ class ExifTags(dict):
 
         with ExifTags(out_str) as im_exif:
             try:
-                im_exif.add_localisation(location)
+                im_exif._add_location_to_iptc(location)
             except NoExifError as e:
                 print("Issue while loading gps, skipping", e)
 
