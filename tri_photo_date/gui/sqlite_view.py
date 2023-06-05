@@ -1,6 +1,6 @@
 import sqlite3
 from PyQt5.QtCore import QSettings
-from PyQt5.QtWidgets import QWidget, QTableWidget, QHeaderView, QVBoxLayout, QLineEdit, QLabel, QApplication, QTableWidgetItem
+from PyQt5.QtWidgets import QWidget, QTableWidget, QHeaderView, QVBoxLayout, QLineEdit, QLabel, QApplication, QTableWidgetItem, QSizePolicy
 
 from tri_photo_date.photo_database import ImageMetadataDB
 from tri_photo_date.utils.config_paths import IMAGE_DATABASE_PATH
@@ -20,6 +20,7 @@ class DatabaseViewer(QWidget):
         #self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
         self.table.horizontalHeader().sectionResized.connect(self.save_column_sizes)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         layout = QVBoxLayout()
         layout.addWidget(self.filter_edit)
@@ -63,8 +64,8 @@ class DatabaseViewer(QWidget):
     def setHiddenCallback(self, callback):
         self.hidden_callback = callback
 
-    def hideEvent(self, event):
-        self.hidden_callback()
+    #def hideEvent(self, event):
+    #    self.hidden_callback()
         #super().hideEvent(event)
         #self.hidden.emit()
 

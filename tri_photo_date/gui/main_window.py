@@ -172,17 +172,20 @@ class MainWindow(QMainWindow):
         self.tab4.listappWdg.itemChanged.connect(self.update_cameras)
         self.tab1.populateBtn.clicked.connect(self.update_selection_tabs)
 
-        previewBtn = QPushButton("\n".join(list(_("> Afficher un aperçu >"))))
-        previewBtn.setFixedWidth(15)
+        #previewBtn = QPushButton("\n".join(list(_("> Afficher un aperçu >"))))
+        #previewBtn.setFixedWidth(15)
+        preview_frame = PreviewCollapsibleFrame(" Afficher un aperçu", 'green')
 
         self.preview_wdg = DatabaseViewer(str(IMAGE_DATABASE_PATH))
         self.preview_wdg.filter_edit.textChanged.connect(self.update_preview)
         self.preview_wdg.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self.preview_wdg.setHidden(True)
-        self.preview_wdg.setHiddenCallback(lambda : previewBtn.setHidden(False))
-        previewBtn.clicked.connect(lambda : self.preview_wdg.setHidden(False))
-        previewBtn.clicked.connect(lambda : previewBtn.setHidden(True))
+        preview_frame.setWidget(self.preview_wdg)
+
+        #self.preview_wdg.setHidden(True)
+        #self.preview_wdg.setHiddenCallback(lambda : previewBtn.setHidden(False))
+        #previewBtn.clicked.connect(lambda : self.preview_wdg.setHidden(False))
+        #previewBtn.clicked.connect(lambda : previewBtn.setHidden(True))
 
         tabs = QTabWidget()
         tabs.setMinimumWidth(300)
@@ -202,8 +205,9 @@ class MainWindow(QMainWindow):
         tabs.addTab(toolBox, _("Outils"))
         splitter.addWidget(tabs)
 
-        splitter.addWidget(previewBtn)
-        splitter.addWidget(self.preview_wdg)
+        #splitter.addWidget(previewBtn)
+        #splitter.addWidget(self.preview_wdg)
+        splitter.addWidget(preview_frame)
 
         main_windows_lyt.addWidget(splitter)
         #self.tab1.previewBtn.clicked.connect(self.update_preview)
@@ -213,6 +217,7 @@ class MainWindow(QMainWindow):
 
         size = self.sizeHint()
         self.setMinimumHeight(size.height())
+        preview_frame.collapse(True)
 
     def update_cameras(self):
         txt = self.tab4.user_choice_cameras
@@ -264,8 +269,15 @@ class MainTab(QWidget):
 
         main_layout = QVBoxLayout()
 
+        #btn = QPushButton('show all')
+        #btn.clicked.connect(MyFrame.uncollapse_all)
+        #main_layout.addWidget(btn)
+        #btn = QPushButton('hide all')
+        #btn.clicked.connect(MyFrame.collapse_all)
+        #main_layout.addWidget(btn)
+
         ########## Source ##########
-        frame = MyFrame(_("Source"), "blue")
+        frame = MyFrame(_("Source"), "blue", parent=main_layout)
         layout = QVBoxLayout()
 
         srcWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['in_dir'])
@@ -412,6 +424,7 @@ class MainTab(QWidget):
         frame.setMinimumHeight(size.height())
 
         main_layout.addWidget(frame)
+        main_layout.addStretch()
 
         size = self.sizeHint()
         self.setMinimumHeight(size.height())
@@ -925,20 +938,171 @@ class ComboBox(QComboBox):
         # Connect QComboBox signal to combo_changed() slot
         self.currentIndexChanged.connect(combo_changed)
 
-class MyFrame(QFrame):
-    def __init__(self, label, color, *args, **kwargs):
+
+class PreviewCollapsibleFrame(QFrame):
+    widget_list = []
+    def __init__(self, label, color, *args, parent=None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.setFrameShape(QFrame.StyledPanel)
-        label_frame = QLabel(label, self)
         self.setObjectName(f"myFrame_{color}")
-        label_frame.setObjectName(f"myLabel_{color}")
         self.setStyleSheet(
             f"#myFrame_{color}" + " { padding: 15px; border: 2px solid " + color + "}"
         )
-        label_frame.setStyleSheet(f"padding: 10px; color:{color}")
         self.adjustSize()
         self.setContentsMargins(6, 14, 6, 1)
+        self.setToolTip("Afficher l'aperçu")
+        self.setMinimumHeight(30)
+        self.setMaximumHeight(1000)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        self.layout = QHBoxLayout()
+        self.widget = QWidget()
+        self.layout.addWidget(self.widget)
+
+        if label:
+            MyFrame.widget_list += [self]
+            label_frame = QLabel(self)
+            label_frame.setObjectName(f"myLabel_{color}")
+            label_frame.setStyleSheet(f"padding: 10px; color:{color}")
+            label_frame.mousePressEvent = self.label_clicked
+            self.label = label_frame
+            self.label_txt = label
+            self.label.setText("\n".join(list("◀ " + self.label_txt)))
+        super().setLayout(self.layout)
+
+    def setLayout(self, *args, **kwargs):
+
+        self.widget.setLayout(*args, **kwargs)
+
+    def setWidget(self, widget):
+
+        self.widget = widget
+        self.layout.addWidget(self.widget)
+        #self.setMinimumWidth(30)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+    def collapse(self, is_collasped=True):
+
+        #self.widget.setVisible(not self.widget.isVisible())
+
+        if not is_collasped:
+            self.widget.setVisible(True)
+            self.label.setText("▶  " + self.label_txt)
+
+            #self.setFixedSize(self.layout.sizeHint())
+            self.adjustSize()
+
+            self.setMinimumWidth(self.layout.sizeHint().width())
+            self.setMaximumWidth(1500)
+            self.setMinimumHeight(50)
+            #self.layout.setSizePolicy(size_policy)
+            #self.setFixedHeight(self.layout.maximumSize().height())
+            #self.widget.setSizePolicy(size_policy)
+            #self.adjustSize()
+            self.setToolTip("Cacher l'aperçu")
+        else:
+            print("here")
+            self.adjustSize()
+            self.widget.setVisible(False)
+            self.label.setText("◀  " + self.label_txt)
+            self.setMinimumWidth(33)
+            self.setMaximumWidth(33)
+            #self.setFixedHeight(self.layout.maximumSize().height())
+            self.parent().parent().parent().resize(100,400)
+            self.setToolTip("Afficher l'aperçu")
+
+        self.adjustSize()
+        self.setContentsMargins(6, 14, 6, 1)
+
+    def label_clicked(self, event):
+
+        print('click', self.widget.isVisible())
+        if self.widget.isVisible():
+            self.collapse(True)
+        else :
+            self.collapse(False)
+
+    @classmethod
+    def collapse_all(cls):
+        for wdg in cls.widget_list:
+            wdg.collapse(True)
+
+    @classmethod
+    def uncollapse_all(cls):
+        for wdg in cls.widget_list:
+            wdg.collapse(False)
+
+
+class MyFrame(QFrame):
+    widget_list = []
+    def __init__(self, label, color, *args, parent=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.setFrameShape(QFrame.StyledPanel)
+        self.setObjectName(f"myFrame_{color}")
+        self.setStyleSheet(
+            f"#myFrame_{color}" + " { padding: 15px; border: 2px solid " + color + "}"
+        )
+        self.adjustSize()
+        self.setContentsMargins(6, 14, 6, 1)
+
+        self.layout = QHBoxLayout()
+        self.widget = QWidget()
+        self.layout.addWidget(self.widget)
+
+        if label:
+            MyFrame.widget_list += [self]
+            label_frame = QLabel(self)
+            label_frame.setObjectName(f"myLabel_{color}")
+            label_frame.setStyleSheet(f"padding: 10px; color:{color}")
+            label_frame.mousePressEvent = self.label_clicked
+            self.label = label_frame
+            self.label_txt = label
+            self.label.setText("▼  " + self.label_txt)
+        super().setLayout(self.layout)
+
+    def setLayout(self, *args, **kwargs):
+
+        self.widget.setLayout(*args, **kwargs)
+
+    def collapse(self, is_collasped=True):
+
+        #self.widget.setVisible(not self.widget.isVisible())
+
+        if not is_collasped:
+            self.widget.setVisible(True)
+            self.label.setText("▼  " + self.label_txt)
+            self.setFixedHeight(self.layout.sizeHint().height())
+            self.adjustSize()
+        else:
+            self.widget.setVisible(False)
+            self.label.setText("▶  " + self.label_txt)
+            self.setMinimumHeight(30)
+            self.setMaximumHeight(30)
+
+        self.adjustSize()
+        self.setContentsMargins(6, 14, 6, 1)
+
+    def label_clicked(self, event):
+
+        if self.widget.isVisible():
+            self.collapse(True)
+        else :
+            self.collapse(False)
+
+    @classmethod
+    def collapse_all(cls):
+        for wdg in cls.widget_list:
+            wdg.collapse(True)
+
+    @classmethod
+    def uncollapse_all(cls):
+        for wdg in cls.widget_list:
+            wdg.collapse(False)
+
+
 
 def OptionBool(QHBoxLayout):
     def __init__(self, label, tooltip):

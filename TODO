@@ -9,8 +9,19 @@ Functionnalities:
 - skip files based on their size more or less than X
 - remove empty folders after moving
 
+CLI:
+- permit to load multiple script : a sequence could be to create multiple script to handle differents camera (with differents camera filters) and save them, so next time :
+```bash
+tri_photo_date -l camera_1.ini, camera_2.ini
+```
+Do the same in gui?
+```
+=> configure => save script => select scripts to run
+    |             |
+    ^-------------<
+```
+
 Code bugs and major lacks:
-- cli
 - command for package install (poetry)
 - program doesn't compare dates of destination folder
 
