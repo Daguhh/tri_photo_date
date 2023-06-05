@@ -276,11 +276,27 @@ class MainTab(QWidget):
         #btn.clicked.connect(MyFrame.collapse_all)
         #main_layout.addWidget(btn)
 
-        ########## Source ##########
-        frame = MyFrame(_("Source"), "blue", parent=main_layout)
-        layout = QVBoxLayout()
+        ########### Scan ##########
+        frame = MyFrame(_("Scanner"), "blue")
+        layout = QHBoxLayout()
+        sub_layout = QVBoxLayout()
 
         srcWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['in_dir'])
+        sub_layout.addLayout(srcWdg)
+        layout.addLayout(sub_layout)
+
+        sub_layout = QVBoxLayout()
+        self.populateBtn = simplePushButton(
+            sub_layout,
+            self.populate_act,
+            **ACTION_BUTTONS['populate']
+        )
+        self.stopBtn0 = simpleStopButton(btn_layout, self.stop)
+
+        ########## Source ##########
+        frame = MyFrame(_("Source"), "blue")
+        layout = QVBoxLayout()
+
         recursBtn = simpleCheckBox(srcWdg, **MAIN_TAB_BUTTONS['is_recursive'])
         extWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['extentions'])
 
@@ -288,7 +304,6 @@ class MainTab(QWidget):
         self.boxWdg['is_recursive'] = recursBtn
         self.textWdg["extentions"] = extWdg.textBox
 
-        layout.addLayout(srcWdg)
         layout.addLayout(extWdg)
 
         if not CFG['gui_mode'] == GUI_SIMPLIFIED:
@@ -385,12 +400,6 @@ class MainTab(QWidget):
 
         btn_layout = QHBoxLayout()
 
-        self.populateBtn = simplePushButton(
-            btn_layout,
-            self.populate_act,
-            **ACTION_BUTTONS['populate']
-        )
-        self.stopBtn0 = simpleStopButton(btn_layout, self.stop)
 
         self.previewBtn = simplePushButton(
             btn_layout,
