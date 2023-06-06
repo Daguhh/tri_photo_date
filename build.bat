@@ -9,11 +9,11 @@ python -m pip install pyinstaller
 pyinstaller ^
     --onefile ^
     --paths venv\Lib\site-packages ^
-    --icon="resources/icon.ico" ^
-    --add-data "resources/icon.ico;." ^
-    --add-data "resources/acknowledgments.md;." ^
-    --add-data "resources/about.md;." ^
-    --add-data "resources/strftime_help.html;." ^
+    --icon="resources/icon.ico" \
+    --add-data "resources/icon.ico;." \
+    --add-data "resources/strftime_help.html;." \
+    --add-data "resources/en/*;./resources/en/" \
+    --add-data "resources/fr/*;./resources/fr/" \
     --add-data "README.md;." ^
     --add-data "LICENSE;." ^
     --add-data "tri_photo_date/locales/fr/LC_MESSAGES/base.mo;./locales/fr/LC_MESSAGES/" ^

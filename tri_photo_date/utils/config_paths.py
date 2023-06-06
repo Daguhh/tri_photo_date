@@ -12,10 +12,10 @@ if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
     RUNTIME_PATH = Path(sys._MEIPASS)
     ICON_PATH = RUNTIME_PATH / "icon.ico"
     README_PATH = RUNTIME_PATH / "README.md"
-    HELP_PATH = RUNTIME_PATH / '{}' / "help.md"
+    HELP_PATH = RUNTIME_PATH / "resources" /'{}' / "help.md"
     LICENSE_PATH = RUNTIME_PATH / "LICENSE"
-    AKNOLEG_PATH = RUNTIME_PATH / '{}' / "acknowledgments.md"
-    ABOUT_PATH = RUNTIME_PATH / '{}' / "about.md"
+    AKNOLEG_PATH = RUNTIME_PATH / "resources" / '{}' / "acknowledgments.md"
+    ABOUT_PATH = RUNTIME_PATH / "resources" / '{}' / "about.md"
     STRFTIME_HELP_PATH = RUNTIME_PATH / "strftime_help.html"
     LOCALES_DIR = RUNTIME_PATH / 'locales'
 
