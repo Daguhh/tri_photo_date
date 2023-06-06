@@ -39,6 +39,7 @@ from PyQt5.QtWidgets import (
     QSplitter,
     QToolBox,
     QSpinBox,
+    QScrollArea,
 )
 
 # Modules
@@ -152,6 +153,10 @@ class MainWindow(QMainWindow):
         splitter = QSplitter()
         splitter.setHandleWidth(3)
 
+        # Set the first tab's widget to be the QScrollArea
+        #tabs.widget(0).setLayout(QVBoxLayout())
+        #tabs.widget(0).layout().addWidget(scroll_area)
+
         self.tab1 = MainTab(self)
         self.tab2 = ListExtsTab()
         self.tab3 = ListMetaTab()
@@ -178,7 +183,7 @@ class MainWindow(QMainWindow):
 
         self.preview_wdg = DatabaseViewer(str(IMAGE_DATABASE_PATH))
         self.preview_wdg.filter_edit.textChanged.connect(self.update_preview)
-        self.preview_wdg.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        #self.preview_wdg.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         preview_frame.setWidget(self.preview_wdg)
 
@@ -188,10 +193,18 @@ class MainWindow(QMainWindow):
         #previewBtn.clicked.connect(lambda : previewBtn.setHidden(True))
 
         tabs = QTabWidget()
-        tabs.setMinimumWidth(300)
+        tabs.setMinimumWidth(450)
         tabs.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        tabs.setMaximumWidth(600)
+        tabs.setMaximumWidth(700)
         tabs.setTabPosition(QTabWidget.West)
+
+        scroll_area = QScrollArea()
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll_area.setWidgetResizable(True)
+        tab1_content = QWidget()
+        tab1_content.setLayout(QVBoxLayout())
+        tab1_content.layout().addWidget(self.tab1)
+        scroll_area.setWidget(tab1_content)
 
         if CFG['gui_mode'] == GUI_SIMPLIFIED or CFG['gui_mode'] == GUI_NORMAL :
 
@@ -200,7 +213,8 @@ class MainWindow(QMainWindow):
 
         elif CFG['gui_mode'] == GUI_ADVANCED :
 
-            tabs.addTab(self.tab1, "Main")
+            #tabs.addTab(self.tab1, "Main")
+            tabs.addTab(scroll_area, "Main")
 
         tabs.addTab(toolBox, _("Outils"))
         splitter.addWidget(tabs)
@@ -216,7 +230,8 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(main_windows_wdg)
 
         size = self.sizeHint()
-        self.setMinimumHeight(size.height())
+        #self.setMinimumHeight(self.tab1.size().height())#size.height())
+        self.resize(400,790)
         preview_frame.collapse(True)
 
     def update_cameras(self):
@@ -276,27 +291,45 @@ class MainTab(QWidget):
         #btn.clicked.connect(MyFrame.collapse_all)
         #main_layout.addWidget(btn)
 
-        ########### Scan ##########
-        frame = MyFrame(_("Scanner"), "blue")
-        layout = QHBoxLayout()
-        sub_layout = QVBoxLayout()
+        ########## Scan ##########
+        frame = MyFrame(_("Scan"), "darkGreen")
+        layout = QVBoxLayout()
 
-        srcWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['in_dir'])
-        sub_layout.addLayout(srcWdg)
+        scanWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['scan_dir'])
+        scanWdg.textBox.setReadOnly(True)
+        scanWdg.btn_selector.setDisabled(True)
+        recursBtn = simpleCheckBox(scanWdg, **MAIN_TAB_BUTTONS['is_recursive'])
+        recursBtn.setDisabled(True)
+        layout.addLayout(scanWdg)
+        sub_layout = QHBoxLayout()
+        recursBtn = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['scan_is_meta'])
+        recursBtn.setDisabled(True)
+        recursBtn = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['scan_is_md5_file'])
+        recursBtn.setDisabled(True)
+        recursBtn = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['scan_is_md5_data'])
+        recursBtn.setDisabled(True)
         layout.addLayout(sub_layout)
 
-        sub_layout = QVBoxLayout()
+        frame.setLayout(layout)
+        frame.collapse(True)
+        main_layout.addWidget(frame)
+
         self.populateBtn = simplePushButton(
-            sub_layout,
+            main_layout,
             self.populate_act,
             **ACTION_BUTTONS['populate']
         )
-        self.stopBtn0 = simpleStopButton(btn_layout, self.stop)
+        self.stopBtn0 = simpleStopButton(main_layout, self.stop)
+
+        self.populate_act_prog_holder = QVBoxLayout()
+        main_layout.addLayout(self.populate_act_prog_holder)
 
         ########## Source ##########
         frame = MyFrame(_("Source"), "blue")
         layout = QVBoxLayout()
 
+        srcWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['in_dir'])
+        srcWdg.textBox.textChanged.connect(lambda x:scanWdg.textBox.setText(x))
         recursBtn = simpleCheckBox(srcWdg, **MAIN_TAB_BUTTONS['is_recursive'])
         extWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['extentions'])
 
@@ -304,6 +337,7 @@ class MainTab(QWidget):
         self.boxWdg['is_recursive'] = recursBtn
         self.textWdg["extentions"] = extWdg.textBox
 
+        layout.addLayout(srcWdg)
         layout.addLayout(extWdg)
 
         if not CFG['gui_mode'] == GUI_SIMPLIFIED:
@@ -389,50 +423,57 @@ class MainTab(QWidget):
         #sub_layout = QHBoxLayout()
 
         frame.setLayout(layout)
+        frame.collapse()
         main_layout.addWidget(frame)
+
+        self.previewBtn = simplePushButton(
+            main_layout,
+            self.preview_act,
+            **ACTION_BUTTONS['calculate']
+        )
+        self.stopBtn1 = simpleStopButton(main_layout, self.stop)
+
         if CFG['gui_mode'] == GUI_SIMPLIFIED:
             frame.setHidden(True)
+
+        self.compute_act_prog_holder = QVBoxLayout()
+        main_layout.addLayout(self.compute_act_prog_holder)
 
         ########## Save & Run ##########
         frame = MyFrame("", "red")
         layout = QVBoxLayout()
         layout.addLayout(fileActionWdg(self))
-
-        btn_layout = QHBoxLayout()
-
-
-        self.previewBtn = simplePushButton(
-            btn_layout,
-            self.preview_act,
-            **ACTION_BUTTONS['calculate']
-        )
-        self.stopBtn1 = simpleStopButton(btn_layout, self.stop)
+        #layout.setContentsMargins(10, 0, 10, 10)
+        frame.setLayout(layout)
+        size = frame.sizeHint()
+        frame.setMinimumHeight(size.height())
+        main_layout.addWidget(frame)
 
         self.executeBtn = simplePushButton(
-            btn_layout,
+            main_layout,
             self.run_act,
             **ACTION_BUTTONS['execute']
         )
-        self.stopBtn2 = simpleStopButton(btn_layout, self.stop)
+        self.stopBtn2 = simpleStopButton(main_layout, self.stop)
+
+        self.execute_act_prog_holder = QVBoxLayout()
+        main_layout.addLayout(self.execute_act_prog_holder)
 
         # Progress bar
         self.progress_bar = MyProgressBar()
-        progress_bar_label = self.progress_bar.add_label()
+        self.progress_bar_label = self.progress_bar.add_label()
 
         # Counters
         #self.couterWdg = CounterWdg()
 
-        layout.addLayout(btn_layout)
-        layout.addWidget(progress_bar_label)
-        layout.addWidget(self.progress_bar)
+        fake_layout = QVBoxLayout()
+        #layout.addLayout(btn_layout)
+        fake_layout.addWidget(self.progress_bar_label)
+        fake_layout.addWidget(self.progress_bar)
+        self.prev_progbar_layout = fake_layout
         #layout.addWidget(self.couterWdg)
-        layout.setContentsMargins(10, 0, 10, 10)
-        frame.setLayout(layout)
 
-        size = frame.sizeHint()
-        frame.setMinimumHeight(size.height())
 
-        main_layout.addWidget(frame)
         main_layout.addStretch()
 
         size = self.sizeHint()
@@ -446,8 +487,22 @@ class MainTab(QWidget):
         else:
             self.set_config()
 
+    def move_progbar(self, new_layout):
+
+        self.progress_bar.setParent(new_layout.parentWidget())
+        self.progress_bar_label.setParent(new_layout.parentWidget())
+        new_layout.addWidget(self.progress_bar_label)
+        new_layout.addWidget(self.progress_bar)
+        self.prev_progbar_layout.removeWidget(self.progress_bar)
+        self.prev_progbar_layout.removeWidget(self.progress_bar_label)
+        new_layout.update()
+        self.prev_progbar_layout.update()
+        self.prev_progbar_layout = new_layout
+
     def populate_act(self):
         logging.info("Starting processing files...")
+
+        self.move_progbar(self.populate_act_prog_holder)
 
         self.save_act()
         self.populateBtn.setHidden(True)
@@ -469,6 +524,8 @@ class MainTab(QWidget):
     def preview_act(self):
         logging.info("Starting processing files...")
 
+        self.move_progbar(self.compute_act_prog_holder)
+
         self.save_act()
         self.previewBtn.setHidden(True)
         self.stopBtn1.setHidden(False)
@@ -483,6 +540,8 @@ class MainTab(QWidget):
 
     def run_act(self):
         logging.info("Starting processing files...")
+
+        self.move_progbar(self.execute_act_prog_holder)
 
         self.save_act()
         self.executeBtn.setHidden(True)
@@ -583,8 +642,8 @@ class LabelNLineEdit(QHBoxLayout):
             self.widget_list += [roll_box]
 
         if fileselector:
-            btn_selector = self.add_fileselector_btn()
-            self.widget_list += [btn_selector]
+            self.btn_selector = self.add_fileselector_btn()
+            self.widget_list += [self.btn_selector]
 
         if checkbox:
             self.toggle_widgets(self.checkBox.checkState())
@@ -701,11 +760,13 @@ class LabelNLineEdit(QHBoxLayout):
             self.textBox.setText(directory)
 
 class simplePushButton(QPushButton):
-    def __init__(self, layout, callback, label="", tooltip=""):
+    def __init__(self, layout, callback, label="", tooltip="", color="darkGreen"):
         super().__init__()
 
         self.setText(label)
         self.setToolTip(tooltip)
+        #self.setStyleSheet("#myButton { border: 2px solid blue}")
+        #self.setStyleSheet("border :2px solid darkGreen")
         layout.addWidget(self)
         self.clicked.connect(callback)
 
@@ -958,16 +1019,13 @@ class PreviewCollapsibleFrame(QFrame):
         self.setStyleSheet(
             f"#myFrame_{color}" + " { padding: 15px; border: 2px solid " + color + "}"
         )
-        self.adjustSize()
         self.setContentsMargins(6, 14, 6, 1)
         self.setToolTip("Afficher l'aperçu")
-        self.setMinimumHeight(30)
-        self.setMaximumHeight(1000)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.layout = QHBoxLayout()
         self.widget = QWidget()
         self.layout.addWidget(self.widget)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
 
         if label:
             MyFrame.widget_list += [self]
@@ -977,7 +1035,7 @@ class PreviewCollapsibleFrame(QFrame):
             label_frame.mousePressEvent = self.label_clicked
             self.label = label_frame
             self.label_txt = label
-            self.label.setText("\n".join(list("◀ " + self.label_txt)))
+            self.label.setText("\n".join(list("◀")))
         super().setLayout(self.layout)
 
     def setLayout(self, *args, **kwargs):
@@ -988,46 +1046,29 @@ class PreviewCollapsibleFrame(QFrame):
 
         self.widget = widget
         self.layout.addWidget(self.widget)
-        #self.setMinimumWidth(30)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def collapse(self, is_collasped=True):
-
-        #self.widget.setVisible(not self.widget.isVisible())
 
         if not is_collasped:
             self.widget.setVisible(True)
             self.label.setText("▶  " + self.label_txt)
-
-            #self.setFixedSize(self.layout.sizeHint())
-            self.adjustSize()
-
-            self.setMinimumWidth(self.layout.sizeHint().width())
-            self.setMaximumWidth(1500)
-            self.setMinimumHeight(50)
-            #self.layout.setSizePolicy(size_policy)
-            #self.setFixedHeight(self.layout.maximumSize().height())
-            #self.widget.setSizePolicy(size_policy)
-            #self.adjustSize()
             self.setToolTip("Cacher l'aperçu")
+            self.setMinimumSize(400,200)
+            self.setMaximumSize(2000,2000)
+            self.parent().parent().parent().resize(1000,790)
         else:
-            print("here")
-            self.adjustSize()
             self.widget.setVisible(False)
-            self.label.setText("◀  " + self.label_txt)
-            self.setMinimumWidth(33)
-            self.setMaximumWidth(33)
-            #self.setFixedHeight(self.layout.maximumSize().height())
-            self.parent().parent().parent().resize(100,400)
+            self.label.setText("◀")
             self.setToolTip("Afficher l'aperçu")
-
+            self.setMinimumSize(30,200)
+            self.setMaximumSize(30,2000)
+            self.parent().parent().parent().resize(400,790)
         self.adjustSize()
+
         self.setContentsMargins(6, 14, 6, 1)
 
     def label_clicked(self, event):
 
-        print('click', self.widget.isVisible())
         if self.widget.isVisible():
             self.collapse(True)
         else :
@@ -1084,7 +1125,9 @@ class MyFrame(QFrame):
             self.widget.setVisible(True)
             self.label.setText("▼  " + self.label_txt)
             self.setFixedHeight(self.layout.sizeHint().height())
-            self.adjustSize()
+            #self.setMinimumHeight(70)
+            #self.adjustSize()
+            self.setFixedHeight(self.layout.sizeHint().height())
         else:
             self.widget.setVisible(False)
             self.label.setText("▶  " + self.label_txt)

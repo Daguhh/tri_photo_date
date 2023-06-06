@@ -32,6 +32,18 @@ REL_PATH_FORMATS = {
 
 
 MAIN_TAB_WIDGETS = {
+    'scan_dir' : {
+        'label' : _("Dossier"),
+        'tooltip' : _("Chemin du dossier à analyser"),
+        'placeholder' : _("D:\CleUsb"),
+        'fileselector' : True,
+    },
+    'scan_exts': {
+        'label' : _("Extensions"),
+                    'tooltip' : _("Liste des extentions séparées par des virgules\n\n  1. Definissez les dossiers à analyser\n  2. Scannez : bouton '1. Scanner'\n  3. Selectionnez les extentions via 'Outils >  Extentions'\n"),
+        'placeholder' : "jpg, jpeg, png",
+        'combobox_options' : ["jpg", "jpg, jpeg, png", "jpg, raw, arw", _(r'{media_photos}'),_(r'{media_videos}')]
+    },
     'in_dir' : {
         'label' : _("Dossier"),
         'tooltip' : _("Chemin du dossier contenant les photos"),
@@ -96,6 +108,18 @@ MENU_TOOL_BUTTON = [
 ]
 
 MAIN_TAB_BUTTONS = {
+    "scan_is_meta" : {
+        'label' : "metadonnées",
+        'tooltip' : _("Obtient les métadonnées des fichiers")
+    },
+    "scan_is_md5_file" : {
+        'label' : "empreinte fichier",
+        'tooltip' : _("Calcule l'empreinte md5 du fichier")
+    },
+    "scan_is_md5_data" : {
+        'label' : "empreinte des données",
+        'tooltip' : _("Calcule l'empreinte md5 des données")
+    },
     "gps" : {
         'label' : "GPS",
         'tooltip' : _("Essaie de determiner le lieu de prise de vue à partir des metadonnées gps\nBécessite une connection internet\n/!\\ Peut grandement ralentir l'execution du prgramme"),
