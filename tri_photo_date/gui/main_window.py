@@ -164,14 +164,27 @@ class MainWindow(QMainWindow):
         self.tab5 = DateTab()
         self.tab6 = GPSTab()
 
-        toolBox = QToolBox()
-        toolBox.setStyleSheet("QToolBox::tab { padding: 5px; }")
+        #toolBox = QToolBox()
+        #toolBox.setStyleSheet("QToolBox::tab { padding: 5px; }")
 
-        toolBox.addItem(self.tab2, _("Extensions"))
-        toolBox.addItem(self.tab3, _("Metadatas"))
-        toolBox.addItem(self.tab4, _("Appareil"))
-        toolBox.addItem(self.tab5, _("Date"))
-        toolBox.addItem(self.tab6, _("GPS"))
+        toolBox = QWidget()
+        toolboxLyt = QVBoxLayout()
+
+        toolboxLyt.addWidget(self.tab2)
+        toolboxLyt.addWidget(self.tab3)
+        toolboxLyt.addWidget(self.tab4)
+        toolboxLyt.addWidget(self.tab5)
+        toolboxLyt.addWidget(self.tab6)
+
+        toolBox.setLayout(toolboxLyt)
+
+        toolscroll_area = QScrollArea()
+        toolscroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        toolscroll_area.setWidgetResizable(True)
+        tab1_content = QWidget()
+        tab1_content.setLayout(QVBoxLayout())
+        tab1_content.layout().addWidget(toolBox)
+        toolscroll_area.setWidget(tab1_content)
 
         self.tab2.listextWdg.itemChanged.connect(self.update_extensions)
         self.tab4.listappWdg.itemChanged.connect(self.update_cameras)
@@ -216,7 +229,7 @@ class MainWindow(QMainWindow):
             #tabs.addTab(self.tab1, "Main")
             tabs.addTab(scroll_area, "Main")
 
-        tabs.addTab(toolBox, _("Outils"))
+        tabs.addTab(toolscroll_area, _("Outils"))
         splitter.addWidget(tabs)
 
         #splitter.addWidget(previewBtn)
@@ -231,7 +244,7 @@ class MainWindow(QMainWindow):
 
         size = self.sizeHint()
         #self.setMinimumHeight(self.tab1.size().height())#size.height())
-        self.resize(400,790)
+        self.resize(400,500)
         preview_frame.collapse(True)
 
     def update_cameras(self):
@@ -292,7 +305,7 @@ class MainTab(QWidget):
         #main_layout.addWidget(btn)
 
         ########## Scan ##########
-        frame = MyFrame(_("Scan"), "darkGreen")
+        frame = MyFrame(_("Scan"), color="darkGreen")
         layout = QVBoxLayout()
 
         scanWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['scan_dir'])
@@ -325,7 +338,7 @@ class MainTab(QWidget):
         main_layout.addLayout(self.populate_act_prog_holder)
 
         ########## Source ##########
-        frame = MyFrame(_("Source"), "blue")
+        frame = MyFrame(_("Source"))
         layout = QVBoxLayout()
 
         srcWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['in_dir'])
@@ -358,7 +371,7 @@ class MainTab(QWidget):
         main_layout.addWidget(frame)
 
         ########## Destination ##########
-        frame = MyFrame(_("Destination"), "blue")
+        frame = MyFrame(_("Destination"), color="blue")
         layout = QVBoxLayout()
 
         destWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['out_dir'])
@@ -377,7 +390,7 @@ class MainTab(QWidget):
         main_layout.addWidget(frame)
 
         ########## Duplicates ##########
-        frame = MyFrame(_("Dupliqués"), "blue")
+        frame = MyFrame(_("Dupliqués"), color="blue")
 
         layout = QVBoxLayout()
 
@@ -392,7 +405,7 @@ class MainTab(QWidget):
         main_layout.addWidget(frame)
 
         ########## Options ##########
-        frame = MyFrame(_("Options"), "blue")
+        frame = MyFrame(_("Options"), color="blue")
 
         layout = QVBoxLayout()
         sub_layout = QHBoxLayout()
@@ -440,7 +453,7 @@ class MainTab(QWidget):
         main_layout.addLayout(self.compute_act_prog_holder)
 
         ########## Save & Run ##########
-        frame = MyFrame("", "red")
+        frame = MyFrame("", color="red")
         layout = QVBoxLayout()
         layout.addLayout(fileActionWdg(self))
         #layout.setContentsMargins(10, 0, 10, 10)
@@ -867,7 +880,7 @@ class GPSTab(QWidget):
         super().__init__()
 
         main_layout = QVBoxLayout()
-        frame = MyFrame(_("tags GPS"), "blue")
+        frame = MyFrame(_("tags GPS"), color="blue")
 
         list_layout = QVBoxLayout()
         list_widget = CopyableListWidget()
@@ -881,7 +894,7 @@ class GPSTab(QWidget):
         frame.setLayout(list_layout)
         main_layout.addWidget(frame)
 
-        frame = MyFrame("", "red")
+        frame = MyFrame("", color="red")
         layout = QVBoxLayout()
 
         label = QLabel(GPS_HELP_TEXT)
@@ -923,42 +936,6 @@ class GPSTab(QWidget):
             item = ItemWidget(tag)
             self.listWdg.addItem(item)
         self.listWdg.repaint()
-
-class DateTab(QWidget):
-    def __init__(self):
-        super().__init__()
-
-        main_layout = QVBoxLayout(self)
-
-        frame = QFrame(self, frameShape=QFrame.StyledPanel)
-        label_frame = QLabel(_("Codes de formatage des dates"), frame)
-        frame.setObjectName("myFrame")
-        label_frame.setObjectName("myLabel")
-        frame.setStyleSheet("#myFrame { padding: 15px; border: 2px solid blue}")
-        label_frame.setStyleSheet("padding: 10px; color:blue")
-        list_layout = QVBoxLayout()
-        #list_widget = QListWidget()
-
-        strftime_help = open(STRFTIME_HELP_PATH).read()
-        text_widget = QTextEdit()
-        #text_widget.setTextFormat(Qt.MarkdownText)
-        text_widget.setHtml(strftime_help)
-        #self.listWdg = list_widget
-        list_layout.addWidget(text_widget)
-        #self.get_tag_list()
-        frame.setLayout(list_layout)
-        main_layout.addWidget(frame)
-
-        self.setLayout(main_layout)
-
-    def link_clicked(self, url):
-        QDesktopServices.openUrl(url)
-
-#    def get_tag_list(self):
-#
-#        for tag in DATE_STRFTIME_FORMAT:
-#            item = QListWidgetItem(tag)
-#            self.listWdg.addItem(item)
 
 
 class CopyableListWidget(QListWidget):
@@ -1087,30 +1064,31 @@ class PreviewCollapsibleFrame(QFrame):
 
 class MyFrame(QFrame):
     widget_list = []
-    def __init__(self, label, color, *args, parent=None, **kwargs):
+    def __init__(self, label, *args, color='blue', parent=None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.setFrameShape(QFrame.StyledPanel)
         self.setObjectName(f"myFrame_{color}")
         self.setStyleSheet(
-            f"#myFrame_{color}" + " { padding: 15px; border: 2px solid " + color + "}"
+            f"#myFrame_{color}" + " { padding: 15px 15px 15px 15px; border: 2px solid " + color + "}"
         )
         self.adjustSize()
-        self.setContentsMargins(6, 14, 6, 1)
+        self.setContentsMargins(6, 14, 6, 6)
 
         self.layout = QHBoxLayout()
         self.widget = QWidget()
         self.layout.addWidget(self.widget)
 
-        if label:
-            MyFrame.widget_list += [self]
-            label_frame = QLabel(self)
-            label_frame.setObjectName(f"myLabel_{color}")
-            label_frame.setStyleSheet(f"padding: 10px; color:{color}")
-            label_frame.mousePressEvent = self.label_clicked
-            self.label = label_frame
-            self.label_txt = label
-            self.label.setText("▼  " + self.label_txt)
+        MyFrame.widget_list += [self]
+        label_frame = QLabel(self)
+        label_frame.setObjectName(f"myLabel_{color}")
+        label_frame.setStyleSheet(f"padding: 40px 10px; color:{color}")
+        label_frame.setMinimumWidth(500)
+        #label_frame.adjustSize()
+        label_frame.mousePressEvent = self.label_clicked
+        self.label = label_frame
+        self.label_txt = label
+        self.label.setText("▼  " + self.label_txt)
         super().setLayout(self.layout)
 
     def setLayout(self, *args, **kwargs):
@@ -1124,15 +1102,16 @@ class MyFrame(QFrame):
         if not is_collasped:
             self.widget.setVisible(True)
             self.label.setText("▼  " + self.label_txt)
-            self.setFixedHeight(self.layout.sizeHint().height())
+            self.setFixedHeight(self.layout.sizeHint().height() + 15)
             #self.setMinimumHeight(70)
             #self.adjustSize()
-            self.setFixedHeight(self.layout.sizeHint().height())
+            #self.setFixedHeight(self.layout.sizeHint().height())
         else:
             self.widget.setVisible(False)
             self.label.setText("▶  " + self.label_txt)
-            self.setMinimumHeight(30)
-            self.setMaximumHeight(30)
+            self.setFixedHeight(self.layout.sizeHint().height() + 15)
+            #self.setMinimumHeight(30)
+            #self.setMaximumHeight(30)
 
         self.adjustSize()
         self.setContentsMargins(6, 14, 6, 1)
@@ -1175,7 +1154,7 @@ class ItemWidget(QListWidgetItem):
 class ListExtsTab(MyFrame):
     def __init__(self):
 
-        super().__init__(_("Extensions"), 'blue')
+        super().__init__(_("Extensions"), color='blue')
         #self.setTabPosition(QTabWidget.West)
         #main_layout = QVBoxLayout(self)
         #tab = QTabWidget()
@@ -1229,7 +1208,7 @@ class ListExtsTab(MyFrame):
 
 class ListCameraTab(MyFrame):
     def __init__(self):
-        super().__init__(_("Appareil"), 'blue')
+        super().__init__(_("Appareil"), color='blue')
         ######## Appareil ##############
         # add the list with toggable buttons to list extentions
         list_layout = QVBoxLayout()
@@ -1280,7 +1259,7 @@ class ListCameraTab(MyFrame):
 
 class ListMetaTab(MyFrame):
     def __init__(self):
-        super().__init__(_("Métadonnées"), 'blue')
+        super().__init__(_("Métadonnées"), color='blue')
         ################ Metadatas #######################
         #frame = MyFrame(_("Métadonnées"), 'blue')
         list_layout = QVBoxLayout()
@@ -1436,6 +1415,43 @@ class CounterWdg(QWidget):
     def update(self, counter):
         self.nb_files.setText(str(counter.nb_files))
         self.duplicates.setText(str(counter.duplicates))
+
+class DateTab(MyFrame):
+    def __init__(self):
+        super().__init__(_("Codes de formatage des dates"))
+
+        main_layout = QVBoxLayout(self)
+
+        #frame = MyFrame(self, frameShape=QFrame.StyledPanel)
+        ##label_frame = QLabel(_("Codes de formatage des dates"), frame)
+        #frame.setObjectName("myFrame")
+        #label_frame.setObjectName("myLabel")
+        #frame.setStyleSheet("#myFrame { padding: 15px; border: 2px solid blue}")
+        #label_frame.setStyleSheet("padding: 10px; color:blue")
+        #list_layout = QVBoxLayout()
+        #list_widget = QListWidget()
+
+        strftime_help = open(STRFTIME_HELP_PATH).read()
+        text_widget = QTextEdit()
+        #text_widget.setTextFormat(Qt.MarkdownText)
+        text_widget.setHtml(strftime_help)
+        #self.listWdg = list_widget
+        main_layout.addWidget(text_widget)
+        #self.get_tag_list()
+        #frame.setLayout(list_layout)
+        #main_layout.addWidget(frame)
+
+        self.setLayout(main_layout)
+
+    def link_clicked(self, url):
+        QDesktopServices.openUrl(url)
+
+#    def get_tag_list(self):
+#
+#        for tag in DATE_STRFTIME_FORMAT:
+#            item = QListWidgetItem(tag)
+#            self.listWdg.addItem(item)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

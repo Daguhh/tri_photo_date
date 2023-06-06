@@ -70,6 +70,75 @@ non_def = non_def
 accepted_formats = jpg, jpeg, png, webp, bmp, ico, tiff, heif, heic, svg, raw, arw, cr2, nrw, k25, apng, avif, gif, svg, webm, mkv, flv, ogg, gif, avi, mov, asf, mp4, m4v, mpg, mp2, mpeg, mpv, 3gp, 3g2, flv
 """
 
+
+BETTER_DEFAULT_CONFIG = """
+[SCAN]
+
+[SOURCE]
+out_dir =
+extentions = jpg,png,jpeg
+cameras =
+is_recursive = 2
+excluded_dirs =
+is_exclude_dir_regex = 2
+exclude_toggle = 0
+
+[DESTINATION]
+in_dir =
+out_path_str = %Y/%Y-%m
+filename = fichier
+
+[FILE_ACTION]
+# FILE_SIMULATE = 1, FILE_COPY = 2, FILE_MOVE = 3
+file_action = 1
+
+[DUPLICATES]
+is_control_duplicates = 2
+# DUP_MD5_FILE = 1, DUP_MD5_DATA = 2, DUP_DATETIME = 3
+dup_mode = 1
+dup_is_scan_dest = 2
+
+[OPTIONS.GENERAL]
+is_delete_metadatas = 0
+is_date_from_filesystem = 0
+
+[OPTIONS.GROUP]
+# group files by floating window over days
+is_group_floating_days = 0
+group_floating_days_nb = 1
+group_floating_days_fmt =
+
+[OPTION.NAME]
+# parse date from file name
+is_guess_date_from_name = 0
+guess_date_from_name =
+
+[OPTIONS.GPS]
+gps = 0
+gps_debug = 0
+gps_simulate = 0
+gps_accuracy = 2
+gps_wait = 5
+
+[INTERFACE]
+gui_size = 1
+gui_mode = 3
+gui_lang = en
+verbose = 0
+
+# Misc
+[MISC]
+exif_user_tags =
+unidecode = 0
+non_def = non_def
+
+# accepted_formats
+accepted_formats = jpg, jpeg, png, webp, bmp, ico, tiff, heif, heic, svg, raw, arw, cr2, nrw, k25, apng, avif, gif, svg, webm, mkv, flv, ogg, gif, avi, mov, asf, mp4, m4v, mpg, mp2, mpeg, mpv, 3gp, 3g2, flv
+"""
+
+
+
+
 cli_mode, config_path = cli_arguments()
 
 if cli_mode == CLI_DUMP:
