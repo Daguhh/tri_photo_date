@@ -12,7 +12,7 @@ from tri_photo_date.utils.config_loader import GUI_ADVANCED, GUI_NORMAL, GUI_SIM
 from tri_photo_date.ordonate_photos import CFG
 from tri_photo_date.gui.human_text import MENU_TOOL_BUTTON
 
-lang = CFG['gui_lang']
+lang = CFG['interface.gui_lang']
 import gettext
 trad = gettext.translation('base', localedir=LOCALES_DIR, languages=[lang])
 trad.install()
@@ -65,7 +65,7 @@ class WindowMenu(QMenuBar):
         mode_group.triggered.connect(self.set_interface_mode)
 
         for action in mode_group.actions():
-            if action.data() == CFG['gui_mode']:
+            if action.data() == CFG['interface.gui_mode']:
                 action.setChecked(True)
         #mode_menu.setDisabled(True)
 
@@ -73,7 +73,7 @@ class WindowMenu(QMenuBar):
         size_menu = QMenu(_('Taille'), self)
         self.size_group = QActionGroup(self)
         self.size_group.setExclusionPolicy(QActionGroup.ExclusionPolicy.ExclusiveOptional)
-        for s in ['1', '1.25', '1.5', '1.75', '2']:
+        for s in ['0.8', '0.9', '1', '1.25', '1.5', '1.75', '2']:
             size_act = QAction(str(s), checkable=True)
             size_act.setData(s)
             size_menu.addAction(self.size_group.addAction(size_act))
@@ -82,7 +82,7 @@ class WindowMenu(QMenuBar):
 
         for action in self.size_group.actions():
             #print(action.data(), CFG['gui_size'], type(action.data()))
-            if action.data() == CFG['gui_size']:
+            if action.data() == CFG['interface.gui_size']:
                 action.setChecked(True)
 
         lang_menu = QMenu(_('Langue'), self)
@@ -96,7 +96,7 @@ class WindowMenu(QMenuBar):
         lang_group.triggered.connect(self.set_language)
 
         for action in lang_group.actions():
-            if action.data() == CFG['gui_lang']:
+            if action.data() == CFG['interface.gui_lang']:
                 action.setChecked(True)
 
         view_menu.addMenu(mode_menu)
@@ -109,7 +109,7 @@ class WindowMenu(QMenuBar):
         debug_action = QAction("Debug", self, checkable=True)
         tool_menu.addAction(debug_action)
         debug_action.triggered.connect(self.debug_toggle)
-        debug_action.setChecked(CFG['verbose'])
+        debug_action.setChecked(CFG['misc.verbose'])
         debug_action.setToolTip(_("Affiche les étapes du programme dans le terminal"))
 
         #simulate_action = QAction("Simuler", self, checkable=True)
@@ -158,19 +158,19 @@ class WindowMenu(QMenuBar):
 
     def set_language(self, lang):
 
-        if CFG['gui_lang'] == lang.data():
+        if CFG['interface.gui_lang'] == lang.data():
             return
 
-        CFG['gui_lang'] = lang.data()
+        CFG['interface.gui_lang'] = lang.data()
 
         self.show_message_box()
 
     def set_interface_mode(self, mode):
 
-        if CFG['gui_mode'] == mode.data():
+        if CFG['interface.gui_mode'] == mode.data():
             return
 
-        CFG['gui_mode'] = mode.data()
+        CFG['interface.gui_mode'] = mode.data()
         msg=""
         if mode.data() == GUI_SIMPLIFIED:
             msg = "\n".join((
@@ -181,10 +181,10 @@ class WindowMenu(QMenuBar):
 
     def set_interface_size(self, size):
         #selected_action = self.size_group.checkedAction()
-        if CFG['gui_size'] == size.data():
+        if CFG['interface.gui_size'] == size.data():
             return
 
-        CFG['gui_size'] = size.data()
+        CFG['interface.gui_size'] = size.data()
         self.show_message_box()
 
     def show_license(self):
@@ -227,11 +227,11 @@ class WindowMenu(QMenuBar):
 
     def debug_toggle(self, value):
 
-        CFG['verbose'] = 2 * int(value)
+        CFG['misc.verbose'] = 2 * int(value)
 
-    def simulate_toggle(self, value):
+    #def simulate_toggle(self, value):
 
-        CFG['simulate'] = 2 * int(value)
+    #    CFG['simulate'] = 2 * int(value)
 
 
 

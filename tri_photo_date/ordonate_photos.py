@@ -20,6 +20,7 @@ from tri_photo_date.photo_database import ImageMetadataDB
 from tri_photo_date.utils.converter import bytes2human, limited_string
 
 GROUP_PLACEHOLDER = r"{group}"
+DEFAULT_DATE_STR = "1900:01:01 00:00:00"
 
 class fake_LoopCallBack:
     stopped = False
@@ -103,11 +104,11 @@ def move_file(in_str, out_str):
     if not out_path.parent.exists():
         Path.mkdir(out_path.parent, parents=True, exist_ok=True)
 
-    if CFG["file_action"] == FILE_SIMULATE:
+    if CFG["action.action_mode"] == FILE_SIMULATE:
         return False
-    elif CFG['file_action'] == FILE_COPY:
+    elif CFG['action.action_mode'] == FILE_COPY:
         shutil.copyfile(in_path, out_path)
-    elif CFG['file_action'] == FILE_MOVE:
+    elif CFG['action.action_mode'] == FILE_MOVE:
         shutil.move(in_path, out_path)
 
     return True
@@ -129,11 +130,11 @@ def get_date_from_exifs_or_file(in_str, metadatas):
     date_str = ""
 
     # First start looking at file name (user option)
-    if CFG['is_guess_date_from_name']:
-        date_fmt = CFG['guess_date_from_name']
+    if CFG['options.name.name_is_guess']:
+        date_fmt = CFG['options.name.guess_fmt']
         date_str = ExifTags.get_date_from_name(date_fmt, in_str)
 
-    if not date_str and CFG['is_date_from_filesystem']:
+    if not date_str and CFG['options.general.opt_is_date_from_filesystem']:
         timestamp = Path(in_str).stat().st_mtime
         date = datetime.fromtimestamp(timestamp, tz=timezone.utc)
         out_fmt = "%Y:%m:%d %H:%M:%S"
@@ -146,6 +147,9 @@ def get_date_from_exifs_or_file(in_str, metadatas):
                 date_str = metadatas[date_tag]
                 break
 
+    if not date_str:
+        date_str = DEFAULT_DATE_STR
+
     # Finally get last modification date (user set option)
     return date_str
 
@@ -153,11 +157,11 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
     CFG.load_config()
 
-    in_dir = CFG['in_dir']
-    out_dir = CFG['out_dir']
+    in_dir = CFG['source.src_dir']
+    out_dir = CFG['destination.dest_dir']
 
     # update image database
-    media_extentions = CFG['accepted_formats']
+    media_extentions = CFG['misc.accepted_formats']
     with ImageMetadataDB() as db:
 
         db.clean_all_table()
@@ -218,29 +222,29 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
     gps.set_global_config(CFG)
-    is_control_hash = CFG['is_control_duplicates']
-    control_dest_duplicates = CFG['dup_is_scan_dest']
-    duplicate_ctrl_mode = CFG['dup_mode']
+    is_control_hash = CFG['duplicates.dup_is_control']
+    control_dest_duplicates = CFG['duplicates.dup_is_scan_dest']
+    duplicate_ctrl_mode = CFG['duplicates.dup_mode']
     #is_hash_reset = CFG["hash_reset"]
-    in_dir = CFG['in_dir']
-    extentions = CFG["extentions"]
-    cameras = CFG['cameras']
+    in_dir = CFG['source.src_dir']
+    extentions = CFG["source.src_extentions"]
+    cameras = CFG['source.src_cameras']
     #out_dir = CFG['out_dir']
-    excluded_dirs = CFG['excluded_dirs'].split(',')
-    is_exclude_dir_regex = bool(CFG['is_exclude_dir_regex'])
-    exclude_toggle = CFG['exclude_toggle']
+    excluded_dirs = CFG['source.src_excluded_dirs']
+    is_exclude_dir_regex = bool(CFG['source.src_is_exclude_dir_regex'])
+    exclude_toggle = CFG['source.src_exclude_toggle']
     exclude = {
         'dirs' : excluded_dirs,
         'is_regex' : is_exclude_dir_regex,
         'toggle' : exclude_toggle
     }
-    out_path_str = CFG['out_path_str']
-    out_filename = CFG['filename']
-    is_gps = CFG['gps']
-    recursive = CFG['is_recursive']
-    is_group_floating_days = CFG['is_group_floating_days']
-    group_floating_days_nb = CFG['group_floating_days_nb']
-    group_floating_days_fmt = CFG['group_floating_days_fmt']
+    out_path_str = CFG['destination.dest_rel_dir']
+    out_filename = CFG['destination.dest_filename']
+    is_gps = CFG['options.gps.gps_is_gps']
+    recursive = CFG['source.src_is_recursive']
+    is_group_floating_days = CFG['options.group.grp_is_group']
+    group_floating_days_nb = CFG['options.group.grp_floating_nb']
+    group_floating_days_fmt = CFG['options.group.grp_display_fmt']
 
     dup_mode = duplicate_ctrl_mode * bool(is_control_hash)
     control_dest_duplicates = control_dest_duplicates * bool(is_control_hash)
@@ -253,6 +257,7 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
         'exclude' : exclude,
     }
 
+    print(list_files_params)
     with ImageMetadataDB() as db:
 
         db.clean_preview_table()
@@ -356,8 +361,8 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
 def execute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
-    is_gps = CFG['gps']
-    is_delete_metadatas = CFG['is_delete_metadatas']
+    is_gps = CFG['options.gps.gps_is_gps']
+    is_delete_metadatas = CFG['options.general.opt_is_delete_metadatas']
 
     with ImageMetadataDB() as db:
 
@@ -374,7 +379,7 @@ def execute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
             # transform relative path into absolute path given user config
             out_rel_str, out_filename = db.get_out_str(in_str)
-            out_str = str(CFG['out_dir'] / out_rel_str / out_filename)
+            out_str = str(CFG['destination.dest_dir'] / out_rel_str / out_filename)
 
             # SImulate / Move / Copy
             has_moved = move_file(in_str, out_str)
@@ -395,7 +400,7 @@ def execute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                 ' - ',
                 FILE_ACTION_TXT[c].format(Path(d).name, limited_string(Path(e).parent.name))
             ))
-            progbar.update(bytes_moved, progbar_text_execute(bytes_moved, total_size,CFG['file_action'],in_str, out_str))
+            progbar.update(bytes_moved, progbar_text_execute(bytes_moved, total_size,CFG['action.action_mode'],in_str, out_str))
 
     progbar.update(bytes_moved, "Fait! {} fichiers ont été déplacés soit un total de {}".format(i, bytes2human(bytes_moved)))
 

@@ -10,36 +10,11 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QThread, QTimer, QEventLoop, QSize
 from PyQt5.QtGui import QKeySequence, QIcon, QPixmap, QClipboard, QStandardItem, QPixmap, QPainter, QFontMetrics
 from PyQt5.QtWidgets import (
-    QApplication,
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QPushButton,
-    QListWidget,
-    QListWidgetItem,
-    QAbstractItemView,
-    QCheckBox,
-    QFrame,
-    QProgressBar,
-    QFileDialog,
-    QStyle,
-    QTabWidget,
-    QAction,
-    QListView,
-    QSizePolicy,
-    QMainWindow,
-    QMenu,
-    QAction,
-    QComboBox,
-    QTextEdit,
-    QButtonGroup,
-    QRadioButton,
-    QSplitter,
-    QToolBox,
-    QSpinBox,
-    QScrollArea,
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton,
+    QListWidget, QListWidgetItem, QAbstractItemView, QCheckBox, QFrame, QProgressBar,
+    QFileDialog, QStyle, QTabWidget, QAction, QListView, QSizePolicy, QMainWindow,
+    QMenu, QAction, QComboBox, QTextEdit, QButtonGroup, QRadioButton, QSplitter,
+    QToolBox, QSpinBox, QScrollArea,
 )
 
 # Modules
@@ -49,21 +24,27 @@ from tri_photo_date.ordonate_photos import CFG
 from tri_photo_date.gui.menu import WindowMenu
 from tri_photo_date.explore_db import list_available_camera_model, list_available_exts, list_available_tags
 
+# Local PyQt widgets
+from tri_photo_date.gui.collapsible_frame import CollapsibleFrame, PreviewCollapsibleFrame
+from tri_photo_date.gui.small_widgets import simpleCheckBox, simplePushButton, simpleStopButton, MyRadioButton
+
 # Constants
 from tri_photo_date.exif import TAG_DESCRIPTION, USEFULL_TAG_DESCRIPTION, EXIF_LOCATION_FIELD
 from tri_photo_date.utils.config_loader import FILE_SIMULATE, FILE_COPY, FILE_MOVE, GUI_SIMPLIFIED, GUI_NORMAL, GUI_ADVANCED, DUP_MD5_FILE, DUP_MD5_DATA, DUP_DATETIME
 from tri_photo_date.gui.strftime_help import DATE_STRFTIME_FORMAT
-from tri_photo_date.gui.human_text import MAIN_TAB_WIDGETS, MAIN_TAB_BUTTONS, GPS_HELP_TEXT, MEDIA_FORMATS, REL_PATH_FORMATS, ACTION_BUTTONS, DUP_RADIO_BUTTONS
+from tri_photo_date.gui.human_text import GPS_HELP_TEXT, MEDIA_FORMATS, REL_PATH_FORMATS, ACTION_BUTTONS, DUP_RADIO_BUTTONS
+from tri_photo_date.gui.human_text import MAIN_TAB_WIDGETS as MTW
+from tri_photo_date.gui.human_text import MAIN_TAB_BUTTONS as MTB
 from tri_photo_date.utils.config_paths import STRFTIME_HELP_PATH, ICON_PATH, LOCALES_DIR, IMAGE_DATABASE_PATH
 
 
-lang = CFG['gui_lang']
+lang = CFG['interface.gui_lang']
 import gettext
 trad = gettext.translation('base', localedir=LOCALES_DIR, languages=[lang])
 trad.install()
 _ = trad.gettext # Greek
 
-os.environ['QT_SCALE_FACTOR'] = CFG['gui_size']
+os.environ['QT_SCALE_FACTOR'] = CFG['interface.gui_size']
 
 from PyQt5.QtCore import Qt, pyqtSignal, QPoint, QRect
 from PyQt5.QtGui import QPixmap, QPainter
@@ -85,60 +66,6 @@ class LoopCallBack:
             return True
         return False
 
-#    @classmethod
-#    def stop(cls):
-#        cls.stopped = True
-#
-#    @classmethod
-#    def start(cls):
-#        cls.status = False
-
-class CustomSplitterHandle(QSplitterHandle):
-    clicked = pyqtSignal()
-
-    def __init__(self, orientation=Qt.Horizontal, parent=None):
-        super().__init__(orientation, parent)
-        self.setContentsMargins(0, 0, 0, 0)
-
-        # Create a QPushButton to collapse/show the panel
-        self.button = QPushButton(self)
-        self.button.setIconSize(QSize(16, 16))
-        self.button.setFixedSize(16, 16)
-        self.button.setToolTip('Hide Panel')
-        self.button.setCheckable(True)
-
-        # Connect the clicked signal of the button to emit the custom clicked signal
-        self.button.clicked.connect(self.clicked.emit)
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            event.accept()
-            return
-
-        super().mousePressEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.button.setChecked(not self.button.isChecked())
-            self.clicked.emit()
-            event.accept()
-            return
-
-        super().mouseReleaseEvent(event)
-
-    def sizeHint(self):
-        return QSize(16, 16)
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        if self.button.isChecked():
-            pixmap = QPixmap('arrow-left.png')
-        else:
-            pixmap = QPixmap('arrow-right.png')
-        pixmap = pixmap.scaled(QSize(16, 16), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        painter.drawPixmap(QRect(0, 0, 16, 16), pixmap)
-
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -153,19 +80,12 @@ class MainWindow(QMainWindow):
         splitter = QSplitter()
         splitter.setHandleWidth(3)
 
-        # Set the first tab's widget to be the QScrollArea
-        #tabs.widget(0).setLayout(QVBoxLayout())
-        #tabs.widget(0).layout().addWidget(scroll_area)
-
         self.tab1 = MainTab(self)
         self.tab2 = ListExtsTab()
         self.tab3 = ListMetaTab()
         self.tab4 = ListCameraTab()
         self.tab5 = DateTab()
         self.tab6 = GPSTab()
-
-        #toolBox = QToolBox()
-        #toolBox.setStyleSheet("QToolBox::tab { padding: 5px; }")
 
         toolBox = QWidget()
         toolboxLyt = QVBoxLayout()
@@ -175,6 +95,7 @@ class MainWindow(QMainWindow):
         toolboxLyt.addWidget(self.tab4)
         toolboxLyt.addWidget(self.tab5)
         toolboxLyt.addWidget(self.tab6)
+        toolboxLyt.addStretch()
 
         toolBox.setLayout(toolboxLyt)
 
@@ -188,22 +109,12 @@ class MainWindow(QMainWindow):
 
         self.tab2.listextWdg.itemChanged.connect(self.update_extensions)
         self.tab4.listappWdg.itemChanged.connect(self.update_cameras)
-        self.tab1.populateBtn.clicked.connect(self.update_selection_tabs)
+        self.tab1.scanWdg.runBtn.clicked.connect(self.update_selection_tabs)
 
-        #previewBtn = QPushButton("\n".join(list(_("> Afficher un aperçu >"))))
-        #previewBtn.setFixedWidth(15)
         preview_frame = PreviewCollapsibleFrame(" Afficher un aperçu", 'green')
-
         self.preview_wdg = DatabaseViewer(str(IMAGE_DATABASE_PATH))
         self.preview_wdg.filter_edit.textChanged.connect(self.update_preview)
-        #self.preview_wdg.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
         preview_frame.setWidget(self.preview_wdg)
-
-        #self.preview_wdg.setHidden(True)
-        #self.preview_wdg.setHiddenCallback(lambda : previewBtn.setHidden(False))
-        #previewBtn.clicked.connect(lambda : self.preview_wdg.setHidden(False))
-        #previewBtn.clicked.connect(lambda : previewBtn.setHidden(True))
 
         tabs = QTabWidget()
         tabs.setMinimumWidth(450)
@@ -219,41 +130,38 @@ class MainWindow(QMainWindow):
         tab1_content.layout().addWidget(self.tab1)
         scroll_area.setWidget(tab1_content)
 
-        if CFG['gui_mode'] == GUI_SIMPLIFIED or CFG['gui_mode'] == GUI_NORMAL :
+        if CFG['interface.gui_mode'] == GUI_SIMPLIFIED or CFG['interface.gui_mode'] == GUI_NORMAL :
 
             splitter.addWidget(self.tab1)
             tabs.setHidden(True)
 
-        elif CFG['gui_mode'] == GUI_ADVANCED :
+        elif CFG['interface.gui_mode'] == GUI_ADVANCED :
 
-            #tabs.addTab(self.tab1, "Main")
             tabs.addTab(scroll_area, "Main")
 
         tabs.addTab(toolscroll_area, _("Outils"))
         splitter.addWidget(tabs)
 
-        #splitter.addWidget(previewBtn)
-        #splitter.addWidget(self.preview_wdg)
         splitter.addWidget(preview_frame)
 
         main_windows_lyt.addWidget(splitter)
-        #self.tab1.previewBtn.clicked.connect(self.update_preview)
 
         main_windows_wdg.setLayout(main_windows_lyt)
         self.setCentralWidget(main_windows_wdg)
 
         size = self.sizeHint()
-        #self.setMinimumHeight(self.tab1.size().height())#size.height())
         self.resize(400,500)
         preview_frame.collapse(True)
 
     def update_cameras(self):
+
         txt = self.tab4.user_choice_cameras
-        self.tab1.textWdg["cameras"].setText(txt)
+        self.tab1.srcFrame.camWdg.textBox.setText(txt)
 
     def update_extensions(self):
+
         txt = self.tab2.user_choice_extentions
-        self.tab1.textWdg["extentions"].setText(txt)
+        self.tab1.srcFrame.extWdg.textBox.setText(txt)
 
     def update_preview(self):
 
@@ -290,183 +198,141 @@ class MainTab(QWidget):
         super().__init__()
 
         self.parent = parent
-        self.textWdg = {}
-        self.boxWdg = {}
-        self.spinWdg = {}
-        self.comboWdg = {}
+        self.Wdgs = {}
 
         main_layout = QVBoxLayout()
 
-        #btn = QPushButton('show all')
-        #btn.clicked.connect(MyFrame.uncollapse_all)
-        #main_layout.addWidget(btn)
-        #btn = QPushButton('hide all')
-        #btn.clicked.connect(MyFrame.collapse_all)
-        #main_layout.addWidget(btn)
-
         ########## Scan ##########
-        frame = MyFrame(_("Scan"), color="darkGreen")
+        scanWdg = CollapsibleFrame(_("Scan"), color="darkGreen")
         layout = QVBoxLayout()
 
-        scanWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['scan_dir'])
-        scanWdg.textBox.setReadOnly(True)
-        scanWdg.btn_selector.setDisabled(True)
-        recursBtn = simpleCheckBox(scanWdg, **MAIN_TAB_BUTTONS['is_recursive'])
-        recursBtn.setDisabled(True)
-        layout.addLayout(scanWdg)
+        scanWdg.dirWdg = LabelNLineEdit(self, **MTW['scan_dir'])
+        scanWdg.dirWdg.recursiveBtn = simpleCheckBox(scanWdg.dirWdg, **MTB['is_recursive'])
+
+        layout.addLayout(scanWdg.dirWdg)
         sub_layout = QHBoxLayout()
-        recursBtn = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['scan_is_meta'])
-        recursBtn.setDisabled(True)
-        recursBtn = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['scan_is_md5_file'])
-        recursBtn.setDisabled(True)
-        recursBtn = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['scan_is_md5_data'])
-        recursBtn.setDisabled(True)
+        scanWdg.is_metaBtn = simpleCheckBox(sub_layout, **MTB['scan_is_meta'])
+        scanWdg.is_md5_file = simpleCheckBox(sub_layout, **MTB['scan_is_md5_file'])
+        scanWdg.is_md5_data = simpleCheckBox(sub_layout, **MTB['scan_is_md5_data'])
         layout.addLayout(sub_layout)
 
-        frame.setLayout(layout)
-        frame.collapse(True)
-        main_layout.addWidget(frame)
+        scanWdg.setLayout(layout)
+        scanWdg.collapse(True)
+        main_layout.addWidget(scanWdg)
 
-        self.populateBtn = simplePushButton(
-            main_layout,
-            self.populate_act,
-            **ACTION_BUTTONS['populate']
-        )
-        self.stopBtn0 = simpleStopButton(main_layout, self.stop)
+        scanWdg.runBtn  = simplePushButton(main_layout, **ACTION_BUTTONS['populate'])
+        scanWdg.runBtn.clicked.connect(self.populate_act)
+        scanWdg.stopBtn = simpleStopButton(main_layout, self.stop)
 
-        self.populate_act_prog_holder = QVBoxLayout()
-        main_layout.addLayout(self.populate_act_prog_holder)
+        scanWdg.progbar_layout = QVBoxLayout()
+        main_layout.addLayout(scanWdg.progbar_layout)
+
+        # Disable "coming soon"
+        scanWdg.dirWdg.textBox.setReadOnly(True)
+        scanWdg.dirWdg.btn_selector.setDisabled(True)
+        scanWdg.dirWdg.recursiveBtn.setDisabled(True)
+        scanWdg.is_metaBtn.setDisabled(True)
+        scanWdg.is_md5_file.setDisabled(True)
+        scanWdg.is_md5_data.setDisabled(True)
+
+        self.scanWdg = scanWdg
 
         ########## Source ##########
-        frame = MyFrame(_("Source"))
+        srcWdg = CollapsibleFrame(_("Source"))
         layout = QVBoxLayout()
 
-        srcWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['in_dir'])
-        srcWdg.textBox.textChanged.connect(lambda x:scanWdg.textBox.setText(x))
-        recursBtn = simpleCheckBox(srcWdg, **MAIN_TAB_BUTTONS['is_recursive'])
-        extWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['extentions'])
+        srcWdg.dirWdg = LabelNLineEdit(self, **MTW['in_dir'])
+        srcWdg.dirWdg.textBox.textChanged.connect(lambda x:scanWdg.dirWdg.textBox.setText(x))
+        srcWdg.dirWdg.recursiveBtn = simpleCheckBox(srcWdg.dirWdg, **MTB['is_recursive'])
+        srcWdg.extWdg = LabelNLineEdit(self, **MTW['extentions'])
+        srcWdg.camWdg = LabelNLineEdit(self, **MTW['cameras'])
+        srcWdg.excludeWdg = LabelNLineEdit(self, **MTW['excluded_dirs'])
+        srcWdg.excludeWdg.is_regex = simpleCheckBox(srcWdg.excludeWdg, **MTB['is_exclude_dir_regex'])
 
-        self.textWdg["in_dir"] = srcWdg.textBox
-        self.boxWdg['is_recursive'] = recursBtn
-        self.textWdg["extentions"] = extWdg.textBox
+        layout.addLayout(srcWdg.dirWdg)
+        layout.addLayout(srcWdg.extWdg)
+        layout.addLayout(srcWdg.camWdg)
+        layout.addLayout(srcWdg.excludeWdg)
+        srcWdg.setLayout(layout)
+        main_layout.addWidget(srcWdg)
 
-        layout.addLayout(srcWdg)
-        layout.addLayout(extWdg)
-
-        if not CFG['gui_mode'] == GUI_SIMPLIFIED:
-            camWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['cameras'])
-            self.textWdg["cameras"] = camWdg.textBox
-            layout.addLayout(camWdg)
-
-            excludeDirWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['excluded_dirs'])
-            self.textWdg['excluded_dirs'] = excludeDirWdg.textBox
-
-            is_exclude_dir_regexBtn = simpleCheckBox(excludeDirWdg, **MAIN_TAB_BUTTONS['is_exclude_dir_regex'])
-            self.boxWdg['is_exclude_dir_regex'] = is_exclude_dir_regexBtn
-            self.comboWdg['exclude_toggle'] = excludeDirWdg.labelbox
-            layout.addLayout(excludeDirWdg)
-
-
-        frame.setLayout(layout)
-        main_layout.addWidget(frame)
+        self.srcFrame = srcWdg
 
         ########## Destination ##########
-        frame = MyFrame(_("Destination"), color="blue")
+        destWdg = CollapsibleFrame(_("Destination"), color="blue")
         layout = QVBoxLayout()
 
-        destWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['out_dir'])
-        rel_destWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['out_path_str'])
-        name_destWdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['filename'])
+        destWdg.dirWdg = LabelNLineEdit(self, **MTW['out_dir'])
+        destWdg.rel_dirWdg = LabelNLineEdit(self, **MTW['out_path_str'])
+        destWdg.filenameWdg = LabelNLineEdit(self, **MTW['filename'])
 
-        self.textWdg["out_dir"] = destWdg.textBox
-        self.textWdg["out_path_str"] = rel_destWdg.textBox
-        self.textWdg["filename"] = name_destWdg.textBox
+        layout.addLayout(destWdg.dirWdg)
+        layout.addLayout(destWdg.rel_dirWdg)
+        layout.addLayout(destWdg.filenameWdg)
 
-        layout.addLayout(destWdg)
-        layout.addLayout(rel_destWdg)
-        layout.addLayout(name_destWdg)
+        destWdg.setLayout(layout)
+        main_layout.addWidget(destWdg)
 
-        frame.setLayout(layout)
-        main_layout.addWidget(frame)
+        self.destFrame = destWdg
 
         ########## Duplicates ##########
-        frame = MyFrame(_("Dupliqués"), color="blue")
-
+        dupWdg = CollapsibleFrame(_("Dupliqués"), color="blue")
         layout = QVBoxLayout()
+        dupWdg.dupBtns = DuplicateWdg(self)
+        layout.addLayout(dupWdg.dupBtns)
+        dupWdg.setLayout(layout)
+        main_layout.addWidget(dupWdg)
 
-        dupWdg = DuplicateWdg(self)
-        #ckbBtn.setCheckState(CFG['is_control_duplicates'])
-        self.boxWdg['is_control_duplicates'] = dupWdg.duplicateBtn
-        self.boxWdg['is_control_duplicates'].stateChanged.emit(CFG['is_control_duplicates'])
-        self.boxWdg['dup_is_scan_dest'] = dupWdg.scandestBtn
-        layout.addLayout(dupWdg)
-
-        frame.setLayout(layout)
-        main_layout.addWidget(frame)
+        self.dupFrame = dupWdg
 
         ########## Options ##########
-        frame = MyFrame(_("Options"), color="blue")
+        optWdg = CollapsibleFrame(_("Options"), color="blue")
 
         layout = QVBoxLayout()
         sub_layout = QHBoxLayout()
 
-        guess_date_from_name_Wdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['guess_date_from_name'])
-        self.textWdg['guess_date_from_name'] = guess_date_from_name_Wdg.textBox
-        self.boxWdg['is_guess_date_from_name'] = guess_date_from_name_Wdg.checkBox
-        layout.addLayout(guess_date_from_name_Wdg)
+        optWdg.guess_date_from_name = LabelNLineEdit(self, **MTW['guess_date_from_name'])
+        optWdg.group_by_floating_days = LabelNLineEdit(self, **MTW['group_by_floating_days'])
 
-        group_by_floating_days_Wdg = LabelNLineEdit(self, **MAIN_TAB_WIDGETS['group_by_floating_days'])
-        self.boxWdg['is_group_floating_days'] = group_by_floating_days_Wdg.checkBox
-        self.textWdg['group_floating_days_fmt'] = group_by_floating_days_Wdg.textBox
-        self.spinWdg['group_floating_days_nb'] = group_by_floating_days_Wdg.spinBox
-        layout.addLayout(group_by_floating_days_Wdg)
+        layout.addLayout(optWdg.guess_date_from_name)
+        layout.addLayout(optWdg.group_by_floating_days)
 
         sub_layout = QHBoxLayout()
-        self.boxWdg['gps'] = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['gps'])
-        self.boxWdg['is_delete_metadatas'] = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['is_delete_metadatas'])
-        self.boxWdg['is_date_from_filesystem'] = simpleCheckBox(sub_layout, **MAIN_TAB_BUTTONS['is_date_from_filesystem'])
+        optWdg.gps = simpleCheckBox(sub_layout, **MTB['gps'])
+
+        optWdg.is_delete_metadatas = simpleCheckBox(sub_layout, **MTB['is_delete_metadatas'])
+        optWdg.is_date_from_filesystem = simpleCheckBox(sub_layout, **MTB['is_date_from_filesystem'])
+
         layout.addLayout(sub_layout)
 
-        for prop, ckb in self.boxWdg.items():
-            ckb.setCheckState(CFG[prop])
-            ckb.stateChanged.connect(self.get_config)
+        optWdg.setLayout(layout)
+        optWdg.collapse()
+        main_layout.addWidget(optWdg)
 
-        #layout.addLayout(sub_layout)
+        self.optFrame = optWdg
 
-        #sub_layout = QHBoxLayout()
-
-        frame.setLayout(layout)
-        frame.collapse()
-        main_layout.addWidget(frame)
-
-        self.previewBtn = simplePushButton(
-            main_layout,
-            self.preview_act,
-            **ACTION_BUTTONS['calculate']
-        )
+        self.previewBtn = simplePushButton(main_layout,**ACTION_BUTTONS['calculate'])
+        self.previewBtn.clicked.connect(self.preview_act)
         self.stopBtn1 = simpleStopButton(main_layout, self.stop)
 
-        if CFG['gui_mode'] == GUI_SIMPLIFIED:
+        if CFG['interface.gui_mode'] == GUI_SIMPLIFIED:
             frame.setHidden(True)
 
         self.compute_act_prog_holder = QVBoxLayout()
         main_layout.addLayout(self.compute_act_prog_holder)
 
         ########## Save & Run ##########
-        frame = MyFrame("", color="red")
+        execWdg = CollapsibleFrame("Executer", color="red")
         layout = QVBoxLayout()
-        layout.addLayout(fileActionWdg(self))
-        #layout.setContentsMargins(10, 0, 10, 10)
-        frame.setLayout(layout)
-        size = frame.sizeHint()
-        frame.setMinimumHeight(size.height())
-        main_layout.addWidget(frame)
+        execWdg.file_actionWdg = fileActionWdg(self)
+        layout.addLayout(execWdg.file_actionWdg)
+        execWdg.setLayout(layout)
+        main_layout.addWidget(execWdg)
 
-        self.executeBtn = simplePushButton(
-            main_layout,
-            self.run_act,
-            **ACTION_BUTTONS['execute']
-        )
+        self.execFrame = execWdg
+
+        self.executeBtn = simplePushButton(main_layout,**ACTION_BUTTONS['execute'])
+        self.executeBtn.clicked.connect(self.run_act)
         self.stopBtn2 = simpleStopButton(main_layout, self.stop)
 
         self.execute_act_prog_holder = QVBoxLayout()
@@ -480,12 +346,9 @@ class MainTab(QWidget):
         #self.couterWdg = CounterWdg()
 
         fake_layout = QVBoxLayout()
-        #layout.addLayout(btn_layout)
         fake_layout.addWidget(self.progress_bar_label)
         fake_layout.addWidget(self.progress_bar)
         self.prev_progbar_layout = fake_layout
-        #layout.addWidget(self.couterWdg)
-
 
         main_layout.addStretch()
 
@@ -494,11 +357,98 @@ class MainTab(QWidget):
 
         self.setLayout(main_layout)
 
-        ########## Get config & init interface ##########
-        if CFG['gui_mode'] == GUI_SIMPLIFIED: # use default values
-            self.get_config()
-        else:
-            self.set_config()
+        # Set up connection to config object
+        scanWdg.dirWdg.textBox.textChanged.connect(lambda x : CFG.__setitem__('scan.scan_dir',x))
+        scanWdg.is_metaBtn.stateChanged.connect(lambda x : CFG.__setitem__('scan.scan_is_meta',x))
+        scanWdg.is_md5_data.stateChanged.connect(lambda x : CFG.__setitem__('scan.scan_is_md5_data',x))
+        scanWdg.is_md5_file.stateChanged.connect(lambda x : CFG.__setitem__('scan.scan_is_md5_file',x))
+        scanWdg.dirWdg.recursiveBtn.stateChanged.connect(lambda x : CFG.__setitem__('scan.scan_is_recursive',x))
+
+        srcWdg.dirWdg.textBox.textChanged.connect(lambda x : CFG.__setitem__('source.src_dir',x))
+        srcWdg.extWdg.textBox.textChanged.connect(lambda x : CFG.__setitem__('source.src_extentions',x))
+        srcWdg.camWdg.textBox.textChanged.connect(lambda x : CFG.__setitem__('source.src_cameras',x))
+        srcWdg.dirWdg.recursiveBtn.stateChanged.connect(lambda x : CFG.__setitem__('source.src_is_recursive',x))
+        srcWdg.excludeWdg.textBox.textChanged.connect(lambda x : CFG.__setitem__('source.src_excluded_dirs',x))
+        srcWdg.excludeWdg.labelbox.currentIndexChanged.connect(lambda x : CFG.__setitem__('source.src_exclude_toggle',x))
+        srcWdg.excludeWdg.is_regex.stateChanged.connect(lambda x : CFG.__setitem__('source.src_is_exclude_dir_regex',x))
+
+        destWdg.dirWdg.textBox.textChanged.connect(lambda x : CFG.__setitem__('destination.dest_dir',x))
+        destWdg.rel_dirWdg.textBox.textChanged.connect(lambda x : CFG.__setitem__('destination.dest_rel_dir',x))
+        destWdg.filenameWdg.textBox.textChanged.connect(lambda x : CFG.__setitem__('destination.dest_filename',x))
+
+        dupWdg.dupBtns.duplicateBtn.stateChanged.connect(lambda x : CFG.__setitem__('duplicates.dup_is_control',x))
+        dupWdg.dupBtns.dup_grp.buttonClicked[int].connect(lambda x : CFG.__setitem__('duplicates.dup_mode',x))
+        dupWdg.dupBtns.scandestBtn.stateChanged.connect(lambda x : CFG.__setitem__('duplicates.dup_is_scan_dest',x))
+
+        optWdg.guess_date_from_name.textBox.textChanged.connect(lambda x : CFG.__setitem__('options.name.name_guess_fmt',x))
+        optWdg.guess_date_from_name.checkBox.stateChanged.connect(lambda x : CFG.__setitem__('options.name.name_is_guess',x))
+        optWdg.group_by_floating_days.checkBox.stateChanged.connect(lambda x : CFG.__setitem__('options.group.grp_is_group',x))
+        optWdg.group_by_floating_days.textBox.textChanged.connect(lambda x : CFG.__setitem__('options.group.grp_display_fmt',x))
+        optWdg.group_by_floating_days.spinBox.valueChanged.connect(lambda x : CFG.__setitem__('options.group.grp_floating_nb',x))
+        optWdg.gps.stateChanged.connect(lambda x : CFG.__setitem__('options.gps.gps_is_gps',x))
+        optWdg.is_delete_metadatas.stateChanged.connect(lambda x : CFG.__setitem__('options.general.opt_is_delete_metadatas',x))
+        optWdg.is_date_from_filesystem.stateChanged.connect(lambda x : CFG.__setitem__('options.general.opt_is_date_from_filesystem',x))
+
+        execWdg.file_actionWdg.btn_group.buttonClicked[int].connect(lambda x : CFG.__setitem__('action.action_mode',x))
+
+        # set up setter for each widget
+        scanWdgs = {}
+        scanWdgs['scan_dir'] = scanWdg.dirWdg.textBox.setText
+        scanWdgs['scan_is_recursive'] = scanWdg.dirWdg.recursiveBtn.setCheckState
+        scanWdgs['scan_is_md5_file'] = scanWdg.is_md5_file.setCheckState
+        scanWdgs['scan_is_md5_data'] = scanWdg.is_md5_data.setCheckState
+        scanWdgs['scan_is_meta'] = scanWdg.is_metaBtn.setCheckState
+        self.Wdgs['scan'] = scanWdgs
+
+        srcWdgs = {}
+        srcWdgs['src_dir'] = srcWdg.dirWdg.textBox.setText
+        srcWdgs['src_extentions'] = srcWdg.extWdg.textBox.setText
+        srcWdgs['src_cameras'] = srcWdg.camWdg.textBox.setText
+        srcWdgs['src_is_recursive'] = srcWdg.dirWdg.recursiveBtn.setCheckState
+        srcWdgs['src_excluded_dirs'] = srcWdg.excludeWdg.textBox.setText
+        srcWdgs['src_exclude_toggle'] = srcWdg.excludeWdg.labelbox.setCurrentIndex
+        srcWdgs['src_is_exclude_dir_regex'] = srcWdg.excludeWdg.is_regex.setCheckState
+        self.Wdgs['source'] = srcWdgs
+
+        destWdgs = {}
+        destWdgs['dest_dir'] = destWdg.dirWdg.textBox.setText
+        destWdgs['dest_rel_dir'] = destWdg.rel_dirWdg.textBox.setText
+        destWdgs['dest_filename'] = destWdg.filenameWdg.textBox.setText
+        self.Wdgs['destination'] = destWdgs
+
+        dupWdgs = {}
+        dupWdgs['dup_is_control'] = dupWdg.dupBtns.duplicateBtn.setCheckState
+        dupWdgs['dup_mode'] = lambda x : dupWdg.dupBtns.dup_grp.button(x).setChecked(True)
+        dupWdgs['dup_is_scan_dest'] = dupWdg.dupBtns.scandestBtn.setCheckState
+        self.Wdgs['duplicates'] = dupWdgs
+
+        optWdgs_name = {}
+        optWdgs_name['name_is_guess'] = optWdg.guess_date_from_name.checkBox.setCheckState
+        optWdgs_name['name_guess_fmt'] = optWdg.guess_date_from_name.textBox.setText
+        self.Wdgs['options.name'] = optWdgs_name
+
+        optWdgs_grp = {}
+        optWdgs_grp['grp_is_group'] = optWdg.group_by_floating_days.checkBox.setCheckState
+        optWdgs_grp['grp_display_fmt'] = optWdg.group_by_floating_days.textBox.setText
+        optWdgs_grp['grp_floating_nb'] = optWdg.group_by_floating_days.spinBox.setValue
+        self.Wdgs['options.group'] = optWdgs_grp
+
+        self.Wdgs['options.gps'] = {'gps_is_gps':optWdg.gps.setCheckState}
+
+        optWdgs_gen = {}
+        optWdgs_gen['opt_is_delete_metadatas'] = optWdg.is_delete_metadatas.setCheckState
+        optWdgs_gen['opt_is_date_from_filesystem'] = optWdg.is_date_from_filesystem.setCheckState
+        self.Wdgs['options.general'] = optWdgs_gen
+
+        self.Wdgs['action'] = {'action_mode' : lambda x : execWdg.file_actionWdg.btn_group.button(x).setChecked(True)}#[int]}
+
+        self.load_conf()
+
+    def load_conf(self):
+
+        for section_name, section_dct in self.Wdgs.items():
+            for param, wdg_setter in section_dct.items():
+                wdg_setter(CFG.get_repr((section_name, param)))
 
     def move_progbar(self, new_layout):
 
@@ -513,13 +463,14 @@ class MainTab(QWidget):
         self.prev_progbar_layout = new_layout
 
     def populate_act(self):
+
         logging.info("Starting processing files...")
 
-        self.move_progbar(self.populate_act_prog_holder)
+        self.move_progbar(self.scanWdg.progbar_layout)
 
         self.save_act()
-        self.populateBtn.setHidden(True)
-        self.stopBtn0.setHidden(False)
+        self.scanWdg.runBtn.setHidden(True)
+        self.scanWdg.stopBtn.setHidden(False)
 
         LoopCallBack.stopped = False
         self.timer = QTimer()
@@ -527,14 +478,11 @@ class MainTab(QWidget):
         self.timer.timeout.connect(lambda : self.run_function(
             ordonate_photos.populate_db, self.progress_bar, LoopCallBack
         ))
-        #self.timer.timeout.connect(lambda : self.run_function(
-        #))
         self.timer.timeout.connect(self.parent.update_preview)
         self.timer.start(1000)  # waits for 1 second
 
-        #ordonate_photos.populate_db()
-
     def preview_act(self):
+
         logging.info("Starting processing files...")
 
         self.move_progbar(self.compute_act_prog_holder)
@@ -552,6 +500,7 @@ class MainTab(QWidget):
         self.timer.start(1000)  # waits for 1 second
 
     def run_act(self):
+
         logging.info("Starting processing files...")
 
         self.move_progbar(self.execute_act_prog_holder)
@@ -567,16 +516,16 @@ class MainTab(QWidget):
         ))
         self.timer.start(1000)  # waits for 1 second
 
-
     def run_function(self, func, *args, **kwargs):
+
         if not LoopCallBack.stopped:
             func(*args, **kwargs)
         if LoopCallBack.stopped:
             self.timer.stop()
-            self.populateBtn.setHidden(False)
+            self.scanWdg.runBtn.setHidden(False)
             self.executeBtn.setHidden(False)
             self.previewBtn.setHidden(False)
-            self.stopBtn0.setHidden(True)
+            self.scanWdg.stopBtn.setHidden(True)
             self.stopBtn1.setHidden(True)
             self.stopBtn2.setHidden(True)
             self.progress_bar.setValue(100)
@@ -584,45 +533,18 @@ class MainTab(QWidget):
     def stop(self):
         self.timer.stop()
         LoopCallBack.stopped = True
-        self.populateBtn.setHidden(False)
+        self.scanWdg.runBtn.setHidden(False)
         self.executeBtn.setHidden(False)
         self.previewBtn.setHidden(False)
-        self.stopBtn0.setHidden(True)
+        self.scanWdg.stopBtn.setHidden(True)
         self.stopBtn1.setHidden(True)
         self.stopBtn2.setHidden(True)
         self.progress_bar.setValue(100)
 
     def save_act(self):
         logging.info(f"Saving config to {CFG.configfile} ...")
-        self.get_config()
+        #self.get_config()
         CFG.save_config()
-
-    def set_config(self):
-        logging.info("load config")
-        for cfg_name, wdg in self.textWdg.items():
-            wdg.setText(str(CFG.get_repr(cfg_name)))
-
-        for cfg_name, wdg in self.spinWdg.items():
-            wdg.setValue(int(CFG.get_repr(cfg_name)))
-
-        for cfg_name, wdg in self.boxWdg.items():
-            wdg.setCheckState(int(CFG.get_repr(cfg_name)))
-
-        for cfg_name, wdg in self.comboWdg.items():
-            wdg.setCurrentIndex(int(CFG.get_repr(cfg_name)))
-
-    def get_config(self):
-        for cfg_name, wdg in self.textWdg.items():
-            CFG[cfg_name] = wdg.text()
-
-        for cfg_name, wdg in self.spinWdg.items():
-            CFG[cfg_name] = wdg.value()
-
-        for cfg_name, wdg in self.boxWdg.items():
-            CFG[cfg_name] = int(wdg.checkState())
-
-        for cfg_name, wdg in self.comboWdg.items():
-            CFG[cfg_name] = (wdg.currentIndex())
 
 class LabelNLineEdit(QHBoxLayout):
     def __init__(self, parent, label, tooltip, placeholder='', fileselector=False, combobox_options='', checkbox=False, spinbox=False):
@@ -648,8 +570,6 @@ class LabelNLineEdit(QHBoxLayout):
             self.widget_list += [self.combo]
         self.widget_list += [self.textBox]
 
-        #self.textBox.textChanged.connect(self.parent.get_config)
-
         if spinbox:
             roll_box = self.add_spinbox(spinbox)
             self.widget_list += [roll_box]
@@ -668,20 +588,13 @@ class LabelNLineEdit(QHBoxLayout):
     def add_labelbox(self, labels):
 
         self.labelbox = QComboBox()
-        #self.listbox.setToolTip(tooltip)
         self.addWidget(self.labelbox)
         self.labelbox.addItems(labels)
-        def callback(val):
-            ind = self.labelbox.currentIndex()
-            CFG['exclude_toggle'] = ind
-
-        self.labelbox.activated.connect(callback)
 
     def add_checkbox(self):
 
         self.checkBox = QCheckBox()
         self.addWidget(self.checkBox)
-        self.checkBox.setCheckState(CFG['is_guess_date_from_name'])
         self.checkBox.toggled.connect(self.toggle_widgets)
 
     def add_spinbox(self, spin_label=False):
@@ -691,10 +604,6 @@ class LabelNLineEdit(QHBoxLayout):
         if spin_label:
             self.addWidget(QLabel(spin_label))
         self.addWidget(self.spinBox)
-        #self.checkBox = spin
-        def callback(val):
-            CFG['group_floating_days_nb'] = str(val)
-        self.spinBox.valueChanged.connect(callback)
 
         return self.spinBox
 
@@ -724,10 +633,9 @@ class LabelNLineEdit(QHBoxLayout):
         self.addWidget(combo)
         self.combo = combo
 
-        if CFG['gui_mode'] == GUI_SIMPLIFIED:
+        if CFG['interface.gui_mode'] == GUI_SIMPLIFIED:
             combo.addItems(options)
             combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            #combo.view().setMinimumWidth(self.combo_box.width())
             self.textBox = QLineEdit()
             self.textBox.setHidden(True)
 
@@ -750,13 +658,10 @@ class LabelNLineEdit(QHBoxLayout):
             self.textBox.setText(text)
             self.combo.clearFocus() # prevent combo to capture all signals
 
-        #callback = lambda e:self.textBox.setText(combo.currentText())
-        #combo.currentIndexChanged.connect(callback)
         combo.activated.connect(callback)
-        #combo.editTextChanged.connect(callback)
 
         # Set default values (need to load values from textBox intead of config at MainTab.__init__)
-        if CFG['gui_mode'] == GUI_SIMPLIFIED:
+        if CFG['interface.gui_mode'] == GUI_SIMPLIFIED:
             combo.setCurrentIndex(0)
             combo.currentIndexChanged.emit(0)
 
@@ -772,43 +677,10 @@ class LabelNLineEdit(QHBoxLayout):
         if directory:
             self.textBox.setText(directory)
 
-class simplePushButton(QPushButton):
-    def __init__(self, layout, callback, label="", tooltip="", color="darkGreen"):
-        super().__init__()
-
-        self.setText(label)
-        self.setToolTip(tooltip)
-        #self.setStyleSheet("#myButton { border: 2px solid blue}")
-        #self.setStyleSheet("border :2px solid darkGreen")
-        layout.addWidget(self)
-        self.clicked.connect(callback)
-
-class simpleStopButton(QPushButton):
-    def __init__(self, layout, callback):
-        super().__init__()
-
-        self.setText(_("Interrompre"))
-        layout.addWidget(self)
-        self.clicked.connect(callback)
-        self.setHidden(True)
-
-class simpleCheckBox(QCheckBox):
-    def __init__(self, parent_layout=None, label='',tooltip=''):
-        super().__init__()
-        self.setText(label)
-        self.setToolTip(tooltip)
-        if parent_layout is not None:
-            parent_layout.addWidget(self)
-
-class MyRadioButton(QRadioButton):
-    def __init__(self, parent, label='', tooltip=''):
-        super().__init__(parent)
-        self.setText(label)
-        self.setToolTip(tooltip)
-
 class DuplicateWdg(QHBoxLayout):
 
     def __init__(self, parent):
+
         super().__init__()
 
         self.duplicateBtn = simpleCheckBox(self, **DUP_RADIO_BUTTONS['duplicate']) #QCheckBox('Dupliqués : ')
@@ -823,28 +695,13 @@ class DuplicateWdg(QHBoxLayout):
         self.dup_grp.addButton(dup_mode_Btns[DUP_MD5_DATA], DUP_MD5_DATA)
         self.dup_grp.addButton(dup_mode_Btns[DUP_DATETIME], DUP_DATETIME)
 
-        dup_mode_Btns[CFG['dup_mode']].setChecked(True)
-
-        self.dup_grp.buttonClicked[int].connect(self.set_dup_mode)
-        self.duplicateBtn.stateChanged.connect(self.set_dup_toggle)
-        #ckbBtn.setCheckState(CFG['is_control_duplicates'])
-        #ckbBtn.stateChanged.emit(CFG['is_control_duplicates'])
-
-        #iself.addWidget(ckbBtn)
         self.addWidget(dup_mode_Btns[DUP_MD5_FILE])
         self.addWidget(dup_mode_Btns[DUP_MD5_DATA])
         self.addWidget(dup_mode_Btns[DUP_DATETIME])
-        self.scandestBtn = simpleCheckBox(self, **MAIN_TAB_BUTTONS['dup_is_scan_dest'])
-        self.scandestBtn.setCheckState(CFG['dup_is_scan_dest'])
-
-        #parent.boxWdg['is_control_duplicates'] = ckbBtn
-        #parent.boxWdg['dup_is_scan_dest'] = scandestBtn
-
-    def set_dup_mode(self, val):
-        CFG['dup_mode'] = val
+        self.scandestBtn = simpleCheckBox(self, **MTB['dup_is_scan_dest'])
 
     def set_dup_toggle(self, val):
-        CFG['is_control_duplicates'] = val
+        #CFG['is_control_duplicates'] = val
         self.scandestBtn.setDisabled(not val)
         for btn in self.dup_grp.buttons():
             btn.setDisabled(not val)
@@ -855,7 +712,7 @@ class fileActionWdg(QHBoxLayout):
         super().__init__()
 
         ckb_grp = QButtonGroup(parent)
-        ckb_grp.buttonClicked[int].connect(self.set_file_action)
+        #ckb_grp.buttonClicked[int].connect(self.set_file_action)
         file_action_Btns = {}
         file_action_Btns[FILE_SIMULATE] = QRadioButton(_('Simuler'), parent)
         file_action_Btns[FILE_COPY] = QRadioButton(_('Copier'), parent)
@@ -865,22 +722,19 @@ class fileActionWdg(QHBoxLayout):
         ckb_grp.addButton(file_action_Btns[FILE_COPY], FILE_COPY)
         ckb_grp.addButton(file_action_Btns[FILE_MOVE], FILE_MOVE)
 
-        file_action_Btns[CFG['file_action']].setChecked(True)
-
         self.addWidget(file_action_Btns[FILE_SIMULATE])
         self.addWidget(file_action_Btns[FILE_COPY])
         self.addWidget(file_action_Btns[FILE_MOVE])
 
-    def set_file_action(self, val):
-        CFG['file_action'] = val
+        self.btn_group = ckb_grp
 
+class GPSTab(CollapsibleFrame):
 
-class GPSTab(QWidget):
     def __init__(self):
-        super().__init__()
+
+        super().__init__(_("tags GPS"), color="blue")
 
         main_layout = QVBoxLayout()
-        frame = MyFrame(_("tags GPS"), color="blue")
 
         list_layout = QVBoxLayout()
         list_widget = CopyableListWidget()
@@ -889,12 +743,9 @@ class GPSTab(QWidget):
 
         self.populate_list()
         list_widget.setMaximumHeight(170)
-        frame.setMaximumHeight(200)
+        self.setMaximumHeight(200)
 
-        frame.setLayout(list_layout)
-        main_layout.addWidget(frame)
-
-        frame = MyFrame("", color="red")
+        main_layout.addLayout(list_layout)
         layout = QVBoxLayout()
 
         label = QLabel(GPS_HELP_TEXT)
@@ -915,9 +766,10 @@ class GPSTab(QWidget):
         btn.clicked.connect(self.run_act)
 
         layout.addLayout(btn_layout)
-        frame.setLayout(layout)
-        main_layout.addWidget(frame)
+        #frame.setLayout(layout)
+        main_layout.addLayout(layout)
         self.setLayout(main_layout)
+        self.collapse(True)
 
     def run_act(self):
         logging.info("Starting processing files...")
@@ -937,8 +789,8 @@ class GPSTab(QWidget):
             self.listWdg.addItem(item)
         self.listWdg.repaint()
 
-
 class CopyableListWidget(QListWidget):
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -985,156 +837,6 @@ class ComboBox(QComboBox):
         # Connect QComboBox signal to combo_changed() slot
         self.currentIndexChanged.connect(combo_changed)
 
-
-class PreviewCollapsibleFrame(QFrame):
-    widget_list = []
-    def __init__(self, label, color, *args, parent=None, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.setFrameShape(QFrame.StyledPanel)
-        self.setObjectName(f"myFrame_{color}")
-        self.setStyleSheet(
-            f"#myFrame_{color}" + " { padding: 15px; border: 2px solid " + color + "}"
-        )
-        self.setContentsMargins(6, 14, 6, 1)
-        self.setToolTip("Afficher l'aperçu")
-
-        self.layout = QHBoxLayout()
-        self.widget = QWidget()
-        self.layout.addWidget(self.widget)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
-
-        if label:
-            MyFrame.widget_list += [self]
-            label_frame = QLabel(self)
-            label_frame.setObjectName(f"myLabel_{color}")
-            label_frame.setStyleSheet(f"padding: 10px; color:{color}")
-            label_frame.mousePressEvent = self.label_clicked
-            self.label = label_frame
-            self.label_txt = label
-            self.label.setText("\n".join(list("◀")))
-        super().setLayout(self.layout)
-
-    def setLayout(self, *args, **kwargs):
-
-        self.widget.setLayout(*args, **kwargs)
-
-    def setWidget(self, widget):
-
-        self.widget = widget
-        self.layout.addWidget(self.widget)
-
-    def collapse(self, is_collasped=True):
-
-        if not is_collasped:
-            self.widget.setVisible(True)
-            self.label.setText("▶  " + self.label_txt)
-            self.setToolTip("Cacher l'aperçu")
-            self.setMinimumSize(400,200)
-            self.setMaximumSize(2000,2000)
-            self.parent().parent().parent().resize(1000,790)
-        else:
-            self.widget.setVisible(False)
-            self.label.setText("◀")
-            self.setToolTip("Afficher l'aperçu")
-            self.setMinimumSize(30,200)
-            self.setMaximumSize(30,2000)
-            self.parent().parent().parent().resize(400,790)
-        self.adjustSize()
-
-        self.setContentsMargins(6, 14, 6, 1)
-
-    def label_clicked(self, event):
-
-        if self.widget.isVisible():
-            self.collapse(True)
-        else :
-            self.collapse(False)
-
-    @classmethod
-    def collapse_all(cls):
-        for wdg in cls.widget_list:
-            wdg.collapse(True)
-
-    @classmethod
-    def uncollapse_all(cls):
-        for wdg in cls.widget_list:
-            wdg.collapse(False)
-
-
-class MyFrame(QFrame):
-    widget_list = []
-    def __init__(self, label, *args, color='blue', parent=None, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.setFrameShape(QFrame.StyledPanel)
-        self.setObjectName(f"myFrame_{color}")
-        self.setStyleSheet(
-            f"#myFrame_{color}" + " { padding: 15px 15px 15px 15px; border: 2px solid " + color + "}"
-        )
-        self.adjustSize()
-        self.setContentsMargins(6, 14, 6, 6)
-
-        self.layout = QHBoxLayout()
-        self.widget = QWidget()
-        self.layout.addWidget(self.widget)
-
-        MyFrame.widget_list += [self]
-        label_frame = QLabel(self)
-        label_frame.setObjectName(f"myLabel_{color}")
-        label_frame.setStyleSheet(f"padding: 40px 10px; color:{color}")
-        label_frame.setMinimumWidth(500)
-        #label_frame.adjustSize()
-        label_frame.mousePressEvent = self.label_clicked
-        self.label = label_frame
-        self.label_txt = label
-        self.label.setText("▼  " + self.label_txt)
-        super().setLayout(self.layout)
-
-    def setLayout(self, *args, **kwargs):
-
-        self.widget.setLayout(*args, **kwargs)
-
-    def collapse(self, is_collasped=True):
-
-        #self.widget.setVisible(not self.widget.isVisible())
-
-        if not is_collasped:
-            self.widget.setVisible(True)
-            self.label.setText("▼  " + self.label_txt)
-            self.setFixedHeight(self.layout.sizeHint().height() + 15)
-            #self.setMinimumHeight(70)
-            #self.adjustSize()
-            #self.setFixedHeight(self.layout.sizeHint().height())
-        else:
-            self.widget.setVisible(False)
-            self.label.setText("▶  " + self.label_txt)
-            self.setFixedHeight(self.layout.sizeHint().height() + 15)
-            #self.setMinimumHeight(30)
-            #self.setMaximumHeight(30)
-
-        self.adjustSize()
-        self.setContentsMargins(6, 14, 6, 1)
-
-    def label_clicked(self, event):
-
-        if self.widget.isVisible():
-            self.collapse(True)
-        else :
-            self.collapse(False)
-
-    @classmethod
-    def collapse_all(cls):
-        for wdg in cls.widget_list:
-            wdg.collapse(True)
-
-    @classmethod
-    def uncollapse_all(cls):
-        for wdg in cls.widget_list:
-            wdg.collapse(False)
-
-
-
 def OptionBool(QHBoxLayout):
     def __init__(self, label, tooltip):
         super().__init__()
@@ -1149,19 +851,11 @@ class ItemWidget(QListWidgetItem):
     def __init__(self, text, parent=None):
         super().__init__(parent)
         self.setText(text)
-        # self.setSizeHint(QtCore.QSize(100, 48))
 
-class ListExtsTab(MyFrame):
+class ListExtsTab(CollapsibleFrame):
     def __init__(self):
 
         super().__init__(_("Extensions"), color='blue')
-        #self.setTabPosition(QTabWidget.West)
-        #main_layout = QVBoxLayout(self)
-        #tab = QTabWidget()
-
-        ###### Extentions ########
-        # add the list with toggable buttons to list extentions
-        #frame = MyFrame(_("Extensions"), 'blue')
         list_layout = QVBoxLayout()
         list_widget = QListWidget()
         self.listextWdg = list_widget
@@ -1173,21 +867,15 @@ class ListExtsTab(MyFrame):
         size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.listextWdg.setSizePolicy(size_policy)
 
-        #list_btn = QPushButton(_("Charger depuis les Fichiers"))
-        #list_btn.clicked.connect(self.get_ext_list)
-
-        #list_layout.addWidget(list_btn)
         list_layout.addWidget(list_widget)
 
         self.setLayout(list_layout)
-        #self.addTab(frame, 'Extensions')
-        #main_layout.addWidget(frame)
+        self.collapse(True)
 
     def validate_ext(self):
         self.user_choice_extentions = []
         for i in range(self.listextWdg.count()):
             item = self.listextWdg.item(i)
-            #item.setSizeHint(QtCore.QSize(100, 48))
             if item.checkState():
                 self.user_choice_extentions.append(item.text().strip("."))
 
@@ -1196,7 +884,7 @@ class ListExtsTab(MyFrame):
 
     def get_ext_list(self):
         self.listextWdg.clear()
-        exts = list_available_exts(CFG["in_dir"], recursive=CFG["is_recursive"])
+        exts = list_available_exts(CFG["source.src_dir"], recursive=CFG["source.src_is_recursive"])
         for ext in exts:
             # item = QListWidgetItem(ext)
             item = ItemWidget(ext)
@@ -1206,11 +894,9 @@ class ListExtsTab(MyFrame):
             self.listextWdg.addItem(item)
         self.listextWdg.repaint()
 
-class ListCameraTab(MyFrame):
+class ListCameraTab(CollapsibleFrame):
     def __init__(self):
         super().__init__(_("Appareil"), color='blue')
-        ######## Appareil ##############
-        # add the list with toggable buttons to list extentions
         list_layout = QVBoxLayout()
         list_widget = QListWidget()
         self.listappWdg = list_widget
@@ -1222,20 +908,15 @@ class ListCameraTab(MyFrame):
         size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.listappWdg.setSizePolicy(size_policy)
 
-        #list_btn = QPushButton(_("Charger depuis les Fichiers"))
-        #list_btn.clicked.connect(self.get_camera_list)
-        #list_layout.addWidget(list_btn)
         list_layout.addWidget(list_widget)
         self.setLayout(list_layout)
-        #self.addTab(frame, 'Appareil')
-        #main_layout.addWidget(frame)
+        self.collapse(True)
 
     def validate_cam(self):
-        ## APPAREIL PHOTO ###
+
         user_choice_cameras = []
         for i in range(self.listappWdg.count()):
             item = self.listappWdg.item(i)
-            #item.setSizeHint(QtCore.QSize(100, 48))
             if item.checkState():
                 text = item.text().strip()
                 user_choice_cameras.append(text)
@@ -1246,7 +927,7 @@ class ListCameraTab(MyFrame):
     def get_camera_list(self):
 
         self.listappWdg.clear()
-        cameras = list_available_camera_model(CFG["in_dir"], CFG['extentions'], recursive=CFG['is_recursive'])
+        cameras = list_available_camera_model(CFG["source.src_dir"], CFG['source.src_extentions'], recursive=CFG['source.src_is_recursive'])
         for camera in cameras:
             # item = QListWidgetItem(ext)
             item = ItemWidget(camera)
@@ -1256,40 +937,27 @@ class ListCameraTab(MyFrame):
             self.listappWdg.addItem(item)
         self.listappWdg.repaint()
 
-
-class ListMetaTab(MyFrame):
+class ListMetaTab(CollapsibleFrame):
     def __init__(self):
         super().__init__(_("Métadonnées"), color='blue')
-        ################ Metadatas #######################
-        #frame = MyFrame(_("Métadonnées"), 'blue')
         list_layout = QVBoxLayout()
         list_widget = CopyableListWidget()
         self.listmetaWdg = list_widget
         self.listmetaWdg.setAlternatingRowColors(True)
 
         btn_layout = QHBoxLayout()
-        #list_btn = QPushButton(_("Charger depuis les Fichiers"))
         self.choose_box = ComboBox(self.show_tag_list)
-        #btn_layout.addWidget(list_btn)
         btn_layout.addWidget(self.choose_box)
         list_layout.addLayout(btn_layout)
 
         list_layout.addWidget(list_widget)
-        #list_btn.clicked.connect(self.get_tag_list)
         self.setLayout(list_layout)
-        #self.addTab(frame, 'Métadonnées')
-        #main_layout.addWidget(frame)
-
-        #self.validate_btn = QPushButton("Valider")
-        #self.validate_btn.clicked.connect(self.validate_act)
-        #main_layout.addWidget(self.validate_btn)
-
-        #self.setLayout(main_layout)
+        self.collapse(True)
 
     def get_tag_list(self):
 
         self.exifs_lists = list_available_tags(
-            CFG["in_dir"], CFG["extentions"], recursive=CFG['is_recursive']
+            CFG["source.src_dir"], CFG["source.src_extentions"], recursive=CFG['source.src_is_recursive']
         )
 
         option = self.choose_box.currentText()
@@ -1346,7 +1014,7 @@ class ListMetaDataTab_old(QWidget):
     def get_tag_list(self):
 
         self.exifs_lists = list_available_tags(
-            CFG["in_dir"], CFG["extentions"], recursive=CFG['is_recursive']
+            CFG["source.src_dir"], CFG["source.src_extentions"], recursive=CFG['source.src_is_recursive']
         )
 
         option = self.choose_box.currentText()
@@ -1416,45 +1084,26 @@ class CounterWdg(QWidget):
         self.nb_files.setText(str(counter.nb_files))
         self.duplicates.setText(str(counter.duplicates))
 
-class DateTab(MyFrame):
+class DateTab(CollapsibleFrame):
     def __init__(self):
         super().__init__(_("Codes de formatage des dates"))
 
+        self.collapse(True)
         main_layout = QVBoxLayout(self)
-
-        #frame = MyFrame(self, frameShape=QFrame.StyledPanel)
-        ##label_frame = QLabel(_("Codes de formatage des dates"), frame)
-        #frame.setObjectName("myFrame")
-        #label_frame.setObjectName("myLabel")
-        #frame.setStyleSheet("#myFrame { padding: 15px; border: 2px solid blue}")
-        #label_frame.setStyleSheet("padding: 10px; color:blue")
-        #list_layout = QVBoxLayout()
-        #list_widget = QListWidget()
 
         strftime_help = open(STRFTIME_HELP_PATH).read()
         text_widget = QTextEdit()
-        #text_widget.setTextFormat(Qt.MarkdownText)
         text_widget.setHtml(strftime_help)
-        #self.listWdg = list_widget
         main_layout.addWidget(text_widget)
-        #self.get_tag_list()
-        #frame.setLayout(list_layout)
-        #main_layout.addWidget(frame)
 
         self.setLayout(main_layout)
 
     def link_clicked(self, url):
         QDesktopServices.openUrl(url)
 
-#    def get_tag_list(self):
-#
-#        for tag in DATE_STRFTIME_FORMAT:
-#            item = QListWidgetItem(tag)
-#            self.listWdg.addItem(item)
-
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
+

@@ -382,12 +382,16 @@ class ImageMetadataDB:
         #if excluded_dirs and excluded_dirs[0]:
             if not exclude['is_regex']:
                 excluded_dirs = [os.path.join(src_dir, f) for f in exclude['dirs']]
+                #for excl in excluded_dirs:
+                if exclude['toggle'] == DIR_EXCLUDE:
+                    #cmd += " " + f"AND folder NOT LIKE ? || '%'"
+                    cmd += " AND NOT ( folder LIKE ? || '%' " + "OR folder LIKE ? || '%' " * (len(excluded_dirs)-1)
+                elif exclude['toggle'] == DIR_INCLUDE:
+                    #cmd += " " + f"AND folder LIKE ? || '%'"
+                    cmd += " AND ( folder LIKE ? || '%' " + "OR folder LIKE ? || '%' " * (len(excluded_dirs)-1)
                 for excl in excluded_dirs:
-                    if exclude['toggle'] == DIR_EXCLUDE:
-                        cmd += " " + f"AND folder NOT LIKE ? || '%'"
-                    elif exclude['toggle'] == DIR_INCLUDE:
-                        cmd += " " + f"AND folder LIKE ? || '%'"
                     tup += ('/' + excl.strip('/'),)
+                cmd += ') '
             else:
                 if exclude['toggle'] == DIR_EXCLUDE:
                     cmd += " " + 'AND NOT MATCH(?,folder)'
@@ -405,6 +409,7 @@ class ImageMetadataDB:
             cmd += ' ' + 'GROUP BY date'
 
         c= self.conn.cursor()
+        print(cmd,'\n',tup)
         c.execute(cmd, tup)
 
         while row := c.fetchone():
