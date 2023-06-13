@@ -1,5 +1,3 @@
-
-
 LOCATION_TYPES = {
     "continent": ["continent"],
     "country": ["country"],
@@ -59,4 +57,3 @@ LOCATION_TYPES = {
     ],
     "postcode": ["postcode"],
 }
-

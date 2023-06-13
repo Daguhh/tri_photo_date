@@ -1,25 +1,24 @@
-
-#try:
+# try:
 #    from .exif import ExifTags
 #    from .tags_description import TAG_DESCRIPTION
 #    from .usefull_tags import USEFULL_TAG_DESCRIPTION
-#except ModuleNotFoundError:
+# except ModuleNotFoundError:
 from tri_photo_date.exif.exif import ExifTags, NoExifError
 from tri_photo_date.exif.tags_description import TAG_DESCRIPTION
 from tri_photo_date.exif.usefull_tags import USEFULL_TAG_DESCRIPTION
 
 
 EXIF_DATE_FIELD = {
-    "date_time_original" : "Exif.Photo.DateTimeOriginal",
-    "date_time_digitized" : "Exif.Photo.DateTimeDigitized",
-    "date_time" : "Exif.Image.DateTime",
+    "date_time_original": "Exif.Photo.DateTimeOriginal",
+    "date_time_digitized": "Exif.Photo.DateTimeDigitized",
+    "date_time": "Exif.Image.DateTime",
 }
 
 EXIF_GPS_FIELD = {
-        "latitude_ref" : "Exif.GPSInfo.GPSLatitudeRef",
-        "latitude" : "Exif.GPSInfo.GPSLatitude",
-        "longitude_ref" : "Exif.GPSInfo.GPSLongitudeRef",
-        "longitude" : "Exif.GPSInfo.GPSLongitude",
+    "latitude_ref": "Exif.GPSInfo.GPSLatitudeRef",
+    "latitude": "Exif.GPSInfo.GPSLatitude",
+    "longitude_ref": "Exif.GPSInfo.GPSLongitudeRef",
+    "longitude": "Exif.GPSInfo.GPSLongitude",
 }
 
 """
@@ -33,20 +32,18 @@ EXIF_GPS_FIELD = {
 """
 
 EXIF_LOCATION_FIELD = {
-    "city" : "Iptc.Application2.City",
-    "road" : "Iptc.Application2.SubLocation",
-    "region" : "Iptc.Application2.ProvinceState",
-    "country_code" : "Iptc.Application2.CountryCode",
-    "country" : "Iptc.Application2.CountryName",
-    "display_name" : "Iptc.Application2.LocationName"
+    "city": "Iptc.Application2.City",
+    "road": "Iptc.Application2.SubLocation",
+    "region": "Iptc.Application2.ProvinceState",
+    "country_code": "Iptc.Application2.CountryCode",
+    "country": "Iptc.Application2.CountryName",
+    "display_name": "Iptc.Application2.LocationName",
 }
 
-EXIF_CAMERA_FIELD = {
-    "camera" : 'Exif.Image.Model'
-}
+EXIF_CAMERA_FIELD = {"camera": "Exif.Image.Model"}
 
 
-#LOCATION_TAGS = [
+# LOCATION_TAGS = [
 #    "Iptc.Application2.City",
 #    "Iptc.Application2.SubLocation",
 #    "Iptc.Application2.ProvinceState",
@@ -54,7 +51,4 @@ EXIF_CAMERA_FIELD = {
 #    "Iptc.Application2.CountryName",
 #    "Iptc.Application2.LocationCode",
 #    "Iptc.Application2.LocationName",
-#]
-
-
-
+# ]

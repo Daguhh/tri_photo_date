@@ -1,4 +1,3 @@
-
 DATE_STRFTIME_FORMAT = """
 %a 	Sun 	Weekday as locale’s abbreviated name.
 %A 	Sunday 	Weekday as locale’s full name.
@@ -35,4 +34,6 @@ DATE_STRFTIME_FORMAT = """
 %% 	% 	A literal '%' character.
 
 Source : https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
-""".split("\n")
+""".split(
+    "\n"
+)

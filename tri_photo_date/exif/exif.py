@@ -10,13 +10,15 @@ import traceback
 
 import pyexiv2
 
+
 class NoExifError(Exception):
     def __init__(self, message, error_code):
         super().__init__(message)
         self.error_code = error_code
 
+
 def strftime_to_regex(fmt):
-    repl= {
+    repl = {
         "%Y": r"\d{4}",
         "%m": r"\d{2}",
         "%d": r"\d{2}",
@@ -26,6 +28,7 @@ def strftime_to_regex(fmt):
     }
     pattern = re.sub(r"%[a-zA-Z]", lambda x: repl[x.group()], fmt)
     return pattern
+
 
 class ExifTags(dict):
     def __init__(self, im_path):
@@ -38,7 +41,7 @@ class ExifTags(dict):
             exifs.update(self.im.read_iptc())
             exifs.update(self.im.read_xmp())
         except UnicodeDecodeError:
-            print(f'Erro with file at {im_path}')
+            print(f"Erro with file at {im_path}")
             raise NoExifError("Unicode error", 1)
         except Exception as e:
             print(e)
@@ -51,11 +54,9 @@ class ExifTags(dict):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-
         self.im.close()
 
     def _clear_all_metadatas(self):
-
         self.im.clear_exif()
         self.im.clear_iptc()
         self.im.clear_xmp()
@@ -73,18 +74,16 @@ class ExifTags(dict):
 
     @staticmethod
     def add_location_to_iptc(im_str, address_dct):
-
         with ExifTags(out_str) as im_exif:
             try:
                 im_exif._add_location_to_iptc(location)
             except NoExifError as e:
                 print("Issue while loading gps, skipping", e)
 
-
     @staticmethod
-    def format_tag(out_fmt, placeholder, value=''):
+    def format_tag(out_fmt, placeholder, value=""):
         # import ipdb; ipdb.set_trace()
-        #out_fmt = out_fmt.replace(tag_key, tag_value)
+        # out_fmt = out_fmt.replace(tag_key, tag_value)
         if not value:
             value = "non_def"
 
@@ -108,8 +107,7 @@ class ExifTags(dict):
 
     @staticmethod
     def get_date_from_name(date_fmt, in_str):
-
-        date_str = ''
+        date_str = ""
 
         # format as in Exifs
         out_fmt = "%Y:%m:%d %H:%M:%S"
@@ -122,9 +120,8 @@ class ExifTags(dict):
             try:
                 date = datetime.strptime(date_str, date_fmt).date()
             except ValueError as e:
-                #logging.WARNING("Wrong format for parsing date from filename :", in_str)
-                return ''
+                # logging.WARNING("Wrong format for parsing date from filename :", in_str)
+                return ""
             date_str = date.strftime(out_fmt)
 
         return date_str
-

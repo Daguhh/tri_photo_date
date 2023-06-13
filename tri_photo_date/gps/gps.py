@@ -9,11 +9,12 @@ import time
 import logging
 
 ##### Prevent outdated ssl certificate error on some systems
-import certifi # Prevent error on system with outdated ssl certificates
-import ssl # Prevent error on system with outdated ssl certificates
+import certifi  # Prevent error on system with outdated ssl certificates
+import ssl  # Prevent error on system with outdated ssl certificates
 
 ctx = ssl.create_default_context(cafile=certifi.where())
 import geopy.geocoders
+
 geopy.geocoders.options.default_ssl_context = ctx
 
 from geopy.geocoders import Nominatim
@@ -22,54 +23,59 @@ from geopy.distance import distance as GEODistance
 from tri_photo_date.exif import ExifTags, EXIF_LOCATION_FIELD, EXIF_GPS_FIELD
 from tri_photo_date.utils.config_paths import CONFIG_DIR
 from tri_photo_date.gps.gps_constants import LOCATION_TYPES
+
 # except ImportError:
 #     from tri_photo_date.exif import ExifTags, EXIF_LOCATION_FIELD, EXIF_GPS_FIELD
 #     from tri_photo_date.utils.config_loader import CONFIG_DIR, CONFIG
 #     from tri_photo_date.gps.gps_constants import LOCATION_TYPES
 
-def set_global_config(CONFIG):
 
+def set_global_config(CONFIG):
     global IS_DEBUG
-    IS_DEBUG = CONFIG["options.gps.gps_debug"] # False
+    IS_DEBUG = CONFIG["options.gps.gps_debug"]  # False
 
     global GPS_SIMULATE
-    GPS_SIMULATE = CONFIG['options.gps.gps_simulate'] # False
+    GPS_SIMULATE = CONFIG["options.gps.gps_simulate"]  # False
 
     global GPS_ACCURACY
-    GPS_ACCURACY = CONFIG['options.gps.gps_accuracy'] # 2 km
+    GPS_ACCURACY = CONFIG["options.gps.gps_accuracy"]  # 2 km
 
     global GPS_WAIT
-    GPS_WAIT = CONFIG['options.gps.gps_wait'] # in seconds
+    GPS_WAIT = CONFIG["options.gps.gps_wait"]  # in seconds
+
 
 SQLITE_CACHE_PATH = CONFIG_DIR / "gps_cache.db"
 
-#try:
+# try:
 #    from .gps_returns_examples import SaintEtienne, SaintRemi, London
-#except ModuleNotFoundError:
+# except ModuleNotFoundError:
 #    from gps_returns_examples import SaintEtienne, SaintRemi, London
+
 
 def DEBUG(func):
     def wrapper(*args, **kwargs):
-        if IS_DEBUG : print(f"Calling function {func.__name__}")
+        if IS_DEBUG:
+            print(f"Calling function {func.__name__}")
         result = func(*args, **kwargs)
-        if IS_DEBUG : print(f"Function {func.__name__} returned {result}")
+        if IS_DEBUG:
+            print(f"Function {func.__name__} returned {result}")
         return result
 
     return wrapper
 
+
 @DEBUG
 def get_image_gps_location(im_exif: dict) -> dict:
-
     # Look for existing location datas
     try:
-        #tags = im.read_iptc()
+        # tags = im.read_iptc()
         if any(loc in im_exif for loc in EXIF_LOCATION_FIELD.values()):
             logging.info("Photo already has location metadatas")
             address_tags = {k: im_exif.get(k, "") for k in EXIF_LOCATION_FIELD.values()}
             return address_tags
 
         # Get location datas
-        #tags = im.read_exif()
+        # tags = im.read_exif()
 
         lat_lon = getGPS(im_exif)
         if lat_lon is None:
@@ -81,6 +87,7 @@ def get_image_gps_location(im_exif: dict) -> dict:
 
     # im.modify_iptc(address_tags)
     return address_tags
+
 
 @DEBUG
 def add_tags_to_image(im_path):
@@ -98,9 +105,11 @@ def add_tags_to_image(im_path):
 
     return address_tags
 
+
 @DEBUG
 def add_tags_to_image_in_folder(fd_path):
     pass
+
 
 # barrowed from
 # https://gist.github.com/snakeye/fdc372dbf11370fe29eb
@@ -118,6 +127,7 @@ def _convert_to_degress(value):
 
     return d + (m / 60.0) + (s / 3600.0)
 
+
 @DEBUG
 def frac2int(frac: str) -> int:
     try:
@@ -126,11 +136,13 @@ def frac2int(frac: str) -> int:
     except ZeroDivisionError as e:
         raise NoGpsDataError("Invalid GPS data : ", frac)
 
+
 @DEBUG
 def exifgps2degree(exif_value):
     degs, mins, secs = (frac2int(x) for x in (exif_value.split(" ")))
     degrees = sum(x / 60**i for i, x in enumerate((degs, mins, secs)))
     return degrees
+
 
 class NoGpsDataError(Exception):
     def __init__(self, message="", data=None):
@@ -166,6 +178,7 @@ def getGPS(tags):
         return
 
     return lat_value, lon_value
+
 
 def cache_gps_data(func):
     @wraps(func)
@@ -209,6 +222,7 @@ def cache_gps_data(func):
 
     return wrapper
 
+
 @DEBUG
 @cache_gps_data
 def gps2address(lat, lon):
@@ -222,14 +236,16 @@ def gps2address(lat, lon):
         lat_lon_str = "{}, {}".format(lat, lon)
         location = geolocator.reverse(lat_lon_str)
         dct = location.raw
-        logging.info('Ask OpenStreetMap server')
+        logging.info("Ask OpenStreetMap server")
         time.sleep(GPS_WAIT)
     else:
         logging.info("Simulate gps")
         from .gps_results import example1
+
         dct = example1
 
     return dct
+
 
 class LocationDict(dict):
     def __init__(self, *args, **kwargs):
@@ -247,15 +263,15 @@ class LocationDict(dict):
 
         return super().__getitem__(tag)
 
+
 @DEBUG
 def address2tag(address_dct):
-
     fd = address_dct["display_name"]
     d = LocationDict(address_dct["address"])
 
     tags = {}
 
-    tags[EXIF_LOCATION_FIELD['city']] = d["city"]
+    tags[EXIF_LOCATION_FIELD["city"]] = d["city"]
     tags[EXIF_LOCATION_FIELD["road"]] = d["road"]
     tags[EXIF_LOCATION_FIELD["region"]] = d["region"]
     tags[EXIF_LOCATION_FIELD["country_code"]] = d["country_code"]

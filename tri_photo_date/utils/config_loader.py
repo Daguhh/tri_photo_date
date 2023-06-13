@@ -5,10 +5,15 @@ from pathlib import Path
 from configparser import ConfigParser
 import logging
 
-#try:
+# try:
 #    from .config_paths import CONFIG_DIR, APP_NAME
-#except ModuleNotFoundError:
-from tri_photo_date.cli.cli_argparser import cli_arguments,CLI_DUMP,CLI_DUMP_DEFAULT,CLI_LOAD
+# except ModuleNotFoundError:
+from tri_photo_date.cli.cli_argparser import (
+    cli_arguments,
+    CLI_DUMP,
+    CLI_DUMP_DEFAULT,
+    CLI_LOAD,
+)
 from tri_photo_date.utils.config_paths import CONFIG_PATH, APP_NAME
 
 DEFAULT_CONFIG = """
@@ -18,6 +23,7 @@ scan_is_recursive = 0
 scan_is_md5_file = 0
 scan_is_md5_data = 0
 scan_is_meta = 0
+scan_is_use_cached_datas = 0
 
 [SOURCE]
 src_dir =
@@ -75,8 +81,6 @@ accepted_formats = jpg, jpeg, png, webp, bmp, ico, tiff, heif, heic, svg, raw, a
 """
 
 
-
-
 cli_mode, config_path = cli_arguments()
 
 if cli_mode == CLI_DUMP:
@@ -84,7 +88,7 @@ if cli_mode == CLI_DUMP:
     sys.exit(0)
 
 if cli_mode == CLI_DUMP_DEFAULT:
-    with open(str(config_path), 'w') as f:
+    with open(str(config_path), "w") as f:
         f.write(DEFAULT_CONFIG)
     sys.exit(0)
 
@@ -95,12 +99,12 @@ if cli_mode == CLI_LOAD:
 CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
-LANG_LIST = ['fr', 'en']
+LANG_LIST = ["fr", "en"]
 
 FILE_ACTION_TXT = {
-    1 : "Simulation du déplacement de {} vers {}",
-    2 : "Copie du fichier {} vers {}",
-    3 : "Déplacement du fichier {} vers {}"
+    1: "Simulation du déplacement de {} vers {}",
+    2: "Copie du fichier {} vers {}",
+    3: "Déplacement du fichier {} vers {}",
 }
 FILE_SIMULATE = 1
 FILE_COPY = 2
@@ -117,87 +121,123 @@ DUP_DATETIME = 3
 DIR_EXCLUDE = 0
 DIR_INCLUDE = 1
 
-STRING = ('dest_rel_dir', 'dest_filename', 'grp_display_fmt', 'name_guess_fmt', 'gui_size', 'gui_lang', 'exif_user_tags', 'non_def')
+STRING = (
+    "dest_rel_dir",
+    "dest_filename",
+    "grp_display_fmt",
+    "name_guess_fmt",
+    "gui_size",
+    "gui_lang",
+    "exif_user_tags",
+    "non_def",
+)
 PATH = ("src_dir", "dest_dir", "scan_dir")
-INTEGER = ('src_exclude_toggle', 'action_mode', 'dup_mode', 'grp_floating_nb', 'gps_wait', 'gui_mode')
-BOOLEAN = ('scan_is_recursive', 'scan_is_md5_file', 'scan_is_md5_data', 'scan_is_meta', 'src_is_recursive', 'src_is_exclude_dir_regex', 'dup_is_control', 'dup_is_scan_dest', 'opt_is_delete_metadatas', 'opt_is_date_from_filesystem', 'grp_is_group', 'name_is_guess', 'gps_is_gps', 'gps_debug', 'gps_simulate', 'verbose', 'unidecode')
-LISTE = ('src_extentions', 'src_cameras', 'src_excluded_dirs', 'accepted_formats')
-FLOAT = ('gps_accuracy',)
+INTEGER = (
+    "src_exclude_toggle",
+    "action_mode",
+    "dup_mode",
+    "grp_floating_nb",
+    "gps_wait",
+    "gui_mode",
+)
+BOOLEAN = (
+    "scan_is_recursive",
+    "scan_is_md5_file",
+    "scan_is_md5_data",
+    "scan_is_meta",
+    "scan_is_use_cached_datas",
+    "src_is_recursive",
+    "src_is_exclude_dir_regex",
+    "dup_is_control",
+    "dup_is_scan_dest",
+    "opt_is_delete_metadatas",
+    "opt_is_date_from_filesystem",
+    "grp_is_group",
+    "name_is_guess",
+    "gps_is_gps",
+    "gps_debug",
+    "gps_simulate",
+    "verbose",
+    "unidecode",
+)
+LISTE = ("src_extentions", "src_cameras", "src_excluded_dirs", "accepted_formats")
+FLOAT = ("gps_accuracy",)
 
 
-
-
-def repr2value(k,v): # for python
+def repr2value(k, v):  # for python
     a = k
-    k = k.split('.')[-1]
+    k = k.split(".")[-1]
     if k in STRING:
         pass
     elif k in PATH:
         v = Path(v)
-    elif k in BOOLEAN :
+    elif k in BOOLEAN:
         v = int(v)
-    elif k in LISTE :
+    elif k in LISTE:
         v = tuple(c.strip() for c in v.split(","))
-    elif k in INTEGER :
+    elif k in INTEGER:
         v = int(v)
-    elif k in FLOAT :
+    elif k in FLOAT:
         v = float(v)
     else:
         logging.info(f"This config is not defined : {k} : {v}")
 
-    k=a
+    k = a
     return k, v
 
-def value2repr(k,v): # for pyqt
+
+def value2repr(k, v):  # for pyqt
     a = k
-    k = k.split('.')[-1]
-    if k in STRING :
+    k = k.split(".")[-1]
+    if k in STRING:
         pass
-    elif k in PATH :
+    elif k in PATH:
         v = str(v)
-    elif k in BOOLEAN :
+    elif k in BOOLEAN:
         v = int(v)
-    elif k in LISTE :
-        v = ','.join(v) #tuple(c.strip() for c in v.split(","))
-    elif k in INTEGER :
+    elif k in LISTE:
+        v = ",".join(v)  # tuple(c.strip() for c in v.split(","))
+    elif k in INTEGER:
         v = v
-    elif k in FLOAT :
+    elif k in FLOAT:
         v = str(v)
     else:
         logging.info(f"This config is not defined : {k} : {v}")
 
-    k=a
+    k = a
     return k, v
 
-def value2conf(k,v): # for config
+
+def value2conf(k, v):  # for config
     a = k
-    k = k.split('.')[-1]
-    if k in STRING :
+    k = k.split(".")[-1]
+    if k in STRING:
         pass
-    elif k in PATH :
+    elif k in PATH:
         v = str(v)
-    elif k in BOOLEAN :
+    elif k in BOOLEAN:
         v = str(v)
-    elif k in LISTE :
-        v = ','.join(v) #tuple(c.strip() for c in v.split(","))
-    elif k in INTEGER :
+    elif k in LISTE:
+        v = ",".join(v)  # tuple(c.strip() for c in v.split(","))
+    elif k in INTEGER:
         v = str(v)
-    elif k in FLOAT :
+    elif k in FLOAT:
         v = str(v)
     else:
         logging.info(f"This config is not defined : {k} : {v}")
 
-    k=a
+    k = a
     return k, v
+
 
 class NoConfigFileError(Exception):
-
     def __str__(self):
         print(
-            'There is no configuration file for path you gave',
-            "Please run 'tri_photo_date --cli --dump <path>' to start from actual configuration"
+            "There is no configuration file for path you gave",
+            "Please run 'tri_photo_date --cli --dump <path>' to start from actual configuration",
         )
         sys.exit(1)
+
 
 class ConfigDict(dict):
     def __init__(self, config_path=None):
@@ -227,7 +267,7 @@ class ConfigDict(dict):
 
     def __getitem__(self, k):
         if isinstance(k, tuple):
-            k = '.'.join(k)
+            k = ".".join(k)
 
         if k not in self.keys():
             logging.info(f"No entry for '{k}' in config")
@@ -239,10 +279,10 @@ class ConfigDict(dict):
 
     def __setitem__(self, k, v):
         if isinstance(k, tuple):
-            k = '.'.join(k)
-        #k = ','.join(x.lower() for x in k)
-        #self.repr_dct[k] = v
-        k,v = repr2value(k,v)
+            k = ".".join(k)
+        # k = ','.join(x.lower() for x in k)
+        # self.repr_dct[k] = v
+        k, v = repr2value(k, v)
 
         super().__setitem__(k, v)
 
@@ -251,19 +291,18 @@ class ConfigDict(dict):
         self.config = ConfigParser(interpolation=None)
         self.config.read(self.configfile)
 
-        #self.repr_dct = {}
+        # self.repr_dct = {}
 
         for section in self.config.sections():
             items = self.config.items(section)
             for key, value in items:
-                self['.'.join((section.lower(), key))] = value
-        #for k, v in self.config.read_dict():
-            #self[k] = v
+                self[".".join((section.lower(), key))] = value
+        # for k, v in self.config.read_dict():
+        # self[k] = v
 
     def save_config(self):
-
         for key, value in self.items():
-            section, param = key.rsplit('.',1)
+            section, param = key.rsplit(".", 1)
             _, value = value2conf(param, value)
             self.config[section.upper()][param] = value
 
@@ -272,14 +311,15 @@ class ConfigDict(dict):
 
     def get_repr(self, k):
         if isinstance(k, tuple):
-            k = '.'.join(k)
-        if k not in self:#config['DEFAULT']:
+            k = ".".join(k)
+        if k not in self:  # config['DEFAULT']:
             logging.info(f"No entry for '{k}' in config")
             logging.info("Regenerating config file...")
             self.generate_config()
             self.load_config()
 
-        k,v = value2repr(k,self[k])
-        return  v#.config["DEFAULT"][k]
+        k, v = value2repr(k, self[k])
+        return v  # .config["DEFAULT"][k]
+
 
 CONFIG = ConfigDict()
