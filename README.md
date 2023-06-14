@@ -18,7 +18,7 @@ Depending on the options enabled, the program achieves in order:
 4. Generation of a new path to record photos 
 5. Copy of the photo
 
-<img src="docs/screen_advanced_mode_main_tab_n_preview.png" width="300">
+<img src="docs/screen_advanced_mode_main_tab_n_preview.png" width="400">
 
 ## Install
 
@@ -58,8 +58,6 @@ python3 tri_photo_date
 
 ### Simplified mode
 
-![simplified main tab](docs/screen_simplified_mode_main_tab.png)
-
 1. Fill source and destination sections, set path,  choose preselection using combobox
 2. Run **'1. Scan'** : it will search for all medias in those folders.
 3. Run **'2. Pre-calculate'** : program generate output path for you images and fill preview pane
@@ -68,8 +66,6 @@ python3 tri_photo_date
 6. Run **'3. Execute'** : program will perform action you choose, wait until it ends
 
 ### Advanced mode
-
-![advanced main tab](docs/screen_advanced_mode_main_tab.png) ![tool tab](docs/screen_tool_tab.png)
 
 Here is typicals steps users should perform to run the program:
 
