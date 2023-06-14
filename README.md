@@ -18,6 +18,8 @@ Depending on the options enabled, the program achieves in order:
 4. Generation of a new path to record photos 
 5. Copy of the photo
 
+![preview of simplified mode](docs/screen_advanced_mode_main_tab_n_preview.png){width=300}
+
 ## Install
 
 ### Binaries

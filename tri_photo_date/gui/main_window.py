@@ -403,7 +403,7 @@ class MainTab(QWidget):
         self.stopBtn1 = simpleStopButton(main_layout, self.stop)
 
         if CFG["interface.gui_mode"] == GUI_SIMPLIFIED:
-            frame.setHidden(True)
+            self.optFrame.setHidden(True)
 
         self.compute_act_prog_holder = QVBoxLayout()
         main_layout.addLayout(self.compute_act_prog_holder)
