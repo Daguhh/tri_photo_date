@@ -224,8 +224,8 @@ class ImageMetadataDB:
                         if k in USEFULL_TAG_DESCRIPTION.keys()
                     }
 
-                date = metadata.get("Exif.Photo.DateTimeOriginal", None)
-                camera = metadata.get("Exif.Image.Model", None)
+                date = metadata.get("Exif.Photo.DateTimeOriginal", None).strip()
+                camera = metadata.get("Exif.Image.Model", None).strip()
 
             except NoExifError as e:
                 metadata = {}
@@ -261,8 +261,8 @@ class ImageMetadataDB:
                     if k in USEFULL_TAG_DESCRIPTION.keys()
                 }
 
-            date = metadata.get("Exif.Photo.DateTimeOriginal", None)
-            camera = metadata.get("Exif.Image.Model", None)
+            date = metadata.get("Exif.Photo.DateTimeOriginal", None).strip()
+            camera = metadata.get("Exif.Image.Model", None).strip()
 
         except NoExifError as e:
             metadata = {}
@@ -294,7 +294,7 @@ class ImageMetadataDB:
 
         self.conn.commit()
 
-    def scan_dest(self, im_str):
+    def scan_dest(self, im_str, is_use_cache=False):
         # Same as add_image but for destination folder
 
         # Check database
@@ -312,6 +312,10 @@ class ImageMetadataDB:
         res = c.fetchone()
 
         if res:
+
+            if is_use_cache:
+                return
+
             db_md5_file, db_md5_data = res
             md5_file = get_file_fingerprint(im_str)
 

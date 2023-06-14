@@ -208,6 +208,10 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                     i, f"{i} / {nb_files} - Calculating hash and loading metadatas ..."
                 )
 
+        if LoopCallBack.run():
+            LoopCallBack.stopped = True
+            return
+
         #### Scanning destination folder ####
         nb_files = sum([len(f) for *_, f in os.walk(out_dir)])
         progbar.init(nb_files)
