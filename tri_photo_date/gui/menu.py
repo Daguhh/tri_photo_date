@@ -1,5 +1,6 @@
 import sys
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import (
     QMainWindow,
     QApplication,
@@ -9,6 +10,14 @@ from PyQt5.QtWidgets import (
     QActionGroup,
     QMessageBox,
     QMenuBar,
+    QDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLineEdit,
+    QLabel,
+    QPushButton,
+    QSpinBox,
+    QCheckBox,
 )
 import logging
 import pkg_resources
@@ -66,6 +75,11 @@ class WindowMenu(QMenuBar):
         config_action = QAction(_("Ouvrir le fichier de configuration"), self)
         edit_menu.addAction(config_action)
         config_action.triggered.connect(self.open_file_browser)
+
+
+        set_settings_action = QAction(_("Ouvrir la configuration globale"), self)
+        edit_menu.addAction(set_settings_action)
+        set_settings_action.triggered.connect(self.show_set_settings)
 
         # option_2_action = QAction('Option 2', self)
         # edit_menu.addAction(option_2_action)
@@ -169,6 +183,20 @@ class WindowMenu(QMenuBar):
     def save(self):
         pass
 
+    def show_set_settings(self):
+
+        popup = SettingFilePopup()
+        res = popup.exec_()
+        if res == QDialog.Accepted:
+            val= popup.get_values()
+
+            CFG['files.files_is_max_hash_size'] = val['max_hash'][0]
+            CFG['files.files_max_hash_size'] = val['max_hash'][1]
+            CFG['files.files_is_min_size'] = val['min_size'][0]
+            CFG['files.files_min_size'] = val['min_size'][1]
+            CFG['files.files_is_max_size'] = val['max_size'][0]
+            CFG['files.files_max_size'] = val['max_size'][1]
+
     def show_message_box(self, msg=""):
         msgBox = QMessageBox()
         msgBox.setIcon(QMessageBox.Warning)
@@ -264,3 +292,70 @@ class WindowMenu(QMenuBar):
     # def simulate_toggle(self, value):
 
     #    CFG['simulate'] = 2 * int(value)
+
+class SettingFilePopup(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Configuration générale")
+
+        # Create the layouts and widgets
+        layout = QVBoxLayout()
+
+        sublayout = QHBoxLayout()
+        self.ckb_max_hash = QCheckBox()
+        label = QLabel(_("Empreinte partielles maximum"))
+        self.spin_max_hash = QSpinBox()
+        self.spin_max_hash.setRange(0, 10000)
+        unit = QLabel('MB')
+        sublayout.addWidget(self.ckb_max_hash)
+        sublayout.addWidget(label)
+        sublayout.addWidget(self.spin_max_hash)
+        sublayout.addWidget(unit)
+        layout.addLayout(sublayout)
+
+        sublayout = QHBoxLayout()
+        self.ckb_min_size = QCheckBox()
+        label = QLabel(_("Ignorer fichiers plus petit que"))
+        self.spin_min_size = QSpinBox()
+        self.spin_min_size.setRange(0, 1000*1000)
+        unit = QLabel('KB')
+        sublayout.addWidget(self.ckb_min_size)
+        sublayout.addWidget(label)
+        sublayout.addWidget(self.spin_min_size)
+        sublayout.addWidget(unit)
+        layout.addLayout(sublayout)
+
+        sublayout = QHBoxLayout()
+        self.ckb_max_size = QCheckBox()
+        label = QLabel(_("Ignorer les fichiers plus grand que"))
+        unit = QLabel('MB')
+        self.spin_max_size = QSpinBox()
+        self.spin_max_size.setRange(1, 100000)
+        sublayout.addWidget(self.ckb_max_size)
+        sublayout.addWidget(label)
+        sublayout.addWidget(self.spin_max_size)
+        sublayout.addWidget(unit)
+        layout.addLayout(sublayout)
+
+        button = QPushButton("OK")
+        button.clicked.connect(self.accept)
+        layout.addWidget(button)
+
+        self.setLayout(layout)
+
+        self.ckb_max_hash.setCheckState(CFG['files.files_is_max_hash_size'])
+        self.spin_max_hash.setValue(CFG['files.files_max_hash_size'])
+        self.ckb_min_size.setCheckState(CFG['files.files_is_min_size'])
+        self.spin_min_size.setValue(CFG['files.files_min_size'])
+        self.ckb_max_size.setCheckState(CFG['files.files_is_max_size'])
+        self.spin_max_size.setValue(CFG['files.files_max_size'])
+
+    def get_values(self):
+        # Return the entered values as a tuple of integers
+        dct = {
+            "max_hash": (self.ckb_max_hash.checkState(), self.spin_max_hash.value()),
+            "max_size": (self.ckb_max_size.checkState(), self.spin_max_size.value()),
+            "min_size": (self.ckb_min_size.checkState(), self.spin_min_size.value())
+        }
+        return dct
+

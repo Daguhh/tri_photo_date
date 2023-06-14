@@ -30,6 +30,7 @@ from tri_photo_date.utils.config_loader import (
 from tri_photo_date import gps
 from tri_photo_date.photo_database import ImageMetadataDB
 from tri_photo_date.utils.converter import bytes2human, limited_string
+from tri_photo_date.utils import fingerprint
 
 GROUP_PLACEHOLDER = r"{group}"
 DEFAULT_DATE_STR = "1900:01:01 00:00:00"
@@ -172,10 +173,13 @@ def get_date_from_exifs_or_file(in_str, metadatas):
 
 def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
     CFG.load_config()
+    fingerprint.set_global_config(CFG)
 
     in_dir = CFG["source.src_dir"]
     out_dir = CFG["destination.dest_dir"]
     is_use_cache = CFG["scan.scan_is_use_cached_datas"]
+    min_size = CFG['files.files_min_size'] *1000 if CFG['files.files_is_min_size'] else 0
+    max_size = CFG['files.files_max_size'] *1000*1000 if CFG['files.files_is_max_size'] else sys.maxsize
 
     # update image database
     media_extentions = CFG["misc.accepted_formats"]
@@ -199,6 +203,8 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                 in_path = Path(folder, filename)
                 # if not filename.lower().endswith(media_extentions):
                 #    continue
+                if not (min_size < in_path.stat().st_size < max_size):
+                    continue
 
                 # Add entry to db
                 db.add_image(str(in_path), is_use_cache=is_use_cache)

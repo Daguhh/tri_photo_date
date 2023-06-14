@@ -24,6 +24,7 @@ from tri_photo_date.utils.config_loader import (
     DIR_EXCLUDE,
     DIR_INCLUDE,
 )
+
 from tri_photo_date.utils.fingerprint import get_data_fingerprint, get_file_fingerprint
 
 
@@ -32,12 +33,10 @@ def _colliding(filename, item):
     reg = re.compile(path.stem + r"(?:\s\([0-9]+\))?" + path.suffix.lower())
     return reg.search(item) is not None
 
-
 def _match_reg(reg, item):
     reg = re.compile(".*" + reg + ".*")
     match = reg.search(item)
     return match is not None
-
 
 class ImageMetadataDB:
     def __init__(self):
@@ -224,8 +223,13 @@ class ImageMetadataDB:
                         if k in USEFULL_TAG_DESCRIPTION.keys()
                     }
 
-                date = metadata.get("Exif.Photo.DateTimeOriginal", None).strip()
-                camera = metadata.get("Exif.Image.Model", None).strip()
+                date = metadata.get("Exif.Photo.DateTimeOriginal", None)
+                if date is not None:
+                    date = date.strip()
+
+                camera = metadata.get("Exif.Image.Model", None)
+                if camera is not None:
+                    camera = camera.strip()
 
             except NoExifError as e:
                 metadata = {}
@@ -261,8 +265,13 @@ class ImageMetadataDB:
                     if k in USEFULL_TAG_DESCRIPTION.keys()
                 }
 
-            date = metadata.get("Exif.Photo.DateTimeOriginal", None).strip()
-            camera = metadata.get("Exif.Image.Model", None).strip()
+            date = metadata.get("Exif.Photo.DateTimeOriginal", None)
+            if date is not None:
+                date = date.strip()
+
+            camera = metadata.get("Exif.Image.Model", None)
+            if camera is not None:
+                camera = camera.strip()
 
         except NoExifError as e:
             metadata = {}

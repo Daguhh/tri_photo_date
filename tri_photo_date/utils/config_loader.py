@@ -17,6 +17,17 @@ from tri_photo_date.cli.cli_argparser import (
 from tri_photo_date.utils.config_paths import CONFIG_PATH, APP_NAME
 
 DEFAULT_CONFIG = """
+[FILES]
+# Partially hashs files given the maximum size in Mo
+files_is_max_hash_size = 0
+files_max_hash_size = 0
+
+# Only find files between min and max in Mo
+files_is_min_size = 0
+files_min_size = 0
+files_is_max_size = 0
+files_max_size = 5000
+
 [SCAN]
 scan_dir =
 scan_is_recursive = 0
@@ -139,6 +150,9 @@ INTEGER = (
     "grp_floating_nb",
     "gps_wait",
     "gui_mode",
+    "files_max_hash_size",
+    "files_min_size",
+    "files_max_size",
 )
 BOOLEAN = (
     "scan_is_recursive",
@@ -159,6 +173,9 @@ BOOLEAN = (
     "gps_simulate",
     "verbose",
     "unidecode",
+    "files_is_max_hash_size",
+    "files_is_min_size",
+    "files_is_max_size",
 )
 LISTE = ("src_extentions", "src_cameras", "src_excluded_dirs", "accepted_formats")
 FLOAT = ("gps_accuracy",)

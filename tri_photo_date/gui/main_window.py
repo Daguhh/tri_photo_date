@@ -609,14 +609,18 @@ class MainTab(QWidget):
                 wdg_setter(CFG.get_repr((section_name, param)))
 
     def move_progbar(self, new_layout):
-        self.progress_bar.setParent(new_layout.parentWidget())
-        self.progress_bar_label.setParent(new_layout.parentWidget())
-        new_layout.addWidget(self.progress_bar_label)
-        new_layout.addWidget(self.progress_bar)
         self.prev_progbar_layout.removeWidget(self.progress_bar)
         self.prev_progbar_layout.removeWidget(self.progress_bar_label)
+
+        self.progress_bar.setParent(new_layout.parentWidget())
+        self.progress_bar_label.setParent(new_layout.parentWidget())
+
+        new_layout.addWidget(self.progress_bar_label)
+        new_layout.addWidget(self.progress_bar)
+
         new_layout.update()
         self.prev_progbar_layout.update()
+
         self.prev_progbar_layout = new_layout
 
     def populate_act(self):
@@ -1214,7 +1218,6 @@ class ListMetaDataTab_old(QWidget):
             item = QListWidgetItem(text)
             self.listWdg.addItem(item)
 
-
 class MyProgressBar(QProgressBar):
     def __init__(self):
         super().__init__()
@@ -1234,7 +1237,6 @@ class MyProgressBar(QProgressBar):
         self.setValue(int(100 * v / self._progbar_nb_val))
         QApplication.processEvents()  # keep the GUI responsive
         self.text_label.setText(text)
-
 
 class CounterWdg(QWidget):
     def __init__(self):

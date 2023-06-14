@@ -2,12 +2,29 @@ import hashlib
 import os
 import struct
 
+def set_global_config(config):
+
+    global max_length
+    is_max_hash = config['files.files_is_max_hash_size']
+    if is_max_hash:
+        max_length = config['files.files_max_hash_size'] * 1000*1000 # 1 MB ->5000 MB
+    else:
+        max_length = 1000*1000*1000*5 # 5GB
+
+    print(max_length)
 
 def get_file_fingerprint(im_path):
+
     with open(im_path, "rb") as f:
         md5_file = hashlib.md5()
-        while chunk := f.read(4096):
+        i = 0
+        while chunk := f.read(4*1024*1024):
             md5_file.update(chunk)
+
+            i += 4*1024*1024
+            if i > max_length:
+                break
+
     return md5_file.hexdigest()
 
 
@@ -37,6 +54,7 @@ def get_data_fingerprint(im_path):
 
 # https://stackoverflow.com/a/10075170
 def png_data_fingerprint(im_str):
+    mlength = max_length
     hash = hashlib.md5()
     fh = open(im_str, "rb")
     assert fh.read(8)[1:4] == b"PNG"
@@ -46,7 +64,10 @@ def png_data_fingerprint(im_str):
         except struct.error:
             break
         if fh.read(4) == b"IDAT":
-            hash.update(fh.read(length))
+            hash.update(fh.readm(min(mlength, length)))
+            mlength = max(mlength-length, 0)
+            if mlength == 0:
+                break
             fh.read(4)  # CRC
         else:
             fh.seek(length + 4, os.SEEK_CUR)
@@ -61,7 +82,13 @@ def jpeg_data_fingerprint(im_str):
         marker, length = struct.unpack(">2H", fh.read(4))
         assert marker & 0xFF00 == 0xFF00
         if marker == 0xFFDA:  # Start of stream
-            hash.update(fh.read())
+            i = 0
+            while chunk := fh.read(4*1024*1024):
+                hash.update(chunk)
+
+                i += 4*1024*1024
+                if i > max_length:
+                    break
             break
         else:
             fh.seek(length - 2, os.SEEK_CUR)
@@ -69,6 +96,7 @@ def jpeg_data_fingerprint(im_str):
 
 
 def mp4_data_fingerprint(im_str):
+    mlength = max_length
     hash = hashlib.md5()
     fh = open(im_str, "rb")
     assert fh.read(8)[4:9] == b"ftyp"
@@ -82,7 +110,10 @@ def mp4_data_fingerprint(im_str):
             break
         tmp = fh.read(4)
         if tmp == b"mdat":
-            hash.update(fh.read(length))
+            hash.update(fh.read(min(mlength, length)))
+            mlength = max(mlength-length, 0)
+            if mlength == 0:
+                break
             fh.read(4)  # crc
         else:
             fh.seek(l)
