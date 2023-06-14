@@ -54,7 +54,7 @@ MAIN_TAB_WIDGETS = {
     "scan_exts": {
         "label": _("Extensions"),
         "tooltip": _(
-            "Liste des extentions séparées par des virgules\n\n  1. Definissez les dossiers à analyser\n  2. Scannez : bouton '1. Scanner'\n  3. Selectionnez les extentions via 'Outils >  Extentions'\n"
+            "Liste des extentions séparées par des virgules\n\n  1. Definissez les dossiers à analyser\n  2. Scannez : bouton '1. Scanner'\n  3. Selectionnez les extentions via 'Outils >  Extentions'\n "
         ),
         "placeholder": "jpg, jpeg, png",
         "combobox_options": [
@@ -172,19 +172,19 @@ MENU_TOOL_BUTTON = [
 
 MAIN_TAB_BUTTONS = {
     "scan_is_meta": {
-        "label": "metadonnées",
+        "label": _("metadonnées"),
         "tooltip": _("Obtient les métadonnées des fichiers"),
     },
     "scan_is_md5_file": {
-        "label": "empreinte fichier",
+        "label": _("empreinte fichier"),
         "tooltip": _("Calcule l'empreinte md5 du fichier"),
     },
     "scan_is_md5_data": {
-        "label": "empreinte des données",
+        "label": _("empreinte des données"),
         "tooltip": _("Calcule l'empreinte md5 des données"),
     },
     "scan_is_use_cached_datas": {
-        "label": "données du cache",
+        "label": _("données du cache"),
         "tooltip": _("Ne recalcule pas les empreintes des fichiers,\nutilise directement les données du cache associées au chemin du fichier.\n/!\\ N'activez uniquement si les données n'ont pas été modifiées depuis le dernier lancement du programme."),
     },
     "gps": {

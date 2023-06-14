@@ -1,5 +1,14 @@
 from PyQt5.QtWidgets import QFrame, QHBoxLayout, QLabel, QWidget, QSizePolicy
 
+from tri_photo_date.utils.config_paths import LOCALES_DIR
+from tri_photo_date.utils.config_loader import CONFIG
+
+import gettext
+
+lang = CONFIG[("interface", "gui_lang")]
+trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
+trad.install()
+_ = trad.gettext  # Greek
 
 class CollapsibleFrame(QFrame):
     widget_list = []
@@ -80,7 +89,7 @@ class PreviewCollapsibleFrame(QFrame):
             f"#myFrame_{color}" + " { padding: 15px; border: 2px solid " + color + "}"
         )
         self.setContentsMargins(6, 14, 6, 1)
-        self.setToolTip("Afficher l'aperçu")
+        self.setToolTip(_("Afficher l'aperçu"))
 
         self.layout = QHBoxLayout()
         self.widget = QWidget()
@@ -109,14 +118,14 @@ class PreviewCollapsibleFrame(QFrame):
         if not is_collasped:
             self.widget.setVisible(True)
             self.label.setText("▶  " + self.label_txt)
-            self.setToolTip("Cacher l'aperçu")
+            self.setToolTip(_("Cacher l'aperçu"))
             self.setMinimumSize(400, 200)
             self.setMaximumSize(2000, 2000)
             self.parent().parent().parent().resize(1000, 790)
         else:
             self.widget.setVisible(False)
             self.label.setText("◀")
-            self.setToolTip("Afficher l'aperçu")
+            self.setToolTip(_("Afficher l'aperçu"))
             self.setMinimumSize(30, 200)
             self.setMaximumSize(30, 2000)
             self.parent().parent().parent().resize(400, 790)
