@@ -29,7 +29,8 @@ files_is_max_size = 0
 files_max_size = 5000
 
 [SCAN]
-scan_dir =
+scan_src_dir =
+scan_dest_dir =
 scan_is_recursive = 0
 scan_is_md5_file = 0
 scan_is_md5_data = 0
@@ -142,7 +143,7 @@ STRING = (
     "exif_user_tags",
     "non_def",
 )
-PATH = ("src_dir", "dest_dir", "scan_dir")
+PATH = ("src_src_dir", "scan_dest_dir", "dest_dir", "scan_dir")
 INTEGER = (
     "src_exclude_toggle",
     "action_mode",

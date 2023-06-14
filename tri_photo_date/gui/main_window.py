@@ -276,12 +276,10 @@ class MainTab(QWidget):
         scanFrame = CollapsibleFrame(_("Scan"), color="darkGreen")
         layout = QVBoxLayout()
 
-        scanFrame.dirWdg = LabelNLineEdit(self, **MTW["scan_dir"])
-        scanFrame.dirWdg.recursiveBtn = simpleCheckBox(
-            scanFrame.dirWdg, **MTB["is_recursive"]
-        )
-
-        layout.addLayout(scanFrame.dirWdg)
+        scanFrame.srcdirWdg = LabelNLineEdit(self, **MTW["scan_src_dir"])
+        layout.addLayout(scanFrame.srcdirWdg)
+        scanFrame.destdirWdg = LabelNLineEdit(self, **MTW["scan_dest_dir"])
+        layout.addLayout(scanFrame.destdirWdg)
         sub_layout = QHBoxLayout()
         #scanFrame.is_metaBtn = simpleCheckBox(sub_layout, **MTB["scan_is_meta"])
         #scanFrame.is_md5_file = simpleCheckBox(sub_layout, **MTB["scan_is_md5_file"])
@@ -301,9 +299,10 @@ class MainTab(QWidget):
         main_layout.addLayout(scanFrame.progbar_layout)
 
         # Disable "coming soon"
-        scanFrame.dirWdg.textBox.setReadOnly(True)
-        scanFrame.dirWdg.btn_selector.setDisabled(True)
-        scanFrame.dirWdg.recursiveBtn.setDisabled(True)
+        scanFrame.srcdirWdg.textBox.setReadOnly(True)
+        scanFrame.destdirWdg.textBox.setReadOnly(True)
+        #scanFrame.dirWdg.btn_selector.setDisabled(True)
+        #scanFrame.dirWdg.recursiveBtn.setDisabled(True)
         #scanFrame.is_metaBtn.setDisabled(True)
         #scanFrame.is_md5_file.setDisabled(True)
         #scanFrame.is_md5_data.setDisabled(True)
@@ -316,7 +315,7 @@ class MainTab(QWidget):
 
         srcFrame.dirWdg = LabelNLineEdit(self, **MTW["in_dir"])
         srcFrame.dirWdg.textBox.textChanged.connect(
-            lambda x: scanFrame.dirWdg.textBox.setText(x)
+            lambda x: scanFrame.srcdirWdg.textBox.setText(x)
         )
         srcFrame.dirWdg.recursiveBtn = simpleCheckBox(
             srcFrame.dirWdg, **MTB["is_recursive"]
@@ -330,8 +329,9 @@ class MainTab(QWidget):
 
         layout.addLayout(srcFrame.dirWdg)
         layout.addLayout(srcFrame.extWdg)
-        layout.addLayout(srcFrame.camWdg)
-        layout.addLayout(srcFrame.excludeWdg)
+        if not CFG["interface.gui_mode"] == GUI_SIMPLIFIED:
+            layout.addLayout(srcFrame.camWdg)
+            layout.addLayout(srcFrame.excludeWdg)
         srcFrame.setLayout(layout)
         main_layout.addWidget(srcFrame)
 
@@ -342,6 +342,9 @@ class MainTab(QWidget):
         layout = QVBoxLayout()
 
         destFrame.dirWdg = LabelNLineEdit(self, **MTW["out_dir"])
+        destFrame.dirWdg.textBox.textChanged.connect(
+            lambda x: scanFrame.destdirWdg.textBox.setText(x)
+        )
         destFrame.rel_dirWdg = LabelNLineEdit(self, **MTW["out_path_str"])
         destFrame.filenameWdg = LabelNLineEdit(self, **MTW["filename"])
 
@@ -445,7 +448,10 @@ class MainTab(QWidget):
         self.setLayout(main_layout)
 
         # Set up connection to config object
-        scanFrame.dirWdg.textBox.textChanged.connect(
+        scanFrame.srcdirWdg.textBox.textChanged.connect(
+            lambda x: CFG.__setitem__("scan.scan_dir", x)
+        )
+        scanFrame.destdirWdg.textBox.textChanged.connect(
             lambda x: CFG.__setitem__("scan.scan_dir", x)
         )
         #scanWdg.is_metaBtn.stateChanged.connect(
@@ -460,9 +466,9 @@ class MainTab(QWidget):
         scanFrame.is_use_cache.stateChanged.connect(
             lambda x: CFG.__setitem__("scan.scan_is_use_cached_datas", x)
         )
-        scanFrame.dirWdg.recursiveBtn.stateChanged.connect(
-            lambda x: CFG.__setitem__("scan.scan_is_recursive", x)
-        )
+        #scanFrame.dirWdg.recursiveBtn.stateChanged.connect(
+        #    lambda x: CFG.__setitem__("scan.scan_is_recursive", x)
+        #)
 
         srcFrame.dirWdg.textBox.textChanged.connect(
             lambda x: CFG.__setitem__("source.src_dir", x)
@@ -537,8 +543,9 @@ class MainTab(QWidget):
 
         # set up setter for each widget
         scanWdgs = {}
-        scanWdgs["scan_dir"] = scanFrame.dirWdg.textBox.setText
-        scanWdgs["scan_is_recursive"] = scanFrame.dirWdg.recursiveBtn.setCheckState
+        scanWdgs["scan_src_dir"] = scanFrame.srcdirWdg.textBox.setText
+        scanWdgs["scan_dest_dir"] = scanFrame.destdirWdg.textBox.setText
+        #scanWdgs["scan_is_recursive"] = scanFrame.dirWdg.recursiveBtn.setCheckState
         #scanWdgs["scan_is_md5_file"] = scanFrame.is_md5_file.setCheckState
         #scanWdgs["scan_is_md5_data"] = scanFrame.is_md5_data.setCheckState
         #scanWdgs["scan_is_meta"] = scanFrame.is_metaBtn.setCheckState

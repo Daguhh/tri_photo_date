@@ -41,11 +41,15 @@ REL_PATH_FORMATS = {
 
 
 MAIN_TAB_WIDGETS = {
-    "scan_dir": {
-        "label": _("Dossier"),
-        "tooltip": _("Chemin du dossier à analyser"),
+    "scan_src_dir": {
+        "label": _("Dossier source"),
+        "tooltip": _("Chemin du dossier à analyser, Ajustez le chemin dans la section 'Source'"),
         "placeholder": _("D:\CleUsb"),
-        "fileselector": True,
+    },
+    "scan_dest_dir": {
+        "label": _("Dossier destination"),
+        "tooltip": _("Chemin du dossier à analyser, Ajuster le chemin dans la section 'Destination'"),
+        "placeholder": _(r"D:\User\Images"),
     },
     "scan_exts": {
         "label": _("Extensions"),
