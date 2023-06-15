@@ -59,27 +59,23 @@ class WindowMenu(QMenuBar):
         # File menu
         file_menu = self.addMenu(_("Fichier"))
 
-        load_action = QAction(_("Charger"), self)
-        file_menu.addAction(load_action)
-        load_action.triggered.connect(self.load)
+        self.load_action = QAction(_("Charger"), self)
+        file_menu.addAction(self.load_action)
 
-        save_action = QAction(_("Sauvegarder"), self)
-        file_menu.addAction(save_action)
-        save_action.triggered.connect(self.save)
+        self.save_action = QAction(_("Sauvegarder"), self)
+        file_menu.addAction(self.save_action)
 
         file_menu.setDisabled(True)
 
         # Edit menu
         edit_menu = self.addMenu(_("Edition"))
 
-        config_action = QAction(_("Ouvrir le fichier de configuration"), self)
-        edit_menu.addAction(config_action)
-        config_action.triggered.connect(self.open_file_browser)
+        self.config_action = QAction(_("Ouvrir le fichier de configuration"), self)
+        edit_menu.addAction(self.config_action)
 
 
-        set_settings_action = QAction(_("Ouvrir la configuration globale"), self)
-        edit_menu.addAction(set_settings_action)
-        set_settings_action.triggered.connect(self.show_set_settings)
+        self.set_settings_action = QAction(_("Ouvrir la configuration globale"), self)
+        edit_menu.addAction(self.set_settings_action)
 
         # option_2_action = QAction('Option 2', self)
         # edit_menu.addAction(option_2_action)
@@ -95,15 +91,14 @@ class WindowMenu(QMenuBar):
         full_action.setData(GUI_ADVANCED)
         simplify_action.setData(GUI_SIMPLIFIED)
 
-        mode_group = QActionGroup(self)
-        mode_group.setExclusionPolicy(QActionGroup.ExclusionPolicy.ExclusiveOptional)
-        mode_menu.addAction(mode_group.addAction(full_action))
-        mode_menu.addAction(mode_group.addAction(simplify_action))
-        mode_group.triggered.connect(self.set_interface_mode)
+        self.mode_group = QActionGroup(self)
+        self.mode_group.setExclusionPolicy(QActionGroup.ExclusionPolicy.ExclusiveOptional)
+        mode_menu.addAction(self.mode_group.addAction(full_action))
+        mode_menu.addAction(self.mode_group.addAction(simplify_action))
 
-        for action in mode_group.actions():
-            if action.data() == CFG["interface.gui_mode"]:
-                action.setChecked(True)
+        #for action in self.mode_group.actions():
+        #    if action.data() == CFG["interface.gui_mode"]:
+        #        action.setChecked(True)
         # mode_menu.setDisabled(True)
 
         # Interface size
@@ -117,28 +112,25 @@ class WindowMenu(QMenuBar):
             size_act.setData(s)
             size_menu.addAction(self.size_group.addAction(size_act))
             # size_act.triggered.connect(lambda x: self.set_interface_size(s))
-        self.size_group.triggered.connect(self.set_interface_size)
 
-        for action in self.size_group.actions():
-            # print(action.data(), CFG['gui_size'], type(action.data()))
-            if action.data() == CFG["interface.gui_size"]:
-                action.setChecked(True)
+        #for action in self.size_group.actions():
+        #    # print(action.data(), CFG['gui_size'], type(action.data()))
+        #    if action.data() == CFG["interface.gui_size"]:
+        #        action.setChecked(True)
 
         lang_menu = QMenu(_("Langue"), self)
-        lang_group = QActionGroup(self)
-        self.size_group = QActionGroup(self)
-        self.size_group.setExclusionPolicy(
+        self.lang_group = QActionGroup(self)
+        self.lang_group.setExclusionPolicy(
             QActionGroup.ExclusionPolicy.ExclusiveOptional
         )
         for lang in LANG_LIST:
             lang_act = QAction(lang, checkable=True)
             lang_act.setData(lang)
-            lang_menu.addAction(lang_group.addAction(lang_act))
-        lang_group.triggered.connect(self.set_language)
+            lang_menu.addAction(self.lang_group.addAction(lang_act))
 
-        for action in lang_group.actions():
-            if action.data() == CFG["interface.gui_lang"]:
-                action.setChecked(True)
+        #for action in self.lang_group.actions():
+        #    if action.data() == CFG["interface.gui_lang"]:
+        #        action.setChecked(True)
 
         view_menu.addMenu(mode_menu)
         view_menu.addMenu(size_menu)
@@ -147,11 +139,9 @@ class WindowMenu(QMenuBar):
         ### tools ###
         tool_menu = self.addMenu(_("Outils"))
 
-        debug_action = QAction("Debug", self, checkable=True)
-        tool_menu.addAction(debug_action)
-        debug_action.triggered.connect(self.debug_toggle)
-        debug_action.setChecked(CFG["misc.verbose"])
-        debug_action.setToolTip(_("Affiche les étapes du programme dans le terminal"))
+        self.debug_action = QAction("Debug", self, checkable=True)
+        tool_menu.addAction(self.debug_action)
+        self.debug_action.setToolTip(_("Affiche les étapes du programme dans le terminal"))
 
         # simulate_action = QAction("Simuler", self, checkable=True)
         # tool_menu.addAction(simulate_action)
@@ -177,25 +167,12 @@ class WindowMenu(QMenuBar):
         about_menu.addAction(help_action)
         help_action.triggered.connect(self.show_help)
 
+
     def load(self):
         pass
 
     def save(self):
         pass
-
-    def show_set_settings(self):
-
-        popup = SettingFilePopup()
-        res = popup.exec_()
-        if res == QDialog.Accepted:
-            val= popup.get_values()
-
-            CFG['files.files_is_max_hash_size'] = val['max_hash'][0]
-            CFG['files.files_max_hash_size'] = val['max_hash'][1]
-            CFG['files.files_is_min_size'] = val['min_size'][0]
-            CFG['files.files_min_size'] = val['min_size'][1]
-            CFG['files.files_is_max_size'] = val['max_size'][0]
-            CFG['files.files_max_size'] = val['max_size'][1]
 
     def show_message_box(self, msg=""):
         msgBox = QMessageBox()
@@ -215,39 +192,6 @@ class WindowMenu(QMenuBar):
         if button_clicked == QMessageBox.Ok:
             self.parent.quit()
         # elif button_clicked == QMessageBox.Cancel:
-
-    def set_language(self, lang):
-        if CFG["interface.gui_lang"] == lang.data():
-            return
-
-        CFG["interface.gui_lang"] = lang.data()
-
-        self.show_message_box()
-
-    def set_interface_mode(self, mode):
-        if CFG["interface.gui_mode"] == mode.data():
-            return
-
-        CFG["interface.gui_mode"] = mode.data()
-        msg = ""
-        if mode.data() == GUI_SIMPLIFIED:
-            msg = "\n".join(
-                (
-                    _(
-                        "Attention, les paramètres de la section 'options' seront conservés"
-                    ),
-                    _("mais ne seront plus modifiables en mode 'simplifié'"),
-                )
-            )
-        self.show_message_box(msg)
-
-    def set_interface_size(self, size):
-        # selected_action = self.size_group.checkedAction()
-        if CFG["interface.gui_size"] == size.data():
-            return
-
-        CFG["interface.gui_size"] = size.data()
-        self.show_message_box()
 
     def show_license(self):
         license_text = open(LICENSE_PATH).read()
@@ -343,12 +287,6 @@ class SettingFilePopup(QDialog):
 
         self.setLayout(layout)
 
-        self.ckb_max_hash.setCheckState(CFG['files.files_is_max_hash_size'])
-        self.spin_max_hash.setValue(CFG['files.files_max_hash_size'])
-        self.ckb_min_size.setCheckState(CFG['files.files_is_min_size'])
-        self.spin_min_size.setValue(CFG['files.files_min_size'])
-        self.ckb_max_size.setCheckState(CFG['files.files_is_max_size'])
-        self.spin_max_size.setValue(CFG['files.files_max_size'])
 
     def get_values(self):
         # Return the entered values as a tuple of integers

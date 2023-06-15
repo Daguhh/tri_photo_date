@@ -39,6 +39,8 @@ from PyQt5.QtWidgets import (
     QListView,
     QSizePolicy,
     QMainWindow,
+    QActionGroup,
+    QDialog,
     QMenu,
     QAction,
     QComboBox,
@@ -55,7 +57,7 @@ from PyQt5.QtWidgets import (
 from tri_photo_date.gui.sqlite_view import DatabaseViewer
 from tri_photo_date import ordonate_photos
 from tri_photo_date.ordonate_photos import CFG
-from tri_photo_date.gui.menu import WindowMenu
+from tri_photo_date.gui.menu import WindowMenu, SettingFilePopup
 from tri_photo_date.explore_db import (
     list_available_camera_model,
     list_available_exts,
@@ -138,15 +140,15 @@ class LoopCallBack:
             return True
         return False
 
-
-class MainWindow(QMainWindow):
+class MainWindow_ui(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Tri photo")
         self.setWindowIcon(QIcon(str(ICON_PATH)))
 
-        self.setMenuBar(WindowMenu(self))
+        self.menubar = WindowMenu(self)
+        self.setMenuBar(self.menubar)
 
         main_windows_wdg = QWidget()
         main_windows_lyt = QHBoxLayout()
@@ -180,13 +182,9 @@ class MainWindow(QMainWindow):
         tab1_content.layout().addWidget(toolBox)
         toolscroll_area.setWidget(tab1_content)
 
-        self.tab2.listextWdg.itemChanged.connect(self.update_extensions)
-        self.tab4.listappWdg.itemChanged.connect(self.update_cameras)
-        self.tab1.scanFrame.runBtn.clicked.connect(self.update_selection_tabs)
 
         preview_frame = PreviewCollapsibleFrame(" Afficher un aperçu", "green")
         self.preview_wdg = DatabaseViewer(str(IMAGE_DATABASE_PATH))
-        self.preview_wdg.filter_edit.textChanged.connect(self.update_preview)
         preview_frame.setWidget(self.preview_wdg)
 
         tabs = QTabWidget()
@@ -203,10 +201,7 @@ class MainWindow(QMainWindow):
         tab1_content.layout().addWidget(self.tab1)
         scroll_area.setWidget(tab1_content)
 
-        if (
-            CFG["interface.gui_mode"] == GUI_SIMPLIFIED
-            or CFG["interface.gui_mode"] == GUI_NORMAL
-        ):
+        if CFG["interface.gui_mode"] == GUI_SIMPLIFIED:
             splitter.addWidget(self.tab1)
             tabs.setHidden(True)
 
@@ -227,6 +222,143 @@ class MainWindow(QMainWindow):
         self.resize(400, 500)
         preview_frame.collapse(True)
 
+class MainWindow(MainWindow_ui):
+    def __init__(self):
+        super().__init__()
+
+        # Set up connection to config object
+        wdgs = {}
+        wdgs['scan.scan_src_dir'] = self.tab1.scanFrame.srcdirWdg.textBox
+        wdgs['scan.scan_dest_dir'] = self.tab1.scanFrame.destdirWdg.textBox
+        #wdgs['("scan.'] = self.tab1.scanWdg.is_metaBtn.stateChanged
+        #wdgs['("scan.'] = self.tab1.scanFrame.is_md5_data.stateChanged
+        #wdgs['("scan.'] = self.tab1.scanFrame.is_md5_file.stateChanged
+        wdgs['scan.scan_is_use_cached_datas'] = self.tab1.scanFrame.is_use_cache
+        #wdgs['("scan.'] = self.tab1.scanFrame.dirWdg.recursiveBtn.stateChanged
+
+        wdgs['source.src_dir'] = self.tab1.srcFrame.dirWdg.textBox
+        wdgs['source.src_extentions'] = self.tab1.srcFrame.extWdg.textBox
+        wdgs['source.src_cameras'] = self.tab1.srcFrame.camWdg.textBox
+        wdgs['source.src_is_recursive'] = self.tab1.srcFrame.dirWdg.recursiveBtn
+        wdgs['source.src_excluded_dirs'] = self.tab1.srcFrame.excludeWdg.textBox
+        wdgs['source.src_exclude_toggle'] = self.tab1.srcFrame.excludeWdg.labelbox
+        wdgs['source.src_is_exclude_dir_regex'] = self.tab1.srcFrame.excludeWdg.is_regex
+
+        wdgs['destination.dest_dir'] = self.tab1.destFrame.dirWdg.textBox
+        wdgs['destination.dest_rel_dir'] = self.tab1.destFrame.rel_dirWdg.textBox
+        wdgs['destination.dest_filename'] = self.tab1.destFrame.filenameWdg.textBox
+
+        wdgs['duplicates.dup_is_control'] = self.tab1.dupFrame.dupBtns.duplicateBtn
+        wdgs['duplicates.dup_mode'] = self.tab1.dupFrame.dupBtns.dup_grp
+        wdgs['duplicates.dup_is_scan_dest'] = self.tab1.dupFrame.dupBtns.scandestBtn
+
+        wdgs['options.name.name_guess_fmt'] = self.tab1.optFrame.guess_date_from_name.textBox
+        wdgs['options.name.name_is_guess'] = self.tab1.optFrame.guess_date_from_name.checkBox
+        wdgs['options.group.grp_is_group'] = self.tab1.optFrame.group_by_floating_days.checkBox
+        wdgs['options.group.grp_display_fmt'] = self.tab1.optFrame.group_by_floating_days.textBox
+        wdgs['options.group.grp_floating_nb'] = self.tab1.optFrame.group_by_floating_days.spinBox
+        wdgs['options.gps.gps_is_gps'] = self.tab1.optFrame.gps
+        wdgs['options.general.opt_is_delete_metadatas'] = self.tab1.optFrame.is_delete_metadatas
+        wdgs['options.general.opt_is_date_from_filesystem'] = self.tab1.optFrame.is_date_from_filesystem
+
+        wdgs['action.action_mode'] = self.tab1.execFrame.file_actionWdg.btn_group
+        wdgs['interface.gui_mode'] = self.menubar.mode_group
+        wdgs['interface.gui_lang'] = self.menubar.lang_group
+        wdgs['interface.gui_size'] = self.menubar.size_group
+
+
+        self.wdgs = wdgs
+
+        self.setup_interconnections()
+        self.setup_actions()
+
+        self.connect_menubar_2_config()
+        self.connect_wdgs_2_config()
+
+        self.load_conf()
+
+    def setup_interconnections(self):
+
+        self.tab2.listextWdg.itemChanged.connect(
+            lambda : self.tab1.srcFrame.extWdg.textBox.setText(self.tab2.user_choice_extentions)
+        )
+        self.tab4.listappWdg.itemChanged.connect(
+            lambda : self.tab1.srcFrame.camWdg.textBox.setText(self.tab4.user_choice_cameras)
+        )
+        self.preview_wdg.filter_edit.textChanged.connect(self.update_preview)
+
+        # Link scan lineedit to source and destination sections
+        self.tab1.srcFrame.dirWdg.textBox.textChanged.connect(
+            self.tab1.scanFrame.srcdirWdg.textBox.setText
+        )
+        self.tab1.destFrame.dirWdg.textBox.textChanged.connect(
+            self.tab1.scanFrame.destdirWdg.textBox.setText
+        )
+
+    def setup_actions(self):
+        self.tab1.runBtn.clicked.connect(self.populate_act)
+        self.tab1.runBtn.clicked.connect(self.update_selection_tabs)
+        self.tab1.previewBtn.clicked.connect(self.preview_act)
+        self.tab1.executeBtn.clicked.connect(self.run_act)
+
+    def connect_wdgs_2_config(self):
+
+        for prop, wdg in self.wdgs.items():
+            callback = lambda x, prop=prop: CFG.__setitem__(prop, x)
+            if isinstance(wdg, QLineEdit):
+                wdg.textChanged.connect(callback)
+            elif isinstance(wdg, QCheckBox):
+                wdg.stateChanged.connect(callback)
+            elif isinstance(wdg, QSpinBox):
+                wdg.valueChanged.connect(callback)
+            elif isinstance(wdg, QComboBox):
+                wdg.currentIndexChanged.connect(callback)
+            elif isinstance(wdg, QButtonGroup):
+                wdg.buttonClicked[int].connect(callback)
+            elif isinstance(wdg, QAction):
+                pass # link manually to specific action
+
+    def connect_menubar_2_config(self):
+
+        #self.menubar.load_action.triggered.connect(self.load)
+        #self.menubar.save_action.triggered.connect(self.save)
+        self.menubar.config_action.triggered.connect(self.menubar.open_file_browser)
+        self.menubar.set_settings_action.triggered.connect(self.show_set_settings)
+        self.menubar.mode_group.triggered.connect(self.set_interface_mode)
+        self.menubar.size_group.triggered.connect(self.set_interface_size)
+        self.menubar.lang_group.triggered.connect(self.set_language)
+        self.menubar.debug_action.triggered.connect(self.menubar.debug_toggle)
+        self.menubar.debug_action.setChecked(CFG["misc.verbose"])
+
+    def load_conf(self):
+
+        for prop, wdg in self.wdgs.items():
+            if isinstance(wdg, QLineEdit):
+                wdg.setText(CFG.get_repr(prop))
+            elif isinstance(wdg, QCheckBox):
+                wdg.setCheckState(CFG.get_repr(prop))
+            elif isinstance(wdg, QSpinBox):
+                wdg.setValue(CFG.get_repr(prop))
+            elif isinstance(wdg, QComboBox):
+                wdg.setCurrentIndex(CFG.get_repr(prop))
+            elif isinstance(wdg, QButtonGroup):
+                wdg.button(CFG.get_repr(prop)).setChecked(True)
+            elif isinstance(wdg, QActionGroup):
+                for act in wdg.actions():
+                    if act.data() == CFG.get_repr(prop):
+                        act.setChecked(True)
+
+    def load_settings_conf(self):
+
+        for prop, wdg in self.wdgs_settings.items():
+            if isinstance(wdg, QCheckBox):
+                wdg.setCheckState(CFG.get_repr(prop))
+            elif isinstance(wdg, QSpinBox):
+                wdg.setValue(CFG.get_repr(prop))
+
+        #for section_name, section_dct in self.Wdgs.items():
+        #    for param, wdg_setter in section_dct.items():
+        #        wdg_setter(CFG.get_repr((section_name, param)))
     def update_cameras(self):
         txt = self.tab4.user_choice_cameras
         self.tab1.srcFrame.camWdg.textBox.setText(txt)
@@ -255,13 +387,132 @@ class MainWindow(QMainWindow):
             self.quit()
 
     def quit(self):
-        self.tab1.save_act()
+        self.save_act()
         QApplication.quit()
 
     def closeEvent(self, event):
-        self.tab1.save_act()
+        self.save_act()
         super().closeEvent(event)
 
+    def populate_act(self):
+        logging.info("Starting processing files...")
+
+        self.tab1.move_progbar(self.tab1.scanFrame.progbar_layout)
+
+        self.save_act()
+        self.tab1.runBtn.setHidden(True)
+        self.tab1.stopBtn.setHidden(False)
+
+        LoopCallBack.stopped = False
+        self.tab1.timer = QTimer()
+
+        self.tab1.timer.timeout.connect(
+            lambda: self.tab1.run_function(
+                ordonate_photos.populate_db, self.tab1.progress_bar, LoopCallBack
+            )
+        )
+        self.tab1.timer.timeout.connect(self.update_preview)
+        self.tab1.timer.start(1000)  # waits for 1 second
+
+    def preview_act(self):
+        logging.info("Starting processing files...")
+
+        self.tab1.move_progbar(self.tab1.compute_act_prog_holder)
+
+        self.save_act()
+        self.tab1.previewBtn.setHidden(True)
+        self.tab1.stopBtn1.setHidden(False)
+
+        LoopCallBack.stopped = False
+        self.tab1.timer = QTimer()
+        self.tab1.timer.timeout.connect(
+            lambda: self.tab1.run_function(
+                ordonate_photos.compute, self.tab1.progress_bar, LoopCallBack
+            )
+        )
+        self.tab1.timer.timeout.connect(self.update_preview)
+        self.tab1.timer.start(1000)  # waits for 1 second
+
+    def run_act(self):
+        logging.info("Starting processing files...")
+
+        self.tab1.move_progbar(self.tab1.execute_act_prog_holder)
+
+        self.save_act()
+        self.tab1.executeBtn.setHidden(True)
+        self.tab1.stopBtn2.setHidden(False)
+
+        LoopCallBack.stopped = False
+        self.tab1.timer = QTimer()
+        self.tab1.timer.timeout.connect(
+            lambda: self.tab1.run_function(
+                ordonate_photos.execute, self.tab1.progress_bar, LoopCallBack
+            )
+        )
+        self.tab1.timer.start(1000)  # waits for 1 second
+
+    def save_act(self):
+        logging.info(f"Saving config to {CFG.configfile} ...")
+        # self.get_config()
+        CFG.save_config()
+
+    def show_set_settings(self):
+
+        popup = SettingFilePopup()
+
+        wdgs = {}
+        wdgs['files.files_is_max_hash_size'] = popup.ckb_max_hash
+        wdgs['files.files_max_hash_size'] = popup.spin_max_hash
+        wdgs['files.files_is_min_size'] = popup.ckb_min_size
+        wdgs['files.files_min_size'] = popup.spin_min_size
+        wdgs['files.files_is_max_size'] = popup.ckb_max_size
+        wdgs['files.files_max_size'] = popup.spin_max_size
+
+        self.wdgs_settings = wdgs
+        self.load_settings_conf()
+
+        res = popup.exec_()
+        if res == QDialog.Accepted:
+            val= popup.get_values()
+
+            CFG['files.files_is_max_hash_size'] = val['max_hash'][0]
+            CFG['files.files_max_hash_size'] = val['max_hash'][1]
+            CFG['files.files_is_min_size'] = val['min_size'][0]
+            CFG['files.files_min_size'] = val['min_size'][1]
+            CFG['files.files_is_max_size'] = val['max_size'][0]
+            CFG['files.files_max_size'] = val['max_size'][1]
+
+    def set_language(self, lang):
+        if CFG["interface.gui_lang"] == lang.data():
+            return
+
+        CFG["interface.gui_lang"] = lang.data()
+
+        self.menubar.show_message_box()
+
+    def set_interface_mode(self, mode):
+        if CFG["interface.gui_mode"] == mode.data():
+            return
+
+        CFG["interface.gui_mode"] = mode.data()
+        msg = ""
+        if mode.data() == GUI_SIMPLIFIED:
+            msg = "\n".join((
+                _(
+                    "Attention, les paramètres de la section 'options' seront conservés"
+                ),
+                _("mais ne seront plus modifiables en mode 'simplifié'"),
+            ))
+        self.menubar.show_message_box(msg)
+
+    def set_interface_size(self, size):
+        print('SIZE TRIGGERED')
+        # selected_action = self.size_group.checkedAction()
+        if CFG["interface.gui_size"] == size.data():
+            return
+
+        CFG["interface.gui_size"] = size.data()
+        self.menubar.show_message_box()
 
 class MainTab(QWidget):
     def __init__(self, parent):
@@ -291,9 +542,8 @@ class MainTab(QWidget):
         scanFrame.collapse(True)
         main_layout.addWidget(scanFrame)
 
-        scanFrame.runBtn = simplePushButton(main_layout, **ACTION_BUTTONS["populate"])
-        scanFrame.runBtn.clicked.connect(self.populate_act)
-        scanFrame.stopBtn = simpleStopButton(main_layout, self.stop)
+        self.runBtn = simplePushButton(main_layout, **ACTION_BUTTONS["populate"])
+        self.stopBtn = simpleStopButton(main_layout, self.stop)
 
         scanFrame.progbar_layout = QVBoxLayout()
         main_layout.addLayout(scanFrame.progbar_layout)
@@ -314,9 +564,6 @@ class MainTab(QWidget):
         layout = QVBoxLayout()
 
         srcFrame.dirWdg = LabelNLineEdit(self, **MTW["in_dir"])
-        srcFrame.dirWdg.textBox.textChanged.connect(
-            lambda x: scanFrame.srcdirWdg.textBox.setText(x)
-        )
         srcFrame.dirWdg.recursiveBtn = simpleCheckBox(
             srcFrame.dirWdg, **MTB["is_recursive"]
         )
@@ -342,9 +589,6 @@ class MainTab(QWidget):
         layout = QVBoxLayout()
 
         destFrame.dirWdg = LabelNLineEdit(self, **MTW["out_dir"])
-        destFrame.dirWdg.textBox.textChanged.connect(
-            lambda x: scanFrame.destdirWdg.textBox.setText(x)
-        )
         destFrame.rel_dirWdg = LabelNLineEdit(self, **MTW["out_path_str"])
         destFrame.filenameWdg = LabelNLineEdit(self, **MTW["filename"])
 
@@ -402,7 +646,6 @@ class MainTab(QWidget):
         self.optFrame = optFrame
 
         self.previewBtn = simplePushButton(main_layout, **ACTION_BUTTONS["calculate"])
-        self.previewBtn.clicked.connect(self.preview_act)
         self.stopBtn1 = simpleStopButton(main_layout, self.stop)
 
         if CFG["interface.gui_mode"] == GUI_SIMPLIFIED:
@@ -422,7 +665,6 @@ class MainTab(QWidget):
         self.execFrame = execFrame
 
         self.executeBtn = simplePushButton(main_layout, **ACTION_BUTTONS["execute"])
-        self.executeBtn.clicked.connect(self.run_act)
         self.stopBtn2 = simpleStopButton(main_layout, self.stop)
 
         self.execute_act_prog_holder = QVBoxLayout()
@@ -447,174 +689,6 @@ class MainTab(QWidget):
 
         self.setLayout(main_layout)
 
-        # Set up connection to config object
-        scanFrame.srcdirWdg.textBox.textChanged.connect(
-            lambda x: CFG.__setitem__("scan.scan_dir", x)
-        )
-        scanFrame.destdirWdg.textBox.textChanged.connect(
-            lambda x: CFG.__setitem__("scan.scan_dir", x)
-        )
-        #scanWdg.is_metaBtn.stateChanged.connect(
-        #    lambda x: CFG.__setitem__("scan.scan_is_meta", x)
-        #)
-        #scanFrame.is_md5_data.stateChanged.connect(
-        #    lambda x: CFG.__setitem__("scan.scan_is_md5_data", x)
-        #)
-        #scanFrame.is_md5_file.stateChanged.connect(
-        #    lambda x: CFG.__setitem__("scan.scan_is_md5_file", x)
-        #)
-        scanFrame.is_use_cache.stateChanged.connect(
-            lambda x: CFG.__setitem__("scan.scan_is_use_cached_datas", x)
-        )
-        #scanFrame.dirWdg.recursiveBtn.stateChanged.connect(
-        #    lambda x: CFG.__setitem__("scan.scan_is_recursive", x)
-        #)
-
-        srcFrame.dirWdg.textBox.textChanged.connect(
-            lambda x: CFG.__setitem__("source.src_dir", x)
-        )
-        srcFrame.extWdg.textBox.textChanged.connect(
-            lambda x: CFG.__setitem__("source.src_extentions", x)
-        )
-        srcFrame.camWdg.textBox.textChanged.connect(
-            lambda x: CFG.__setitem__("source.src_cameras", x)
-        )
-        srcFrame.dirWdg.recursiveBtn.stateChanged.connect(
-            lambda x: CFG.__setitem__("source.src_is_recursive", x)
-        )
-        srcFrame.excludeWdg.textBox.textChanged.connect(
-            lambda x: CFG.__setitem__("source.src_excluded_dirs", x)
-        )
-        srcFrame.excludeWdg.labelbox.currentIndexChanged.connect(
-            lambda x: CFG.__setitem__("source.src_exclude_toggle", x)
-        )
-        srcFrame.excludeWdg.is_regex.stateChanged.connect(
-            lambda x: CFG.__setitem__("source.src_is_exclude_dir_regex", x)
-        )
-
-        destFrame.dirWdg.textBox.textChanged.connect(
-            lambda x: CFG.__setitem__("destination.dest_dir", x)
-        )
-        destFrame.rel_dirWdg.textBox.textChanged.connect(
-            lambda x: CFG.__setitem__("destination.dest_rel_dir", x)
-        )
-        destFrame.filenameWdg.textBox.textChanged.connect(
-            lambda x: CFG.__setitem__("destination.dest_filename", x)
-        )
-
-        dupFrame.dupBtns.duplicateBtn.stateChanged.connect(
-            lambda x: CFG.__setitem__("duplicates.dup_is_control", x)
-        )
-        dupFrame.dupBtns.dup_grp.buttonClicked[int].connect(
-            lambda x: CFG.__setitem__("duplicates.dup_mode", x)
-        )
-        dupFrame.dupBtns.scandestBtn.stateChanged.connect(
-            lambda x: CFG.__setitem__("duplicates.dup_is_scan_dest", x)
-        )
-
-        optFrame.guess_date_from_name.textBox.textChanged.connect(
-            lambda x: CFG.__setitem__("options.name.name_guess_fmt", x)
-        )
-        optFrame.guess_date_from_name.checkBox.stateChanged.connect(
-            lambda x: CFG.__setitem__("options.name.name_is_guess", x)
-        )
-        optFrame.group_by_floating_days.checkBox.stateChanged.connect(
-            lambda x: CFG.__setitem__("options.group.grp_is_group", x)
-        )
-        optFrame.group_by_floating_days.textBox.textChanged.connect(
-            lambda x: CFG.__setitem__("options.group.grp_display_fmt", x)
-        )
-        optFrame.group_by_floating_days.spinBox.valueChanged.connect(
-            lambda x: CFG.__setitem__("options.group.grp_floating_nb", x)
-        )
-        optFrame.gps.stateChanged.connect(
-            lambda x: CFG.__setitem__("options.gps.gps_is_gps", x)
-        )
-        optFrame.is_delete_metadatas.stateChanged.connect(
-            lambda x: CFG.__setitem__("options.general.opt_is_delete_metadatas", x)
-        )
-        optFrame.is_date_from_filesystem.stateChanged.connect(
-            lambda x: CFG.__setitem__("options.general.opt_is_date_from_filesystem", x)
-        )
-
-        execFrame.file_actionWdg.btn_group.buttonClicked[int].connect(
-            lambda x: CFG.__setitem__("action.action_mode", x)
-        )
-
-        # set up setter for each widget
-        scanWdgs = {}
-        scanWdgs["scan_src_dir"] = scanFrame.srcdirWdg.textBox.setText
-        scanWdgs["scan_dest_dir"] = scanFrame.destdirWdg.textBox.setText
-        #scanWdgs["scan_is_recursive"] = scanFrame.dirWdg.recursiveBtn.setCheckState
-        #scanWdgs["scan_is_md5_file"] = scanFrame.is_md5_file.setCheckState
-        #scanWdgs["scan_is_md5_data"] = scanFrame.is_md5_data.setCheckState
-        #scanWdgs["scan_is_meta"] = scanFrame.is_metaBtn.setCheckState
-        scanWdgs["scan_is_use_cached_datas"] = scanFrame.is_use_cache.setCheckState
-        self.Wdgs["scan"] = scanWdgs
-
-        srcWdgs = {}
-        srcWdgs["src_dir"] = srcFrame.dirWdg.textBox.setText
-        srcWdgs["src_extentions"] = srcFrame.extWdg.textBox.setText
-        srcWdgs["src_cameras"] = srcFrame.camWdg.textBox.setText
-        srcWdgs["src_is_recursive"] = srcFrame.dirWdg.recursiveBtn.setCheckState
-        srcWdgs["src_excluded_dirs"] = srcFrame.excludeWdg.textBox.setText
-        srcWdgs["src_exclude_toggle"] = srcFrame.excludeWdg.labelbox.setCurrentIndex
-        srcWdgs["src_is_exclude_dir_regex"] = srcFrame.excludeWdg.is_regex.setCheckState
-        self.Wdgs["source"] = srcWdgs
-
-        destWdgs = {}
-        destWdgs["dest_dir"] = destFrame.dirWdg.textBox.setText
-        destWdgs["dest_rel_dir"] = destFrame.rel_dirWdg.textBox.setText
-        destWdgs["dest_filename"] = destFrame.filenameWdg.textBox.setText
-        self.Wdgs["destination"] = destWdgs
-
-        dupWdgs = {}
-        dupWdgs["dup_is_control"] = dupFrame.dupBtns.duplicateBtn.setCheckState
-        dupWdgs["dup_mode"] = lambda x: dupFrame.dupBtns.dup_grp.button(x).setChecked(
-            True
-        )
-        dupWdgs["dup_is_scan_dest"] = dupFrame.dupBtns.scandestBtn.setCheckState
-        self.Wdgs["duplicates"] = dupWdgs
-
-        optWdgs_name = {}
-        optWdgs_name[
-            "name_is_guess"
-        ] = optFrame.guess_date_from_name.checkBox.setCheckState
-        optWdgs_name["name_guess_fmt"] = optFrame.guess_date_from_name.textBox.setText
-        self.Wdgs["options.name"] = optWdgs_name
-
-        optWdgs_grp = {}
-        optWdgs_grp[
-            "grp_is_group"
-        ] = optFrame.group_by_floating_days.checkBox.setCheckState
-        optWdgs_grp["grp_display_fmt"] = optFrame.group_by_floating_days.textBox.setText
-        optWdgs_grp["grp_floating_nb"] = optFrame.group_by_floating_days.spinBox.setValue
-        self.Wdgs["options.group"] = optWdgs_grp
-
-        self.Wdgs["options.gps"] = {"gps_is_gps": optFrame.gps.setCheckState}
-
-        optWdgs_gen = {}
-        optWdgs_gen[
-            "opt_is_delete_metadatas"
-        ] = optFrame.is_delete_metadatas.setCheckState
-        optWdgs_gen[
-            "opt_is_date_from_filesystem"
-        ] = optFrame.is_date_from_filesystem.setCheckState
-        self.Wdgs["options.general"] = optWdgs_gen
-
-        self.Wdgs["action"] = {
-            "action_mode": lambda x: execFrame.file_actionWdg.btn_group.button(
-                x
-            ).setChecked(True)
-        }  # [int]}
-
-        self.load_conf()
-
-    def load_conf(self):
-        for section_name, section_dct in self.Wdgs.items():
-            for param, wdg_setter in section_dct.items():
-                wdg_setter(CFG.get_repr((section_name, param)))
-
     def move_progbar(self, new_layout):
         self.prev_progbar_layout.removeWidget(self.progress_bar)
         self.prev_progbar_layout.removeWidget(self.progress_bar_label)
@@ -630,72 +704,16 @@ class MainTab(QWidget):
 
         self.prev_progbar_layout = new_layout
 
-    def populate_act(self):
-        logging.info("Starting processing files...")
-
-        self.move_progbar(self.scanFrame.progbar_layout)
-
-        self.save_act()
-        self.scanFrame.runBtn.setHidden(True)
-        self.scanFrame.stopBtn.setHidden(False)
-
-        LoopCallBack.stopped = False
-        self.timer = QTimer()
-
-        self.timer.timeout.connect(
-            lambda: self.run_function(
-                ordonate_photos.populate_db, self.progress_bar, LoopCallBack
-            )
-        )
-        self.timer.timeout.connect(self.parent.update_preview)
-        self.timer.start(1000)  # waits for 1 second
-
-    def preview_act(self):
-        logging.info("Starting processing files...")
-
-        self.move_progbar(self.compute_act_prog_holder)
-
-        self.save_act()
-        self.previewBtn.setHidden(True)
-        self.stopBtn1.setHidden(False)
-
-        LoopCallBack.stopped = False
-        self.timer = QTimer()
-        self.timer.timeout.connect(
-            lambda: self.run_function(
-                ordonate_photos.compute, self.progress_bar, LoopCallBack
-            )
-        )
-        self.timer.timeout.connect(self.parent.update_preview)
-        self.timer.start(1000)  # waits for 1 second
-
-    def run_act(self):
-        logging.info("Starting processing files...")
-
-        self.move_progbar(self.execute_act_prog_holder)
-
-        self.save_act()
-        self.executeBtn.setHidden(True)
-        self.stopBtn2.setHidden(False)
-
-        LoopCallBack.stopped = False
-        self.timer = QTimer()
-        self.timer.timeout.connect(
-            lambda: self.run_function(
-                ordonate_photos.execute, self.progress_bar, LoopCallBack
-            )
-        )
-        self.timer.start(1000)  # waits for 1 second
 
     def run_function(self, func, *args, **kwargs):
         if not LoopCallBack.stopped:
             func(*args, **kwargs)
         if LoopCallBack.stopped:
             self.timer.stop()
-            self.scanFrame.runBtn.setHidden(False)
+            self.runBtn.setHidden(False)
             self.executeBtn.setHidden(False)
             self.previewBtn.setHidden(False)
-            self.scanFrame.stopBtn.setHidden(True)
+            self.stopBtn.setHidden(True)
             self.stopBtn1.setHidden(True)
             self.stopBtn2.setHidden(True)
             self.progress_bar.setValue(100)
@@ -703,18 +721,13 @@ class MainTab(QWidget):
     def stop(self):
         self.timer.stop()
         LoopCallBack.stopped = True
-        self.scanFrame.runBtn.setHidden(False)
+        self.runBtn.setHidden(False)
         self.executeBtn.setHidden(False)
         self.previewBtn.setHidden(False)
-        self.scanFrame.stopBtn.setHidden(True)
+        self.stopBtn.setHidden(True)
         self.stopBtn1.setHidden(True)
         self.stopBtn2.setHidden(True)
         self.progress_bar.setValue(100)
-
-    def save_act(self):
-        logging.info(f"Saving config to {CFG.configfile} ...")
-        # self.get_config()
-        CFG.save_config()
 
 
 class LabelNLineEdit(QHBoxLayout):
