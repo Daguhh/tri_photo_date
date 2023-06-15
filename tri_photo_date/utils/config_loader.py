@@ -62,6 +62,7 @@ is_scan_dest = 2
 [OPTIONS.GENERAL]
 is_delete_metadatas = 0
 is_date_from_filesystem = 0
+is_force_date_from_filesystem = 0
 
 [OPTIONS.GROUP]
 is_group = 0
@@ -167,6 +168,7 @@ BOOLEAN = (
     "is_scan_dest",
     "is_delete_metadatas",
     "is_date_from_filesystem",
+    "is_force_date_from_filesystem",
     "is_group",
     "is_guess",
     "is_gps",

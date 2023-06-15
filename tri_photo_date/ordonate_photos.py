@@ -142,6 +142,14 @@ def create_out_str(in_str, out_path_str, out_filename):
 
     return out_str
 
+def get_date_from_file_system(in_str):
+
+    timestamp = Path(in_str).stat().st_mtime
+    date = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    out_fmt = "%Y:%m:%d %H:%M:%S"
+    date_str = date.strftime(out_fmt)
+
+    return date_str
 
 def get_date_from_exifs_or_file(in_str, metadatas):
     date_str = ""
@@ -151,11 +159,12 @@ def get_date_from_exifs_or_file(in_str, metadatas):
         date_fmt = CFG["options.name.guess_fmt"]
         date_str = ExifTags.get_date_from_name(date_fmt, in_str)
 
-    if not date_str and CFG["options.general.is_date_from_filesystem"]:
-        timestamp = Path(in_str).stat().st_mtime
-        date = datetime.fromtimestamp(timestamp, tz=timezone.utc)
-        out_fmt = "%Y:%m:%d %H:%M:%S"
-        date_str = date.strftime(out_fmt)
+    is_force_date_filesystem = (
+        bool(CFG["options.general.is_date_from_filesystem"]) and
+        bool(CFG['options.general.is_force_date_from_filesystem'])
+    )
+    if not date_str and is_force_date_filesystem:
+        date_str = get_date_from_file_system(in_str)
 
     # Try in metadatas
     if not date_str:
@@ -163,6 +172,9 @@ def get_date_from_exifs_or_file(in_str, metadatas):
             if date_tag in metadatas:
                 date_str = metadatas[date_tag]
                 break
+
+    if not date_str and CFG['options.general.is_force_date_filesystem']:
+        date_str = get_date_from_file_system(in_str)
 
     if not date_str:
         date_str = DEFAULT_DATE_STR

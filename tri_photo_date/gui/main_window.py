@@ -260,6 +260,7 @@ class MainWindow(MainWindow_ui):
         wdgs['options.gps.is_gps'] = self.tab1.optFrame.gps
         wdgs['options.general.is_delete_metadatas'] = self.tab1.optFrame.is_delete_metadatas
         wdgs['options.general.is_date_from_filesystem'] = self.tab1.optFrame.is_date_from_filesystem
+        wdgs['options.general.is_force_date_from_filesystem'] = self.tab1.optFrame.is_force_date_from_filesystem
 
         wdgs['action.action_mode'] = self.tab1.execFrame.file_actionWdg.btn_group
         wdgs['interface.mode'] = self.menubar.mode_group
@@ -629,13 +630,26 @@ class MainTab(QWidget):
 
         sub_layout = QHBoxLayout()
         optFrame.gps = simpleCheckBox(sub_layout, **MTB["gps"])
+        layout.addLayout(sub_layout)
+
+        sub_layout = QHBoxLayout()
 
         optFrame.is_delete_metadatas = simpleCheckBox(
             sub_layout, **MTB["is_delete_metadatas"]
         )
+        layout.addLayout(sub_layout)
+
+        sub_layout = QHBoxLayout()
         optFrame.is_date_from_filesystem = simpleCheckBox(
             sub_layout, **MTB["is_date_from_filesystem"]
         )
+        optFrame.is_force_date_from_filesystem = simpleCheckBox(
+            sub_layout, **MTB["is_force_date_from_filesystem"]
+        )
+        optFrame.is_date_from_filesystem.stateChanged.connect(
+            lambda e : optFrame.is_force_date_from_filesystem.setEnabled(bool(e))
+        )
+        optFrame.is_date_from_filesystem.stateChanged.emit(False)
 
         layout.addLayout(sub_layout)
 
@@ -874,6 +888,8 @@ class DuplicateWdg(QHBoxLayout):
             self, **DUP_RADIO_BUTTONS["duplicate"]
         )  # QCheckBox('Dupliqués : ')
 
+        self.duplicateBtn.stateChanged.connect(self.set_dup_toggle)
+
         self.dup_grp = QButtonGroup(parent)
         mode_Btns = {}
         mode_Btns[DUP_MD5_FILE] = MyRadioButton(
@@ -894,6 +910,8 @@ class DuplicateWdg(QHBoxLayout):
         self.addWidget(mode_Btns[DUP_MD5_DATA])
         self.addWidget(mode_Btns[DUP_DATETIME])
         self.scandestBtn = simpleCheckBox(self, **MTB["is_scan_dest"])
+
+        self.duplicateBtn.stateChanged.emit(False)
 
     def set_dup_toggle(self, val):
         # CFG['is_control_duplicates'] = val

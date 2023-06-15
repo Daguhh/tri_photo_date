@@ -216,6 +216,12 @@ MAIN_TAB_BUTTONS = {
     "is_date_from_filesystem": {
         "label": _("Date fichier"),
         "tooltip": _(
+            "Cherche aussi la date de création de fichier à défaut d'informations trouvées dans les métadonnées"
+        ),
+    },
+    "is_force_date_from_filesystem" : {
+        "label": _("Forcer"),
+        "tooltip": _(
             "Prendre la date de création du fichier plutôt que de chercher dans les métadonnées"
         ),
     },
