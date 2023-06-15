@@ -58,7 +58,7 @@ class DatabaseViewer(QWidget):
 
     def update_table(
         self, filter_text=""
-    ):  # , src_dir='', extentions=[], cameras=[], recursive=True, filter_text='', dup_mode=False, from_compute='update_table'):
+    ):  # , dir='', extentions=[], cameras=[], recursive=True, filter_text='', mode=False, from_compute='update_table'):
         # filter_text = self.filter_edit.text()
         # conn = sqlite3.connect(self.db_file)
         # cursor = conn.cursor()

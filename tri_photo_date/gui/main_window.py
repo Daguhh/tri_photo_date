@@ -111,14 +111,14 @@ from tri_photo_date.utils.config_paths import (
 )
 
 
-lang = CFG["interface.gui_lang"]
+lang = CFG["interface.lang"]
 import gettext
 
 trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
 trad.install()
 _ = trad.gettext  # Greek
 
-os.environ["QT_SCALE_FACTOR"] = CFG["interface.gui_size"]
+os.environ["QT_SCALE_FACTOR"] = CFG["interface.size"]
 
 from PyQt5.QtCore import Qt, pyqtSignal, QPoint, QRect
 from PyQt5.QtGui import QPixmap, QPainter
@@ -201,11 +201,11 @@ class MainWindow_ui(QMainWindow):
         tab1_content.layout().addWidget(self.tab1)
         scroll_area.setWidget(tab1_content)
 
-        if CFG["interface.gui_mode"] == GUI_SIMPLIFIED:
+        if CFG["interface.mode"] == GUI_SIMPLIFIED:
             splitter.addWidget(self.tab1)
             tabs.setHidden(True)
 
-        elif CFG["interface.gui_mode"] == GUI_ADVANCED:
+        elif CFG["interface.mode"] == GUI_ADVANCED:
             tabs.addTab(scroll_area, "Main")
 
         tabs.addTab(toolscroll_area, _("Outils"))
@@ -228,43 +228,43 @@ class MainWindow(MainWindow_ui):
 
         # Set up connection to config object
         wdgs = {}
-        wdgs['scan.scan_src_dir'] = self.tab1.scanFrame.srcdirWdg.textBox
-        wdgs['scan.scan_dest_dir'] = self.tab1.scanFrame.destdirWdg.textBox
+        wdgs['scan.src_dir'] = self.tab1.scanFrame.srcdirWdg.textBox
+        wdgs['scan.dest_dir'] = self.tab1.scanFrame.destdirWdg.textBox
         #wdgs['("scan.'] = self.tab1.scanWdg.is_metaBtn.stateChanged
         #wdgs['("scan.'] = self.tab1.scanFrame.is_md5_data.stateChanged
         #wdgs['("scan.'] = self.tab1.scanFrame.is_md5_file.stateChanged
-        wdgs['scan.scan_is_use_cached_datas'] = self.tab1.scanFrame.is_use_cache
+        wdgs['scan.is_use_cached_datas'] = self.tab1.scanFrame.is_use_cache
         #wdgs['("scan.'] = self.tab1.scanFrame.dirWdg.recursiveBtn.stateChanged
 
-        wdgs['source.src_dir'] = self.tab1.srcFrame.dirWdg.textBox
-        wdgs['source.src_extentions'] = self.tab1.srcFrame.extWdg.textBox
-        wdgs['source.src_cameras'] = self.tab1.srcFrame.camWdg.textBox
-        wdgs['source.src_is_recursive'] = self.tab1.srcFrame.dirWdg.recursiveBtn
-        wdgs['source.src_excluded_dirs'] = self.tab1.srcFrame.excludeWdg.textBox
-        wdgs['source.src_exclude_toggle'] = self.tab1.srcFrame.excludeWdg.labelbox
-        wdgs['source.src_is_exclude_dir_regex'] = self.tab1.srcFrame.excludeWdg.is_regex
+        wdgs['source.dir'] = self.tab1.srcFrame.dirWdg.textBox
+        wdgs['source.extentions'] = self.tab1.srcFrame.extWdg.textBox
+        wdgs['source.cameras'] = self.tab1.srcFrame.camWdg.textBox
+        wdgs['source.is_recursive'] = self.tab1.srcFrame.dirWdg.recursiveBtn
+        wdgs['source.excluded_dirs'] = self.tab1.srcFrame.excludeWdg.textBox
+        wdgs['source.exclude_toggle'] = self.tab1.srcFrame.excludeWdg.labelbox
+        wdgs['source.is_exclude_dir_regex'] = self.tab1.srcFrame.excludeWdg.is_regex
 
-        wdgs['destination.dest_dir'] = self.tab1.destFrame.dirWdg.textBox
-        wdgs['destination.dest_rel_dir'] = self.tab1.destFrame.rel_dirWdg.textBox
-        wdgs['destination.dest_filename'] = self.tab1.destFrame.filenameWdg.textBox
+        wdgs['destination.dir'] = self.tab1.destFrame.dirWdg.textBox
+        wdgs['destination.rel_dir'] = self.tab1.destFrame.rel_dirWdg.textBox
+        wdgs['destination.filename'] = self.tab1.destFrame.filenameWdg.textBox
 
-        wdgs['duplicates.dup_is_control'] = self.tab1.dupFrame.dupBtns.duplicateBtn
-        wdgs['duplicates.dup_mode'] = self.tab1.dupFrame.dupBtns.dup_grp
-        wdgs['duplicates.dup_is_scan_dest'] = self.tab1.dupFrame.dupBtns.scandestBtn
+        wdgs['duplicates.is_control'] = self.tab1.dupFrame.dupBtns.duplicateBtn
+        wdgs['duplicates.mode'] = self.tab1.dupFrame.dupBtns.dup_grp
+        wdgs['duplicates.is_scan_dest'] = self.tab1.dupFrame.dupBtns.scandestBtn
 
-        wdgs['options.name.name_guess_fmt'] = self.tab1.optFrame.guess_date_from_name.textBox
-        wdgs['options.name.name_is_guess'] = self.tab1.optFrame.guess_date_from_name.checkBox
-        wdgs['options.group.grp_is_group'] = self.tab1.optFrame.group_by_floating_days.checkBox
-        wdgs['options.group.grp_display_fmt'] = self.tab1.optFrame.group_by_floating_days.textBox
-        wdgs['options.group.grp_floating_nb'] = self.tab1.optFrame.group_by_floating_days.spinBox
-        wdgs['options.gps.gps_is_gps'] = self.tab1.optFrame.gps
-        wdgs['options.general.opt_is_delete_metadatas'] = self.tab1.optFrame.is_delete_metadatas
-        wdgs['options.general.opt_is_date_from_filesystem'] = self.tab1.optFrame.is_date_from_filesystem
+        wdgs['options.name.guess_fmt'] = self.tab1.optFrame.guess_date_from_name.textBox
+        wdgs['options.name.is_guess'] = self.tab1.optFrame.guess_date_from_name.checkBox
+        wdgs['options.group.is_group'] = self.tab1.optFrame.group_by_floating_days.checkBox
+        wdgs['options.group.display_fmt'] = self.tab1.optFrame.group_by_floating_days.textBox
+        wdgs['options.group.floating_nb'] = self.tab1.optFrame.group_by_floating_days.spinBox
+        wdgs['options.gps.is_gps'] = self.tab1.optFrame.gps
+        wdgs['options.general.is_delete_metadatas'] = self.tab1.optFrame.is_delete_metadatas
+        wdgs['options.general.is_date_from_filesystem'] = self.tab1.optFrame.is_date_from_filesystem
 
         wdgs['action.action_mode'] = self.tab1.execFrame.file_actionWdg.btn_group
-        wdgs['interface.gui_mode'] = self.menubar.mode_group
-        wdgs['interface.gui_lang'] = self.menubar.lang_group
-        wdgs['interface.gui_size'] = self.menubar.size_group
+        wdgs['interface.mode'] = self.menubar.mode_group
+        wdgs['interface.lang'] = self.menubar.lang_group
+        wdgs['interface.size'] = self.menubar.size_group
 
 
         self.wdgs = wdgs
@@ -461,12 +461,12 @@ class MainWindow(MainWindow_ui):
         popup = SettingFilePopup()
 
         wdgs = {}
-        wdgs['files.files_is_max_hash_size'] = popup.ckb_max_hash
-        wdgs['files.files_max_hash_size'] = popup.spin_max_hash
-        wdgs['files.files_is_min_size'] = popup.ckb_min_size
-        wdgs['files.files_min_size'] = popup.spin_min_size
-        wdgs['files.files_is_max_size'] = popup.ckb_max_size
-        wdgs['files.files_max_size'] = popup.spin_max_size
+        wdgs['files.is_max_hash_size'] = popup.ckb_max_hash
+        wdgs['files.max_hash_size'] = popup.spin_max_hash
+        wdgs['files.is_min_size'] = popup.ckb_min_size
+        wdgs['files.min_size'] = popup.spin_min_size
+        wdgs['files.is_max_size'] = popup.ckb_max_size
+        wdgs['files.max_size'] = popup.spin_max_size
 
         self.wdgs_settings = wdgs
         self.load_settings_conf()
@@ -475,26 +475,26 @@ class MainWindow(MainWindow_ui):
         if res == QDialog.Accepted:
             val= popup.get_values()
 
-            CFG['files.files_is_max_hash_size'] = val['max_hash'][0]
-            CFG['files.files_max_hash_size'] = val['max_hash'][1]
-            CFG['files.files_is_min_size'] = val['min_size'][0]
-            CFG['files.files_min_size'] = val['min_size'][1]
-            CFG['files.files_is_max_size'] = val['max_size'][0]
-            CFG['files.files_max_size'] = val['max_size'][1]
+            CFG['files.is_max_hash_size'] = val['max_hash'][0]
+            CFG['files.max_hash_size'] = val['max_hash'][1]
+            CFG['files.is_min_size'] = val['min_size'][0]
+            CFG['files.min_size'] = val['min_size'][1]
+            CFG['files.is_max_size'] = val['max_size'][0]
+            CFG['files.max_size'] = val['max_size'][1]
 
     def set_language(self, lang):
-        if CFG["interface.gui_lang"] == lang.data():
+        if CFG["interface.lang"] == lang.data():
             return
 
-        CFG["interface.gui_lang"] = lang.data()
+        CFG["interface.lang"] = lang.data()
 
         self.menubar.show_message_box()
 
     def set_interface_mode(self, mode):
-        if CFG["interface.gui_mode"] == mode.data():
+        if CFG["interface.mode"] == mode.data():
             return
 
-        CFG["interface.gui_mode"] = mode.data()
+        CFG["interface.mode"] = mode.data()
         msg = ""
         if mode.data() == GUI_SIMPLIFIED:
             msg = "\n".join((
@@ -508,10 +508,10 @@ class MainWindow(MainWindow_ui):
     def set_interface_size(self, size):
         print('SIZE TRIGGERED')
         # selected_action = self.size_group.checkedAction()
-        if CFG["interface.gui_size"] == size.data():
+        if CFG["interface.size"] == size.data():
             return
 
-        CFG["interface.gui_size"] = size.data()
+        CFG["interface.size"] = size.data()
         self.menubar.show_message_box()
 
 class MainTab(QWidget):
@@ -527,15 +527,15 @@ class MainTab(QWidget):
         scanFrame = CollapsibleFrame(_("Scan"), color="darkGreen")
         layout = QVBoxLayout()
 
-        scanFrame.srcdirWdg = LabelNLineEdit(self, **MTW["scan_src_dir"])
+        scanFrame.srcdirWdg = LabelNLineEdit(self, **MTW["dir"])
         layout.addLayout(scanFrame.srcdirWdg)
-        scanFrame.destdirWdg = LabelNLineEdit(self, **MTW["scan_dest_dir"])
+        scanFrame.destdirWdg = LabelNLineEdit(self, **MTW["dir"])
         layout.addLayout(scanFrame.destdirWdg)
         sub_layout = QHBoxLayout()
-        #scanFrame.is_metaBtn = simpleCheckBox(sub_layout, **MTB["scan_is_meta"])
-        #scanFrame.is_md5_file = simpleCheckBox(sub_layout, **MTB["scan_is_md5_file"])
-        #scanFrame.is_md5_data = simpleCheckBox(sub_layout, **MTB["scan_is_md5_data"])
-        scanFrame.is_use_cache = simpleCheckBox(sub_layout, **MTB["scan_is_use_cached_datas"])
+        #scanFrame.is_metaBtn = simpleCheckBox(sub_layout, **MTB["is_meta"])
+        #scanFrame.is_md5_file = simpleCheckBox(sub_layout, **MTB["is_md5_file"])
+        #scanFrame.is_md5_data = simpleCheckBox(sub_layout, **MTB["is_md5_data"])
+        scanFrame.is_use_cache = simpleCheckBox(sub_layout, **MTB["is_use_cached_datas"])
         layout.addLayout(sub_layout)
 
         scanFrame.setLayout(layout)
@@ -576,7 +576,7 @@ class MainTab(QWidget):
 
         layout.addLayout(srcFrame.dirWdg)
         layout.addLayout(srcFrame.extWdg)
-        if not CFG["interface.gui_mode"] == GUI_SIMPLIFIED:
+        if not CFG["interface.mode"] == GUI_SIMPLIFIED:
             layout.addLayout(srcFrame.camWdg)
             layout.addLayout(srcFrame.excludeWdg)
         srcFrame.setLayout(layout)
@@ -648,7 +648,7 @@ class MainTab(QWidget):
         self.previewBtn = simplePushButton(main_layout, **ACTION_BUTTONS["calculate"])
         self.stopBtn1 = simpleStopButton(main_layout, self.stop)
 
-        if CFG["interface.gui_mode"] == GUI_SIMPLIFIED:
+        if CFG["interface.mode"] == GUI_SIMPLIFIED:
             self.optFrame.setHidden(True)
 
         self.compute_act_prog_holder = QVBoxLayout()
@@ -821,7 +821,7 @@ class LabelNLineEdit(QHBoxLayout):
         self.addWidget(combo)
         self.combo = combo
 
-        if CFG["interface.gui_mode"] == GUI_SIMPLIFIED:
+        if CFG["interface.mode"] == GUI_SIMPLIFIED:
             combo.addItems(options)
             combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             self.textBox = QLineEdit()
@@ -849,7 +849,7 @@ class LabelNLineEdit(QHBoxLayout):
         combo.activated.connect(callback)
 
         # Set default values (need to load values from textBox intead of config at MainTab.__init__)
-        if CFG["interface.gui_mode"] == GUI_SIMPLIFIED:
+        if CFG["interface.mode"] == GUI_SIMPLIFIED:
             combo.setCurrentIndex(0)
             combo.currentIndexChanged.emit(0)
 
@@ -875,25 +875,25 @@ class DuplicateWdg(QHBoxLayout):
         )  # QCheckBox('Dupliqués : ')
 
         self.dup_grp = QButtonGroup(parent)
-        dup_mode_Btns = {}
-        dup_mode_Btns[DUP_MD5_FILE] = MyRadioButton(
+        mode_Btns = {}
+        mode_Btns[DUP_MD5_FILE] = MyRadioButton(
             parent, **DUP_RADIO_BUTTONS["file"]
         )  # QRadioButton(_('Fichier'), parent)
-        dup_mode_Btns[DUP_MD5_DATA] = MyRadioButton(
+        mode_Btns[DUP_MD5_DATA] = MyRadioButton(
             parent, **DUP_RADIO_BUTTONS["data"]
         )  # QRadioButton(_('Données'), parent)
-        dup_mode_Btns[DUP_DATETIME] = MyRadioButton(
+        mode_Btns[DUP_DATETIME] = MyRadioButton(
             parent, **DUP_RADIO_BUTTONS["date"]
         )  # QRadioButton(_('Date'), parent)
 
-        self.dup_grp.addButton(dup_mode_Btns[DUP_MD5_FILE], DUP_MD5_FILE)
-        self.dup_grp.addButton(dup_mode_Btns[DUP_MD5_DATA], DUP_MD5_DATA)
-        self.dup_grp.addButton(dup_mode_Btns[DUP_DATETIME], DUP_DATETIME)
+        self.dup_grp.addButton(mode_Btns[DUP_MD5_FILE], DUP_MD5_FILE)
+        self.dup_grp.addButton(mode_Btns[DUP_MD5_DATA], DUP_MD5_DATA)
+        self.dup_grp.addButton(mode_Btns[DUP_DATETIME], DUP_DATETIME)
 
-        self.addWidget(dup_mode_Btns[DUP_MD5_FILE])
-        self.addWidget(dup_mode_Btns[DUP_MD5_DATA])
-        self.addWidget(dup_mode_Btns[DUP_DATETIME])
-        self.scandestBtn = simpleCheckBox(self, **MTB["dup_is_scan_dest"])
+        self.addWidget(mode_Btns[DUP_MD5_FILE])
+        self.addWidget(mode_Btns[DUP_MD5_DATA])
+        self.addWidget(mode_Btns[DUP_DATETIME])
+        self.scandestBtn = simpleCheckBox(self, **MTB["is_scan_dest"])
 
     def set_dup_toggle(self, val):
         # CFG['is_control_duplicates'] = val
@@ -1079,7 +1079,7 @@ class ListExtsTab(CollapsibleFrame):
     def get_ext_list(self):
         self.listextWdg.clear()
         exts = list_available_exts(
-            CFG["source.src_dir"], recursive=CFG["source.src_is_recursive"]
+            CFG["source.dir"], recursive=CFG["source.is_recursive"]
         )
         for ext in exts:
             # item = QListWidgetItem(ext)
@@ -1123,9 +1123,9 @@ class ListCameraTab(CollapsibleFrame):
     def get_camera_list(self):
         self.listappWdg.clear()
         cameras = list_available_camera_model(
-            CFG["source.src_dir"],
-            CFG["source.src_extentions"],
-            recursive=CFG["source.src_is_recursive"],
+            CFG["source.dir"],
+            CFG["source.extentions"],
+            recursive=CFG["source.is_recursive"],
         )
         for camera in cameras:
             # item = QListWidgetItem(ext)
@@ -1156,9 +1156,9 @@ class ListMetaTab(CollapsibleFrame):
 
     def get_tag_list(self):
         self.exifs_lists = list_available_tags(
-            CFG["source.src_dir"],
-            CFG["source.src_extentions"],
-            recursive=CFG["source.src_is_recursive"],
+            CFG["source.dir"],
+            CFG["source.extentions"],
+            recursive=CFG["source.is_recursive"],
         )
 
         option = self.choose_box.currentText()
@@ -1214,9 +1214,9 @@ class ListMetaDataTab_old(QWidget):
 
     def get_tag_list(self):
         self.exifs_lists = list_available_tags(
-            CFG["source.src_dir"],
-            CFG["source.src_extentions"],
-            recursive=CFG["source.src_is_recursive"],
+            CFG["source.dir"],
+            CFG["source.extentions"],
+            recursive=CFG["source.is_recursive"],
         )
 
         option = self.choose_box.currentText()

@@ -43,7 +43,7 @@ from tri_photo_date.utils.config_loader import (
 from tri_photo_date.ordonate_photos import CFG
 from tri_photo_date.gui.human_text import MENU_TOOL_BUTTON
 
-lang = CFG["interface.gui_lang"]
+lang = CFG["interface.lang"]
 import gettext
 
 trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
@@ -97,7 +97,7 @@ class WindowMenu(QMenuBar):
         mode_menu.addAction(self.mode_group.addAction(simplify_action))
 
         #for action in self.mode_group.actions():
-        #    if action.data() == CFG["interface.gui_mode"]:
+        #    if action.data() == CFG["interface.mode"]:
         #        action.setChecked(True)
         # mode_menu.setDisabled(True)
 
@@ -114,8 +114,8 @@ class WindowMenu(QMenuBar):
             # size_act.triggered.connect(lambda x: self.set_interface_size(s))
 
         #for action in self.size_group.actions():
-        #    # print(action.data(), CFG['gui_size'], type(action.data()))
-        #    if action.data() == CFG["interface.gui_size"]:
+        #    # print(action.data(), CFG['size'], type(action.data()))
+        #    if action.data() == CFG["interface.size"]:
         #        action.setChecked(True)
 
         lang_menu = QMenu(_("Langue"), self)
@@ -129,7 +129,7 @@ class WindowMenu(QMenuBar):
             lang_menu.addAction(self.lang_group.addAction(lang_act))
 
         #for action in self.lang_group.actions():
-        #    if action.data() == CFG["interface.gui_lang"]:
+        #    if action.data() == CFG["interface.lang"]:
         #        action.setChecked(True)
 
         view_menu.addMenu(mode_menu)

@@ -421,35 +421,35 @@ class ImageMetadataDB:
 
     def list_files(
         self,
-        src_dir="",
+        dir="",
         extentions=[],
         cameras=[],
         recursive=True,
         filter_txt="",
-        dup_mode=False,
+        mode=False,
         exclude=[],
     ):
-        """List files in src_dir applying user filters"""
+        """List files in dir applying user filters"""
 
-        src_dir = str(src_dir)
+        dir = str(dir)
 
-        if not dup_mode:
+        if not mode:
             cmd = "SELECT path, md5_file FROM images_view"
-        elif dup_mode == DUP_MD5_FILE:
+        elif mode == DUP_MD5_FILE:
             cmd = "SELECT path, md5_file, MAX(path) FROM images_view"
-        elif dup_mode == DUP_MD5_DATA:
+        elif mode == DUP_MD5_DATA:
             # Prevent missing md5_data
             cmd = (
                 "SELECT path, COALESCE(md5_data, md5_file), MAX(path) FROM images_view"
             )
-        elif dup_mode == DUP_DATETIME:
+        elif mode == DUP_DATETIME:
             cmd = "SELECT path, date, MAX(path) FROM images_view"
 
         if not recursive:
             cmd += " " + "WHERE folder = ? AND path LIKE '%' || ? || '%'"
         else:
             cmd += " " + "WHERE folder LIKE ? || '%' AND path LIKE '%' || ? || '%'"
-        tup = (src_dir, filter_txt)
+        tup = (dir, filter_txt)
 
         if extentions and extentions[0]:
             cmd += " " + f"AND extentions IN ({','.join('?' for _ in extentions)})"
@@ -462,7 +462,7 @@ class ImageMetadataDB:
         if exclude["dirs"] and exclude["dirs"][0]:
             # if excluded_dirs and excluded_dirs[0]:
             if not exclude["is_regex"]:
-                excluded_dirs = [os.path.join(src_dir, f) for f in exclude["dirs"]]
+                excluded_dirs = [os.path.join(dir, f) for f in exclude["dirs"]]
                 # for excl in excluded_dirs:
                 if exclude["toggle"] == DIR_EXCLUDE:
                     # cmd += " " + f"AND folder NOT LIKE ? || '%'"
@@ -486,13 +486,13 @@ class ImageMetadataDB:
                     cmd += " " + "AND MATCH(?,folder)"
                 tup += ("|".join(exclude["dirs"]),)
 
-        if not dup_mode:
+        if not mode:
             pass
-        elif dup_mode == DUP_MD5_FILE:
+        elif mode == DUP_MD5_FILE:
             cmd += " " + "GROUP BY md5_file"
-        elif dup_mode == DUP_MD5_DATA:
+        elif mode == DUP_MD5_DATA:
             cmd += " " + "GROUP BY COALESCE(md5_data, md5_file)"
-        elif dup_mode == DUP_DATETIME:
+        elif mode == DUP_DATETIME:
             cmd += " " + "GROUP BY date"
 
         c = self.conn.cursor()
@@ -502,28 +502,28 @@ class ImageMetadataDB:
         while row := c.fetchone():
             yield row[0]
 
-    def exist_in_dest(self, in_str, dup_mode):
+    def exist_in_dest(self, in_str, mode):
         c = self.conn.cursor()
 
-        if dup_mode == DUP_MD5_FILE:
+        if mode == DUP_MD5_FILE:
             query = "SELECT  md5_file FROM images_view WHERE path = ?"
-        elif dup_mode == DUP_MD5_DATA:
+        elif mode == DUP_MD5_DATA:
             # Prevent missing md5_data
             query = (
                 "SELECT COALESCE(md5_data, md5_file) FROM images_view WHERE path = ?"
             )
-        elif dup_mode == DUP_DATETIME:
+        elif mode == DUP_DATETIME:
             query = "SELECT date FROM images_view WHERE path = ?"
 
         c.execute(query, (in_str,))
         res = c.fetchone()
 
-        if dup_mode == DUP_MD5_FILE:
+        if mode == DUP_MD5_FILE:
             query = "SELECT * FROM scan_dest WHERE md5_file = ?"
-        elif dup_mode == DUP_MD5_DATA:
+        elif mode == DUP_MD5_DATA:
             # Prevent missing md5_dat
             query = "SELECT * FROM scan_dest WHERE COALESCE(md5_data, md5_file) = ?"
-        elif dup_mode == DUP_DATETIME:
+        elif mode == DUP_DATETIME:
             print("Can't check date in destination folder, not implemented yet.")
             return False
             # query = "SELECT * FROM scan_dest WHERE date = ?"

@@ -19,70 +19,70 @@ from tri_photo_date.utils.config_paths import CONFIG_PATH, APP_NAME
 DEFAULT_CONFIG = """
 [FILES]
 # Partially hashs files given the maximum size in Mo
-files_is_max_hash_size = 0
-files_max_hash_size = 0
+is_max_hash_size = 0
+max_hash_size = 0
 
 # Only find files between min and max in Mo
-files_is_min_size = 0
-files_min_size = 0
-files_is_max_size = 0
-files_max_size = 5000
+is_min_size = 0
+min_size = 0
+is_max_size = 0
+max_size = 5000
 
 [SCAN]
-scan_src_dir =
-scan_dest_dir =
-scan_is_recursive = 0
-scan_is_md5_file = 0
-scan_is_md5_data = 0
-scan_is_meta = 0
-scan_is_use_cached_datas = 0
+src_dir =
+dest_dir =
+is_recursive = 0
+is_md5_file = 0
+is_md5_data = 0
+is_meta = 0
+is_use_cached_datas = 0
 
 [SOURCE]
-src_dir =
-src_extentions = jpg,png,jpeg
-src_cameras =
-src_is_recursive = 2
-src_excluded_dirs =
-src_is_exclude_dir_regex = 2
-src_exclude_toggle = 0
+dir =
+extentions = jpg,png,jpeg
+cameras =
+is_recursive = 2
+excluded_dirs =
+is_exclude_dir_regex = 2
+exclude_toggle = 0
 
 [DESTINATION] =
-dest_dir =
-dest_rel_dir =
-dest_filename =
+dir =
+rel_dir =
+filename =
 
 [ACTION]
 action_mode = 1
 
 [DUPLICATES]
-dup_is_control = 2
-dup_mode = 1
-dup_is_scan_dest = 2
+is_control = 2
+mode = 1
+is_scan_dest = 2
 
 [OPTIONS.GENERAL]
-opt_is_delete_metadatas = 0
-opt_is_date_from_filesystem = 0
+is_delete_metadatas = 0
+is_date_from_filesystem = 0
 
 [OPTIONS.GROUP]
-grp_is_group = 0
-grp_floating_nb = 1
-grp_display_fmt =
+is_group = 0
+floating_nb = 1
+display_fmt =
 
 [OPTIONS.NAME]
-name_is_guess = 0
-name_guess_fmt =
+is_guess = 0
+guess_fmt =
 
 [OPTIONS.GPS]
-gps_is_gps = 0
-gps_debug = 0
-gps_simulate = 0
-gps_accuracy = 2
-gps_wait = 5
+is_gps = 0
+debug = 0
+simulate = 0
+accuracy = 2
+wait = 5
 
 [INTERFACE]
-gui_size = 1
-gui_mode = 3
-gui_lang = en
+size = 1
+mode = 3
+lang = en
 
 [MISC]
 verbose = 0
@@ -134,52 +134,52 @@ DIR_EXCLUDE = 0
 DIR_INCLUDE = 1
 
 STRING = (
-    "dest_rel_dir",
-    "dest_filename",
-    "grp_display_fmt",
-    "name_guess_fmt",
-    "gui_size",
-    "gui_lang",
+    "rel_dir",
+    "filename",
+    "display_fmt",
+    "guess_fmt",
+    "size",
+    "lang",
     "exif_user_tags",
     "non_def",
 )
-PATH = ("src_src_dir", "scan_dest_dir", "dest_dir", "scan_dir")
+PATH = ("src_dir", "dir", "dir", "scan_dir")
 INTEGER = (
-    "src_exclude_toggle",
+    "exclude_toggle",
     "action_mode",
-    "dup_mode",
-    "grp_floating_nb",
-    "gps_wait",
-    "gui_mode",
-    "files_max_hash_size",
-    "files_min_size",
-    "files_max_size",
+    "mode",
+    "floating_nb",
+    "wait",
+    "mode",
+    "max_hash_size",
+    "min_size",
+    "max_size",
 )
 BOOLEAN = (
-    "scan_is_recursive",
-    "scan_is_md5_file",
-    "scan_is_md5_data",
-    "scan_is_meta",
-    "scan_is_use_cached_datas",
-    "src_is_recursive",
-    "src_is_exclude_dir_regex",
-    "dup_is_control",
-    "dup_is_scan_dest",
-    "opt_is_delete_metadatas",
-    "opt_is_date_from_filesystem",
-    "grp_is_group",
-    "name_is_guess",
-    "gps_is_gps",
-    "gps_debug",
-    "gps_simulate",
+    "is_recursive",
+    "is_md5_file",
+    "is_md5_data",
+    "is_meta",
+    "is_use_cached_datas",
+    "is_recursive",
+    "is_exclude_dir_regex",
+    "is_control",
+    "is_scan_dest",
+    "is_delete_metadatas",
+    "is_date_from_filesystem",
+    "is_group",
+    "is_guess",
+    "is_gps",
+    "debug",
+    "simulate",
     "verbose",
     "unidecode",
-    "files_is_max_hash_size",
-    "files_is_min_size",
-    "files_is_max_size",
+    "is_max_hash_size",
+    "is_min_size",
+    "is_max_size",
 )
-LISTE = ("src_extentions", "src_cameras", "src_excluded_dirs", "accepted_formats")
-FLOAT = ("gps_accuracy",)
+LISTE = ("extentions", "cameras", "excluded_dirs", "accepted_formats")
+FLOAT = ("accuracy",)
 
 
 def repr2value(k, v):  # for python

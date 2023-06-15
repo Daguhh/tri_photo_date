@@ -147,11 +147,11 @@ def get_date_from_exifs_or_file(in_str, metadatas):
     date_str = ""
 
     # First start looking at file name (user option)
-    if CFG["options.name.name_is_guess"]:
-        date_fmt = CFG["options.name.name_guess_fmt"]
+    if CFG["options.name.is_guess"]:
+        date_fmt = CFG["options.name.guess_fmt"]
         date_str = ExifTags.get_date_from_name(date_fmt, in_str)
 
-    if not date_str and CFG["options.general.opt_is_date_from_filesystem"]:
+    if not date_str and CFG["options.general.is_date_from_filesystem"]:
         timestamp = Path(in_str).stat().st_mtime
         date = datetime.fromtimestamp(timestamp, tz=timezone.utc)
         out_fmt = "%Y:%m:%d %H:%M:%S"
@@ -175,11 +175,11 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
     CFG.load_config()
     fingerprint.set_global_config(CFG)
 
-    in_dir = CFG["source.src_dir"]
-    out_dir = CFG["destination.dest_dir"]
-    is_use_cache = CFG["scan.scan_is_use_cached_datas"]
-    min_size = CFG['files.files_min_size'] *1000 if CFG['files.files_is_min_size'] else 0
-    max_size = CFG['files.files_max_size'] *1000*1000 if CFG['files.files_is_max_size'] else sys.maxsize
+    in_dir = CFG["source.dir"]
+    out_dir = CFG["destination.dir"]
+    is_use_cache = CFG["scan.is_use_cached_datas"]
+    min_size = CFG['files.min_size'] *1000 if CFG['files.is_min_size'] else 0
+    max_size = CFG['files.max_size'] *1000*1000 if CFG['files.is_max_size'] else sys.maxsize
 
     # update image database
     media_extentions = CFG["misc.accepted_formats"]
@@ -252,38 +252,38 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
 def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
     gps.set_global_config(CFG)
-    is_control_hash = CFG["duplicates.dup_is_control"]
-    control_dest_duplicates = CFG["duplicates.dup_is_scan_dest"]
-    duplicate_ctrl_mode = CFG["duplicates.dup_mode"]
+    is_control_hash = CFG["duplicates.is_control"]
+    control_dest_duplicates = CFG["duplicates.is_scan_dest"]
+    duplicate_ctrl_mode = CFG["duplicates.mode"]
     # is_hash_reset = CFG["hash_reset"]
-    in_dir = CFG["source.src_dir"]
-    extentions = CFG["source.src_extentions"]
-    cameras = CFG["source.src_cameras"]
+    in_dir = CFG["source.dir"]
+    extentions = CFG["source.extentions"]
+    cameras = CFG["source.cameras"]
     # out_dir = CFG['out_dir']
-    excluded_dirs = CFG["source.src_excluded_dirs"]
-    is_exclude_dir_regex = bool(CFG["source.src_is_exclude_dir_regex"])
-    exclude_toggle = CFG["source.src_exclude_toggle"]
+    excluded_dirs = CFG["source.excluded_dirs"]
+    is_exclude_dir_regex = bool(CFG["source.is_exclude_dir_regex"])
+    exclude_toggle = CFG["source.exclude_toggle"]
     exclude = {
         "dirs": excluded_dirs,
         "is_regex": is_exclude_dir_regex,
         "toggle": exclude_toggle,
     }
-    out_path_str = CFG["destination.dest_rel_dir"]
-    out_filename = CFG["destination.dest_filename"]
-    is_gps = CFG["options.gps.gps_is_gps"]
-    recursive = CFG["source.src_is_recursive"]
-    is_group_floating_days = CFG["options.group.grp_is_group"]
-    group_floating_days_nb = CFG["options.group.grp_floating_nb"]
-    group_floating_days_fmt = CFG["options.group.grp_display_fmt"]
+    out_path_str = CFG["destination.rel_dir"]
+    out_filename = CFG["destination.filename"]
+    is_gps = CFG["options.gps.is_gps"]
+    recursive = CFG["source.is_recursive"]
+    is_group_floating_days = CFG["options.group.is_group"]
+    group_floating_days_nb = CFG["options.group.floating_nb"]
+    group_floating_days_fmt = CFG["options.group.display_fmt"]
 
-    dup_mode = duplicate_ctrl_mode * bool(is_control_hash)
+    mode = duplicate_ctrl_mode * bool(is_control_hash)
     control_dest_duplicates = control_dest_duplicates * bool(is_control_hash)
     list_files_params = {
-        "src_dir": in_dir,
+        "dir": in_dir,
         "extentions": extentions,
         "cameras": cameras,
         "recursive": recursive,
-        "dup_mode": dup_mode,
+        "mode": mode,
         "exclude": exclude,
     }
 
@@ -307,7 +307,7 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
             # skip duplicates
             if control_dest_duplicates:
-                if db.exist_in_dest(in_str, dup_mode):
+                if db.exist_in_dest(in_str, mode):
                     continue
 
             # Generate a path string from user configuration
@@ -394,8 +394,8 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
 
 def execute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
-    is_gps = CFG["options.gps.gps_is_gps"]
-    is_delete_metadatas = CFG["options.general.opt_is_delete_metadatas"]
+    is_gps = CFG["options.gps.is_gps"]
+    is_delete_metadatas = CFG["options.general.is_delete_metadatas"]
 
     with ImageMetadataDB() as db:
         nb_files, total_size = db.count_preview()
@@ -411,7 +411,7 @@ def execute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
             # transform relative path into absolute path given user config
             out_rel_str, out_filename = db.get_out_str(in_str)
-            out_str = str(CFG["destination.dest_dir"] / out_rel_str / out_filename)
+            out_str = str(CFG["destination.dir"] / out_rel_str / out_filename)
 
             # SImulate / Move / Copy
             has_moved = move_file(in_str, out_str)

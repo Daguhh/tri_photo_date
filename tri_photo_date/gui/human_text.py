@@ -7,7 +7,7 @@ print("----------------------")
 print(CONFIG)
 print("-------======---------------")
 
-lang = CONFIG[("interface", "gui_lang")]
+lang = CONFIG[("interface", "lang")]
 trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
 trad.install()
 _ = trad.gettext  # Greek
@@ -41,12 +41,12 @@ REL_PATH_FORMATS = {
 
 
 MAIN_TAB_WIDGETS = {
-    "scan_src_dir": {
+    "dir": {
         "label": _("Dossier source"),
         "tooltip": _("Chemin du dossier à analyser, Ajustez le chemin dans la section 'Source'"),
         "placeholder": _("D:\CleUsb"),
     },
-    "scan_dest_dir": {
+    "dir": {
         "label": _("Dossier destination"),
         "tooltip": _("Chemin du dossier à analyser, Ajuster le chemin dans la section 'Destination'"),
         "placeholder": _(r"D:\User\Images"),
@@ -171,19 +171,19 @@ MENU_TOOL_BUTTON = [
 ]
 
 MAIN_TAB_BUTTONS = {
-    "scan_is_meta": {
+    "is_meta": {
         "label": _("metadonnées"),
         "tooltip": _("Obtient les métadonnées des fichiers"),
     },
-    "scan_is_md5_file": {
+    "is_md5_file": {
         "label": _("empreinte fichier"),
         "tooltip": _("Calcule l'empreinte md5 du fichier"),
     },
-    "scan_is_md5_data": {
+    "is_md5_data": {
         "label": _("empreinte des données"),
         "tooltip": _("Calcule l'empreinte md5 des données"),
     },
-    "scan_is_use_cached_datas": {
+    "is_use_cached_datas": {
         "label": _("données du cache"),
         "tooltip": _("Ne recalcule pas les empreintes des fichiers,\nutilise directement les données du cache associées au chemin du fichier.\n/!\\ N'activez uniquement si les données n'ont pas été modifiées depuis le dernier lancement du programme."),
     },
@@ -197,7 +197,7 @@ MAIN_TAB_BUTTONS = {
         "label": _("Récursif"),
         "tooltip": _("Cherche dans les sous dossier du dossier 'Source'"),
     },
-    "dup_is_scan_dest": {
+    "is_scan_dest": {
         "label": _("Destination"),
         "tooltip": _(
             "Scanne aussi le dossier destination à la recherche de fichiers dupliqués"

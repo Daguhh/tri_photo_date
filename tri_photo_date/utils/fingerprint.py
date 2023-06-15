@@ -5,9 +5,9 @@ import struct
 def set_global_config(config):
 
     global max_length
-    is_max_hash = config['files.files_is_max_hash_size']
+    is_max_hash = config['files.is_max_hash_size']
     if is_max_hash:
-        max_length = config['files.files_max_hash_size'] * 1000*1000 # 1 MB ->5000 MB
+        max_length = config['files.max_hash_size'] * 1000*1000 # 1 MB ->5000 MB
     else:
         max_length = 1000*1000*1000*5 # 5GB
 

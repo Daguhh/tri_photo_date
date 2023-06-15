@@ -5,7 +5,7 @@ from tri_photo_date.utils.config_loader import CONFIG
 
 import gettext
 
-lang = CONFIG[("interface", "gui_lang")]
+lang = CONFIG[("interface", "lang")]
 trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
 trad.install()
 _ = trad.gettext  # Greek
