@@ -496,7 +496,6 @@ class ImageMetadataDB:
             cmd += " " + "GROUP BY date"
 
         c = self.conn.cursor()
-        print(cmd, "\n", tup)
         c.execute(cmd, tup)
 
         while row := c.fetchone():

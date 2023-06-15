@@ -226,7 +226,17 @@ class MainWindow(MainWindow_ui):
     def __init__(self):
         super().__init__()
 
-        # Set up connection to config object
+        self.create_widget_dct()
+
+        self.setup_interconnections()
+        self.setup_actions()
+
+        self.connect_wdgs_2_config()
+
+        self.load_conf()
+
+    def create_widget_dct(self):
+
         wdgs = {}
         wdgs['scan.src_dir'] = self.tab1.scanFrame.srcdirWdg.textBox
         wdgs['scan.dest_dir'] = self.tab1.scanFrame.destdirWdg.textBox
@@ -263,20 +273,12 @@ class MainWindow(MainWindow_ui):
         wdgs['options.general.is_force_date_from_filesystem'] = self.tab1.optFrame.is_force_date_from_filesystem
 
         wdgs['action.action_mode'] = self.tab1.execFrame.file_actionWdg.btn_group
+
         wdgs['interface.mode'] = self.menubar.mode_group
         wdgs['interface.lang'] = self.menubar.lang_group
         wdgs['interface.size'] = self.menubar.size_group
 
-
         self.wdgs = wdgs
-
-        self.setup_interconnections()
-        self.setup_actions()
-
-        self.connect_menubar_2_config()
-        self.connect_wdgs_2_config()
-
-        self.load_conf()
 
     def setup_interconnections(self):
 
@@ -318,16 +320,13 @@ class MainWindow(MainWindow_ui):
                 wdg.buttonClicked[int].connect(callback)
             elif isinstance(wdg, QAction):
                 pass # link manually to specific action
-
-    def connect_menubar_2_config(self):
+            elif isinstance(wdg, QActionGroup):
+                wdg.triggered.connect(lambda s, prop=prop : callback(s.data(), prop))
 
         #self.menubar.load_action.triggered.connect(self.load)
         #self.menubar.save_action.triggered.connect(self.save)
         self.menubar.config_action.triggered.connect(self.menubar.open_file_browser)
         self.menubar.set_settings_action.triggered.connect(self.show_set_settings)
-        self.menubar.mode_group.triggered.connect(self.set_interface_mode)
-        self.menubar.size_group.triggered.connect(self.set_interface_size)
-        self.menubar.lang_group.triggered.connect(self.set_language)
         self.menubar.debug_action.triggered.connect(self.menubar.debug_toggle)
         self.menubar.debug_action.setChecked(CFG["misc.verbose"])
 
@@ -357,16 +356,13 @@ class MainWindow(MainWindow_ui):
             elif isinstance(wdg, QSpinBox):
                 wdg.setValue(CFG.get_repr(prop))
 
-        #for section_name, section_dct in self.Wdgs.items():
-        #    for param, wdg_setter in section_dct.items():
-        #        wdg_setter(CFG.get_repr((section_name, param)))
-    def update_cameras(self):
-        txt = self.tab4.user_choice_cameras
-        self.tab1.srcFrame.camWdg.textBox.setText(txt)
+    #def update_cameras(self):
+    #    txt = self.tab4.user_choice_cameras
+    #    self.tab1.srcFrame.camWdg.textBox.setText(txt)
 
-    def update_extensions(self):
-        txt = self.tab2.user_choice_extentions
-        self.tab1.srcFrame.extWdg.textBox.setText(txt)
+    #def update_extensions(self):
+    #    txt = self.tab2.user_choice_extentions
+    #    self.tab1.srcFrame.extWdg.textBox.setText(txt)
 
     def update_preview(self):
         timer = QTimer()
@@ -483,37 +479,6 @@ class MainWindow(MainWindow_ui):
             CFG['files.is_max_size'] = val['max_size'][0]
             CFG['files.max_size'] = val['max_size'][1]
 
-    def set_language(self, lang):
-        if CFG["interface.lang"] == lang.data():
-            return
-
-        CFG["interface.lang"] = lang.data()
-
-        self.menubar.show_message_box()
-
-    def set_interface_mode(self, mode):
-        if CFG["interface.mode"] == mode.data():
-            return
-
-        CFG["interface.mode"] = mode.data()
-        msg = ""
-        if mode.data() == GUI_SIMPLIFIED:
-            msg = "\n".join((
-                _(
-                    "Attention, les paramètres de la section 'options' seront conservés"
-                ),
-                _("mais ne seront plus modifiables en mode 'simplifié'"),
-            ))
-        self.menubar.show_message_box(msg)
-
-    def set_interface_size(self, size):
-        print('SIZE TRIGGERED')
-        # selected_action = self.size_group.checkedAction()
-        if CFG["interface.size"] == size.data():
-            return
-
-        CFG["interface.size"] = size.data()
-        self.menubar.show_message_box()
 
 class MainTab(QWidget):
     def __init__(self, parent):

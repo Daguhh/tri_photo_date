@@ -173,7 +173,7 @@ def get_date_from_exifs_or_file(in_str, metadatas):
                 date_str = metadatas[date_tag]
                 break
 
-    if not date_str and CFG['options.general.is_force_date_filesystem']:
+    if not date_str and CFG['options.general.is_force_date_from_filesystem']:
         date_str = get_date_from_file_system(in_str)
 
     if not date_str:
@@ -299,7 +299,6 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
         "exclude": exclude,
     }
 
-    print(list_files_params)
     with ImageMetadataDB() as db:
         db.clean_preview_table()
 

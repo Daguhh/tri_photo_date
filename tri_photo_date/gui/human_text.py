@@ -3,14 +3,13 @@ from tri_photo_date.utils.config_paths import LOCALES_DIR
 
 import gettext
 
-print("----------------------")
-print(CONFIG)
-print("-------======---------------")
-
 lang = CONFIG[("interface", "lang")]
 trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
 trad.install()
 _ = trad.gettext  # Greek
+
+
+WARNING_SWITCH_SIMPLIFY_MODE = _("Attention, les paramètres de la section 'options' seront conservés\nmais ne seront plus modifiables en mode 'simplifié'")
 
 MEDIA_FORMATS = {
     _(

@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import (
     QMainWindow,
@@ -41,7 +41,7 @@ from tri_photo_date.utils.config_loader import (
     LANG_LIST,
 )
 from tri_photo_date.ordonate_photos import CFG
-from tri_photo_date.gui.human_text import MENU_TOOL_BUTTON
+from tri_photo_date.gui.human_text import MENU_TOOL_BUTTON, WARNING_SWITCH_SIMPLIFY_MODE
 
 lang = CFG["interface.lang"]
 import gettext
@@ -148,6 +148,9 @@ class WindowMenu(QMenuBar):
         # simulate_action.triggered.connect(self.simulate_toggle)
         # simulate_action.setChecked(CFG['simulate'])
         # simulate_action.setToolTip("Ne copie aucun fichier")
+        self.mode_group.triggered.connect(self.set_interface_mode)
+        self.size_group.triggered.connect(self.set_interface_size)
+        self.lang_group.triggered.connect(self.set_language)
 
         # About menu
         about_menu = self.addMenu(_("A propos"))
@@ -173,6 +176,18 @@ class WindowMenu(QMenuBar):
 
     def save(self):
         pass
+
+    def set_language(self, lang):
+        QTimer.singleShot(0, self.show_message_box)
+
+    def set_interface_mode(self, mode):
+        msg = ""
+        if mode.data() == GUI_SIMPLIFIED:
+            msg = WARNING_SWITCH_SIMPLIFY_MODE
+        QTimer.singleShot(0, lambda msg=msg: self.show_message_box(msg))
+
+    def set_interface_size(self, size):
+        QTimer.singleShot(0, self.show_message_box)
 
     def show_message_box(self, msg=""):
         msgBox = QMessageBox()

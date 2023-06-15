@@ -298,7 +298,6 @@ class ConfigDict(dict):
         return super().__getitem__(k)
 
     def __setitem__(self, k, v):
-        print('set :',k,v)
         if isinstance(k, tuple):
             k = ".".join(k)
         # k = ','.join(x.lower() for x in k)
