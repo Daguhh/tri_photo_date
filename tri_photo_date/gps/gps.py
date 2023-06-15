@@ -21,7 +21,7 @@ from geopy.geocoders import Nominatim
 from geopy.distance import distance as GEODistance
 
 from tri_photo_date.exif import ExifTags, EXIF_LOCATION_FIELD, EXIF_GPS_FIELD
-from tri_photo_date.utils.config_paths import CONFIG_DIR
+from tri_photo_date.utils.config_paths import GPS_DATABASE_PATH
 from tri_photo_date.gps.gps_constants import LOCATION_TYPES
 
 # except ImportError:
@@ -44,7 +44,7 @@ def set_global_config(CONFIG):
     GPS_WAIT = CONFIG["options.gps.wait"]  # in seconds
 
 
-SQLITE_CACHE_PATH = CONFIG_DIR / "gps_cache.db"
+# SQLITE_CACHE_PATH = CONFIG_DIR / "gps_cache.db"
 
 # try:
 #    from .gps_returns_examples import SaintEtienne, SaintRemi, London
@@ -186,7 +186,7 @@ def cache_gps_data(func):
         lat, lon = args
 
         # Load / Create
-        cache = sqlite3.connect(SQLITE_CACHE_PATH)
+        cache = sqlite3.connect(GPS_DATABASE_PATH)
         cur = cache.cursor()
         cur.execute(
             "CREATE TABLE IF NOT EXISTS cache (lat REAL, lon REAL, result TEXT)"
