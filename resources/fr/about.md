@@ -1,10 +1,10 @@
 # TriPhotoDate
 
-## v0.1.1 ([changelog](changelog))
+**v0.1.1** ([changelog](changelog))
 
 ### @ 2023 Daguhh
 
-Sort image using metadata placeholder
+Triez vos photos en utilisant leurs métadonnées
 
 [Source](https://github.com/Daguhh/tri_photo_date) - [License](https://raw.githubusercontent.com/Daguhh/tri_photo_date/main/LICENSE)
 

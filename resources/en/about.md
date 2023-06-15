@@ -1,6 +1,6 @@
 # TriPhotoDate
 
-## v0.1.1 ([changelog](changelog))
+**v0.1.1** ([changelog](changelog))
 
 ### @ 2023 Daguhh
 

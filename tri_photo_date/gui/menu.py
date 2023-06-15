@@ -154,7 +154,7 @@ class WindowMenu(QMenuBar):
 
         # About menu
         about_menu = self.addMenu(_("A propos"))
-        about_action = QAction(_("About"), self)
+        about_action = QAction(_("A propos"), self)
         about_menu.addAction(about_action)
         about_action.triggered.connect(self.show_about)
 

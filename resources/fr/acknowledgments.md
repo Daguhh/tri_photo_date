@@ -11,7 +11,6 @@
 ### Service en ligne
 
 Le programme utilise le service [nominatim d'OpenStreetMap](https://nominatim.openstreetmap.org/ui/search.html) pour résoudre les adresses à partir des coordonnées GPS :
+- Consulter les [droits d'auteur](https://www.openstreetmap.org/copyright)
 - Consulter les [conditions d'usage](https://operations.osmfoundation.org/policies/nominatim/) 
 - Consulter la [politique de confidentialité](https://wiki.osmfoundation.org/wiki/Privacy_Policy) du service
-
-
