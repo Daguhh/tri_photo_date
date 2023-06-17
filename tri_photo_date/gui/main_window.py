@@ -288,7 +288,7 @@ class MainWindow(MainWindow_ui):
         self.tab4.listappWdg.itemChanged.connect(
             lambda : self.tab1.srcFrame.camWdg.textBox.setText(self.tab4.user_choice_cameras)
         )
-        self.preview_wdg.filter_edit.textChanged.connect(self.update_preview)
+        #self.preview_wdg.filter_edit.textChanged.connect(self.update_preview)
 
         # Link scan lineedit to source and destination sections
         self.tab1.srcFrame.dirWdg.textBox.textChanged.connect(
@@ -663,8 +663,8 @@ class MainTab(QWidget):
 
         main_layout.addStretch()
 
-        size = self.sizeHint()
-        self.setMinimumHeight(size.height())
+        #size = self.sizeHint()
+        #self.setMinimumHeight(size.height())
 
         self.setLayout(main_layout)
 
@@ -1274,14 +1274,12 @@ class DateTab(CollapsibleFrame):
         super().__init__(_("Codes de formatage des dates"))
 
         self.collapse(True)
-        main_layout = QVBoxLayout(self)
 
         strftime_help = open(STRFTIME_HELP_PATH).read()
         text_widget = QTextEdit()
         text_widget.setHtml(strftime_help)
-        main_layout.addWidget(text_widget)
+        self.layout.addWidget(text_widget)
 
-        self.setLayout(main_layout)
 
     def link_clicked(self, url):
         QDesktopServices.openUrl(url)

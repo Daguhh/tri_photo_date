@@ -38,6 +38,26 @@ def _match_reg(reg, item):
     match = reg.search(item)
     return match is not None
 
+def get_image_metadatas(im_str):
+
+    try:
+        with ExifTags(im_str) as exifs:
+            metadata = {
+                k: v
+                for k, v in exifs.items()
+                if k in USEFULL_TAG_DESCRIPTION.keys()
+            }
+    except NoExifError as e:
+        metadata = {}
+
+    date = metadata.get("Exif.Photo.DateTimeOriginal", False)
+    date = date.strip() if date else None
+
+    camera = metadata.get("Exif.Image.Model", False)
+    camera = camera.strip() if camera else None
+
+    return metadata, date, camera
+
 class ImageMetadataDB:
     def __init__(self):
         self.db_file = str(IMAGE_DATABASE_PATH)
@@ -65,6 +85,7 @@ class ImageMetadataDB:
                   date text,
                   camera text,
                   metadata text,
+                  st_size int,
                   PRIMARY KEY (path)
             )
         """
@@ -73,7 +94,7 @@ class ImageMetadataDB:
         # Store path of image to process
         c.execute(
             """
-            CREATE TABLE IF NOT EXISTS images
+            CREATE TABLE IF NOT EXISTS images_to_process
               (
                   path text,
                   PRIMARY KEY (path)
@@ -85,9 +106,9 @@ class ImageMetadataDB:
         c.execute(
             """
             CREATE VIEW IF NOT EXISTS
-                images_view AS
+                images_to_process_view AS
             SELECT
-                images.path,
+                images_to_process.path,
                 images_cache.md5_file,
                 images_cache.md5_data,
                 images_cache.path,
@@ -96,18 +117,19 @@ class ImageMetadataDB:
                 images_cache.extentions,
                 images_cache.date,
                 images_cache.camera,
-                images_cache.metadata
+                images_cache.metadata,
+                images_cache.st_size
             FROM
-                images
+                images_to_process
             JOIN
                 images_cache
-            ON images.path = images_cache.path;"""
+            ON images_to_process.path = images_cache.path;"""
         )
 
         # Store processed data : new image path, location, group
         c.execute(
             """
-            CREATE TABLE IF NOT EXISTS tri_preview
+            CREATE TABLE IF NOT EXISTS process_preview
             (
                 path text,
                 filename text,
@@ -116,7 +138,7 @@ class ImageMetadataDB:
                 location text,
                 groups text,
                 date text,
-                FOREIGN KEY (path, filename) REFERENCES images_view(path, filename)
+                FOREIGN KEY (path, filename) REFERENCES images_to_process_view(path, filename)
             )"""
         )
 
@@ -124,13 +146,34 @@ class ImageMetadataDB:
         # /!\ missing date for date comparison for finding duplicate
         c.execute(
             """
-            CREATE TABLE IF NOT EXISTS scan_dest
+            CREATE TABLE IF NOT EXISTS images_in_dest
               (
-                  md5_file text,
-                  md5_data text,
                   path text,
                   PRIMARY KEY (path)
             )"""
+        )
+
+        c.execute(
+            """
+            CREATE VIEW IF NOT EXISTS
+                images_in_dest_view AS
+            SELECT
+                images_in_dest.path,
+                images_cache.md5_file,
+                images_cache.md5_data,
+                images_cache.path,
+                images_cache.folder,
+                images_cache.filename,
+                images_cache.extentions,
+                images_cache.date,
+                images_cache.camera,
+                images_cache.metadata,
+                images_cache.st_size
+            FROM
+                images_in_dest
+            JOIN
+                images_cache
+            ON images_in_dest.path = images_cache.path;"""
         )
 
         return self
@@ -142,25 +185,17 @@ class ImageMetadataDB:
 
     def clean_all_table(self):
         c = self.conn.cursor()
-        c.execute("DELETE FROM images")
-        c.execute("DELETE FROM tri_preview")
-        c.execute("DELETE FROM scan_dest")
+        c.execute("DELETE FROM images_to_process")
+        c.execute("DELETE FROM process_preview")
+        c.execute("DELETE FROM images_in_dest")
         self.conn.commit()
 
     def clean_preview_table(self):
         c = self.conn.cursor()
-        c.execute("DELETE FROM tri_preview")
+        c.execute("DELETE FROM process_preview")
         self.conn.commit()
 
-    def add_image(self, im_str, is_use_cache=False):
-        # Check if file exist in cache
-        # Check if md5 file has changed
-        # Check if md5 data has changed
-        #
-        # Get metadata from cache or image
-        # Get date and camera from metadata
-        #
-        # Insert/update db
+    def get_image_fingerprint(self, im_str):
 
         c = self.conn.cursor()
 
@@ -171,112 +206,103 @@ class ImageMetadataDB:
             WHERE path = ?""",
             (im_str,),
         )
-        res = c.fetchone()
 
-        if res:
-            # don't try to recalculates hash (/!\ data should have not changed since last time)
-            if is_use_cache:
-                c.execute("""INSERT INTO images VALUES (?)""", (im_str,))
-                self.conn.commit()
-                return
+        return c.fetchone()
 
-            # Test if file is the same
-            db_md5_file, db_md5_data = res
-            md5_file = get_file_fingerprint(im_str)
-            if db_md5_file == md5_file:
-                # md5 hash has not changed, do not update the row
-                c.execute("""INSERT INTO images VALUES (?)""", (im_str,))
-                self.conn.commit()
-                return
+    def get_file_size(self, im_str):
 
-            # Test if data inside file is the same
-            md5_data = get_data_fingerprint(im_str)
-            if db_md5_data == md5_data:
-                # md5 hash has changed, update the row
-                try:
-                    with ExifTags(im_str) as exifs:
-                        metadata = {
-                            k: v
-                            for k, v in exifs.items()
-                            if k in USEFULL_TAG_DESCRIPTION.keys()
-                        }
-                except NoExifError as e:
-                    metadata = {}
-                c.execute(
-                    """
-                    UPDATE images_cache
-                    SET md5_file = ?, metadata = ?
-                    WHERE path = ?""",
-                    (md5_file, json.dumps(metadata), im_str),
-                )
+        c = self.conn.cursor()
 
-                c.execute("""INSERT INTO images VALUES (?)""", (im_str,))
-                self.conn.commit()
-                return
+        c.execute(
+            """
+            SELECT st_size
+            FROM images_cache
+            WHERE path = ?""",
+            (im_str,),
+        )
 
-            # Photo itself had changed, but waht to do????
-            try:
-                with ExifTags(im_str) as exifs:
-                    metadata = {
-                        k: v
-                        for k, v in exifs.items()
-                        if k in USEFULL_TAG_DESCRIPTION.keys()
-                    }
+        return c.fetchone()[0]
 
-                date = metadata.get("Exif.Photo.DateTimeOriginal", None)
-                if date is not None:
-                    date = date.strip()
+    def add_image_to_scanned_list(self, im_str):
 
-                camera = metadata.get("Exif.Image.Model", None)
-                if camera is not None:
-                    camera = camera.strip()
+        c = self.conn.cursor()
+        c.execute("""INSERT INTO images_to_process VALUES (?)""", (im_str,))
+        self.conn.commit()
 
-            except NoExifError as e:
-                metadata = {}
-                date = None
-                camera = None
+    def add_image_to_scanned_dest_list(self, im_str):
 
-            c.execute(
-                """
-                UPDATE
-                    images_cache
-                SET
-                    md5_file = ?, md5_data = ?, metadata = ?, date = ?, camera = ?
-                WHERE path = ?""",
-                (md5_file, md5_data, json.dumps(metadata), date, camera, im_str),
-            )
+        c = self.conn.cursor()
+        c.execute("""INSERT INTO images_in_dest VALUES (?)""", (im_str,))
+        self.conn.commit()
 
-            c.execute("""INSERT INTO images VALUES (?)""", (im_str,))
-            self.conn.commit()
-            return
+    #def set_image_cache_metadatas(self, im_str, md5_file,  metadata):
 
-        # md5 hash does not exist in the database, insert a new row
+    #    c = self.conn.cursor()
+    #    c.execute(
+    #        """
+    #        UPDATE images_cache
+    #        SET md5_file = ?, metadata = ?
+    #        WHERE path = ?""",
+    #        (md5_file, json.dumps(metadata), im_str),
+    #    )
+
+    #    self.conn.commit()
+
+    def set_image_cache_values(self, im_str, **kwargs):
+
+        query = "UPDATE images_cache SET {} WHERE path = ?".format(
+            " ".join(f"{row} = ?" for row in kwargs.keys())
+        )
+
+        values = list(kwargs.values()) + [im_str]
+
+        c = self.conn.cursor()
+        c.execute(query, values)
+        self.conn.commit()
+
+    def update_cache(self, im_str, db_md5_file, db_md5_data):
+
+        # no changes
+        if (md5_file := get_file_fingerprint(im_str)) == db_md5_file:
+            pass
+
+        # metadatas changed
+        elif (md5_data := get_data_fingerprint(im_str)) == db_md5_data:
+            metadata, date, camera = get_image_metadatas(im_str)
+            st_size = Path(im_str).stat().st_size
+            values_to_set = {
+                'md5_file' : md5_file,
+                'metadata' : metadata,
+                'date' : date,
+                'camera' : camera,
+                'st_size' : st_size
+            }
+            self.set_image_cache_values(im_str, **values_to_set)
+
+        # even data changed (copletly new image or something like cropped)
+        else:
+            metadata, date, camera = get_image_metadatas(im_str)
+            st_size = Path(im_str).stat().st_size
+            values_to_set = {
+                'md5_file' : md5_file,
+                'md5_data' : md5_data,
+                'metadata' : metadata,
+                'date' : date,
+                'camera' : camera,
+                'st_size' : st_size,
+            }
+            self.set_image_cache_values(im_str, **values_to_set)
+
+    def set_cache(self, im_str):
+
         md5_file = get_file_fingerprint(im_str)
         md5_data = get_data_fingerprint(im_str)
         folder = str(Path(im_str).parent)
         filename = Path(im_str).name
         extention = im_str.split(".")[-1].lower()
 
-        try:
-            with ExifTags(im_str) as exifs:
-                metadata = {
-                    k: v
-                    for k, v in exifs.items()
-                    if k in USEFULL_TAG_DESCRIPTION.keys()
-                }
-
-            date = metadata.get("Exif.Photo.DateTimeOriginal", None)
-            if date is not None:
-                date = date.strip()
-
-            camera = metadata.get("Exif.Image.Model", None)
-            if camera is not None:
-                camera = camera.strip()
-
-        except NoExifError as e:
-            metadata = {}
-            date = None
-            camera = None
+        metadata, date, camera = get_image_metadatas(im_str)
+        st_size = Path(im_str).stat().st_size
 
         image_tuple = (
             md5_file,
@@ -288,104 +314,47 @@ class ImageMetadataDB:
             date,
             camera,
             json.dumps(metadata),
+            st_size,
         )
         # preview_tuple = (
         #    im_str, filename, None, None, None
         # )
-        c.execute(
-            "INSERT INTO images_cache VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            image_tuple,
-        )
-        # c.execute("INSERT INTO tri_preview VALUES (?, ?, ?, ?, ?)", preview_tuple)
-
-        # Add after in case of user interuption during 'add_image'
-        c.execute("""INSERT INTO images VALUES (?)""", (im_str,))
-
-        self.conn.commit()
-
-    def scan_dest(self, im_str, is_use_cache=False):
-        # Same as add_image but for destination folder
-
-        # Check database
         c = self.conn.cursor()
         c.execute(
-            """
-            SELECT
-                md5_file, md5_data
-            FROM
-                scan_dest
-            WHERE
-                path = ?""",
-            (im_str,),
+            "INSERT INTO images_cache VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            image_tuple,
         )
-        res = c.fetchone()
-
-        if res:
-
-            if is_use_cache:
-                return
-
-            db_md5_file, db_md5_data = res
-            md5_file = get_file_fingerprint(im_str)
-
-            if db_md5_file == md5_file and db_md5_data == md5_data:
-                # md5 hash has not changed, do not update the row
-                return
-
-            md5_data = get_data_fingerprint(im_str)
-            if db_md5_data == md5_data:
-                # md5 hash has changed, update the row
-                with ExifTags(im_str) as exifs:
-                    metadata = exifs.copy()
-                c.execute(
-                    """
-                    UPDATE
-                        scan_dest
-                    SET
-                        md5_file = ?
-                    WHERE
-                        path = ?""",
-                    (md5_file, json.dumps(metadata), im_str),
-                )
-            else:  # Photo itself had changed, but waht to do????
-                with ExifTags(im_str) as exifs:
-                    metadata = exifs.copy()
-                c.execute(
-                    """
-                    UPDATE
-                        scan_dest
-                    SET
-                        md5_file = ?, md5_data = ?
-                    WHERE
-                        path = ?""",
-                    (md5_file, md5_data, json.dumps(metadata), im_str),
-                )
-        else:
-            md5_file = get_file_fingerprint(im_str)
-            md5_data = get_data_fingerprint(im_str)
-            c.execute(
-                """
-                INSERT INTO
-                    scan_dest
-                VALUES
-                    (?, ?, ?)""",
-                (md5_file, md5_data, im_str),
-            )
-
         self.conn.commit()
 
-    #    def exist(self, im_path):
-    #
-    #        c= self.conn.cursor()
-    #        md5_file, md5_data = get_fingerprint(im_path)
-    #        c.execute(
-    #            '''SELECT EXISTS(
-    #                SELECT 1 FROM images_view WHERE md5_file=? LIMIT 1
-    #            )''',
-    #            (md5_file,))
-    #        res = c.fetchone()
-    #
-    #        return res[0]
+    def add_image(self, im_str, to_process=True, is_use_cache=False):
+
+        cached_fingerprints = self.get_image_fingerprint(im_str)
+
+        if cached_fingerprints and is_use_cache: # force cache
+            pass
+        elif cached_fingerprints: # exist in db
+            self.update_cache(im_str, *cached_fingerprints)
+        else:
+            self.set_cache(im_str)
+
+        if to_process:
+            self.add_image_to_scanned_list(im_str)
+        else:
+            self.add_image_to_scanned_dest_list(im_str)
+
+
+   # def scan_dest(self, im_str, is_use_cache=False):
+   #     # Same as add_image but for destination folder
+
+   #     cached_fingerprints = self.get_image_fingerprint(im_str)
+
+   #     if cached_fingerprints and is_use_cache: # force cache
+   #         pass
+   #     elif cached_fingerprints: # exist in db
+   #         self.update_cache(im_str, *cached_fingerprints)
+   #     else:
+   #         self.set_cache(im_str)
+
 
     def count(self, *args, **kwargs):
         nb_files = 0
@@ -393,7 +362,7 @@ class ImageMetadataDB:
 
         for f in self.list_files(*args, **kwargs):
             nb_files += 1
-            nb_bytes += Path(f).stat().st_size
+            nb_bytes += self.get_file_size(f) #Path(f).stat().st_size
 
         return nb_files, nb_bytes
 
@@ -408,7 +377,7 @@ class ImageMetadataDB:
         SELECT
             path
         FROM
-            tri_preview
+            process_preview
         """
         )
         rows = c.fetchall()
@@ -426,24 +395,24 @@ class ImageMetadataDB:
         cameras=[],
         recursive=True,
         filter_txt="",
-        mode=False,
+        dup_mode=False,
         exclude=[],
     ):
         """List files in dir applying user filters"""
 
         dir = str(dir)
 
-        if not mode:
-            cmd = "SELECT path, md5_file FROM images_view"
-        elif mode == DUP_MD5_FILE:
-            cmd = "SELECT path, md5_file, MAX(path) FROM images_view"
-        elif mode == DUP_MD5_DATA:
+        if not dup_mode:
+            cmd = "SELECT path, md5_file FROM images_to_process_view"
+        elif dup_mode == DUP_MD5_FILE:
+            cmd = "SELECT path, md5_file, MAX(path) FROM images_to_process_view"
+        elif dup_mode == DUP_MD5_DATA:
             # Prevent missing md5_data
             cmd = (
-                "SELECT path, COALESCE(md5_data, md5_file), MAX(path) FROM images_view"
+                "SELECT path, COALESCE(md5_data, md5_file), MAX(path) FROM images_to_process_view"
             )
-        elif mode == DUP_DATETIME:
-            cmd = "SELECT path, date, MAX(path) FROM images_view"
+        elif dup_mode == DUP_DATETIME:
+            cmd = "SELECT path, date, MAX(path) FROM images_to_process_view"
 
         if not recursive:
             cmd += " " + "WHERE folder = ? AND path LIKE '%' || ? || '%'"
@@ -486,13 +455,13 @@ class ImageMetadataDB:
                     cmd += " " + "AND MATCH(?,folder)"
                 tup += ("|".join(exclude["dirs"]),)
 
-        if not mode:
+        if not dup_mode:
             pass
-        elif mode == DUP_MD5_FILE:
+        elif dup_mode == DUP_MD5_FILE:
             cmd += " " + "GROUP BY md5_file"
-        elif mode == DUP_MD5_DATA:
+        elif dup_mode == DUP_MD5_DATA:
             cmd += " " + "GROUP BY COALESCE(md5_data, md5_file)"
-        elif mode == DUP_DATETIME:
+        elif dup_mode == DUP_DATETIME:
             cmd += " " + "GROUP BY date"
 
         c = self.conn.cursor()
@@ -501,31 +470,31 @@ class ImageMetadataDB:
         while row := c.fetchone():
             yield row[0]
 
-    def exist_in_dest(self, in_str, mode):
+    def exist_in_dest(self, in_str, dup_mode):
         c = self.conn.cursor()
 
-        if mode == DUP_MD5_FILE:
-            query = "SELECT  md5_file FROM images_view WHERE path = ?"
-        elif mode == DUP_MD5_DATA:
+        if dup_mode == DUP_MD5_FILE:
+            query = "SELECT  md5_file FROM images_to_process_view WHERE path = ?"
+        elif dup_mode == DUP_MD5_DATA:
             # Prevent missing md5_data
             query = (
-                "SELECT COALESCE(md5_data, md5_file) FROM images_view WHERE path = ?"
+                "SELECT COALESCE(md5_data, md5_file) FROM images_to_process_view WHERE path = ?"
             )
-        elif mode == DUP_DATETIME:
-            query = "SELECT date FROM images_view WHERE path = ?"
+        elif dup_mode == DUP_DATETIME:
+            query = "SELECT date FROM images_to_process_view WHERE path = ?"
 
         c.execute(query, (in_str,))
         res = c.fetchone()
 
-        if mode == DUP_MD5_FILE:
-            query = "SELECT * FROM scan_dest WHERE md5_file = ?"
-        elif mode == DUP_MD5_DATA:
+        if dup_mode == DUP_MD5_FILE:
+            query = "SELECT * FROM images_in_dest_view WHERE md5_file = ?"
+        elif dup_mode == DUP_MD5_DATA:
             # Prevent missing md5_dat
-            query = "SELECT * FROM scan_dest WHERE COALESCE(md5_data, md5_file) = ?"
-        elif mode == DUP_DATETIME:
+            query = "SELECT * FROM images_in_dest_view WHERE COALESCE(md5_data, md5_file) = ?"
+        elif dup_mode == DUP_DATETIME:
             print("Can't check date in destination folder, not implemented yet.")
             return False
-            # query = "SELECT * FROM scan_dest WHERE date = ?"
+            # query = "SELECT * FROM images_in_dest_view WHERE date = ?"
 
         c.execute(query, res)
 
@@ -562,7 +531,7 @@ class ImageMetadataDB:
         c.execute(
             """
             INSERT INTO
-                tri_preview
+                process_preview
             VALUES
                 (?, ?, ?, ?, ?, ?, ?)""",
             preview_tuple,
@@ -572,7 +541,7 @@ class ImageMetadataDB:
 
     def get_exifs(self, im_path):
         c = self.conn.cursor()
-        c.execute("""SELECT metadata FROM images_view WHERE path=?""", (im_path,))
+        c.execute("""SELECT metadata FROM images_to_process_view WHERE path=?""", (im_path,))
         res = c.fetchone()
         return json.loads(res[0])
 
@@ -582,7 +551,7 @@ class ImageMetadataDB:
         c.execute(
             """
             UPDATE
-                tri_preview
+                process_preview
             SET
                 date = ?
             WHERE
@@ -613,7 +582,7 @@ class ImageMetadataDB:
     #        # Put in preview windows
     #        c.execute('''
     #            UPDATE
-    #                tri_preview
+    #                process_preview
     #            SET
     #                location = ?
     #            WHERE
@@ -627,8 +596,8 @@ class ImageMetadataDB:
 
         c = self.conn.cursor()
 
-        query = "SELECT new_filename FROM tri_preview WHERE new_folder = ? AND COLLIDE(?,new_filename)"
-        # query = 'SELECT new_filename FROM tri_preview WHERE new_folder = ? AND new_filename REGEXP ? '
+        query = "SELECT new_filename FROM process_preview WHERE new_folder = ? AND COLLIDE(?,new_filename)"
+        # query = 'SELECT new_filename FROM process_preview WHERE new_folder = ? AND new_filename REGEXP ? '
 
         c.execute(
             query,
@@ -651,7 +620,7 @@ class ImageMetadataDB:
         c.execute(
             """
             UPDATE
-                tri_preview
+                process_preview
             SET
                 new_folder = ?, new_filename = ?
             WHERE
@@ -668,7 +637,7 @@ class ImageMetadataDB:
             SELECT
                 path, date
             FROM
-                tri_preview
+                process_preview
             ORDER BY
                 date"""
         )
@@ -686,7 +655,7 @@ class ImageMetadataDB:
                 grp_date = date
             elif (date - prev_date).days < n:
                 pass
-            else:
+            else: # new group
                 grp_date = date
             self.set_group_preview(path, datetime.strftime(grp_date, date_fmt))
             prev_date = date
@@ -699,7 +668,7 @@ class ImageMetadataDB:
             SELECT
                 groups
             FROM
-                tri_preview
+                process_preview
             WHERE
                 path = ?""",
             (im_str,),
@@ -719,7 +688,7 @@ class ImageMetadataDB:
             SELECT
                 new_folder, new_filename
             FROM
-                tri_preview
+                process_preview
             WHERE
                 path = ?""",
             (in_str,),
@@ -728,8 +697,8 @@ class ImageMetadataDB:
         if res:
             return res
 
-    def get_metadatas(self, im_path):
-        return self.get_exifs(im_path)
+    #def get_metadatas(self, im_path):
+    #    return self.get_exifs(im_path)
 
     def get_location(self, im_str):
         c = self.conn.cursor()
@@ -739,7 +708,7 @@ class ImageMetadataDB:
             SELECT
                 location
             FROM
-                tri_preview
+                process_preview
             WHERE
                 path = ?""",
             (im_str,),
@@ -754,7 +723,7 @@ class ImageMetadataDB:
         c.execute(
             """
             UPDATE
-                tri_preview
+                process_preview
             SET
                 groups = ?
             WHERE
@@ -766,7 +735,7 @@ class ImageMetadataDB:
 
     def get_camera_list(self):
         c = self.conn.cursor()
-        c.execute("""SELECT DISTINCT camera FROM images_view""")
+        c.execute("""SELECT DISTINCT camera FROM images_to_process_view""")
         res = c.fetchall()
         if not res:
             return []
@@ -774,13 +743,13 @@ class ImageMetadataDB:
 
     def get_tag_list(self):
         c = self.conn.cursor()
-        c.execute("""SELECT metadata FROM images_view""")
+        c.execute("""SELECT metadata FROM images_to_process_view""")
 
         exifs_all = set()
         while row := c.fetchone():
             exifs_all.update(list(json.loads(row[0]).keys()))
 
-        c.execute("""SELECT metadata FROM images_view""")
+        c.execute("""SELECT metadata FROM images_to_process_view""")
 
         exifs_common = set()
         while row := c.fetchone():
@@ -790,7 +759,7 @@ class ImageMetadataDB:
 
     def get_extention_list(self):
         c = self.conn.cursor()
-        c.execute("""SELECT DISTINCT extentions FROM images_view""")
+        c.execute("""SELECT DISTINCT extentions FROM images_to_process_view""")
         res = c.fetchall()
         return [r[0] for r in res]
 
@@ -798,8 +767,8 @@ class ImageMetadataDB:
         # paths = list(paths)
         c = self.conn.cursor()
         # placeholders = ','.join('?' for _ in paths)
-        # query = f"SELECT * FROM tri_preview WHERE path IN ({placeholders})"
-        query = f"SELECT path FROM tri_preview;"
+        # query = f"SELECT * FROM process_preview WHERE path IN ({placeholders})"
+        query = f"SELECT path FROM process_preview;"
         c.execute(query)
 
         while row := c.fetchone():
@@ -809,47 +778,10 @@ class ImageMetadataDB:
         # paths = list(paths)
         c = self.conn.cursor()
         # placeholders = ','.join('?' for _ in paths)
-        # query = f"SELECT * FROM tri_preview WHERE path IN ({placeholders})"
-        query = f"SELECT * FROM tri_preview WHERE path LIKE '%' || ? || '%';"
+        # query = f"SELECT * FROM process_preview WHERE path IN ({placeholders})"
+        query = f"SELECT * FROM process_preview WHERE path LIKE '%' || ? || '%';"
         c.execute(query, (filter_txt,))
 
         while row := c.fetchone():
             yield row
 
-
-#    def get_file_list_preview(self):
-#        c = self.conn.cursor()
-#        c.execute('''
-#                SELECT new_folder, new_filename FROM tri_preview
-#                '''
-#                  )
-#        return c.fetchall()
-
-#    def populate_database(self):
-#        # Loop through each image in the images directory
-#        for root, dirs, files in os.walk(self.images_dir):
-#            for file in files:
-#                # Only process image files
-#                if file.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp', '.tif', '.tiff')):
-#                    # Calculate the MD5 hash of the image file
-#                    path = os.path.join(root, file)
-#                    with open(path, 'rb') as f:
-#                        image_data = f.read()
-#                        md5sum = hashlib.md5(image_data).hexdigest()
-#
-#                    # Read the image metadata using pyexiv2
-#                    metadata = pyexiv2.ImageMetadata(path)
-#                    metadata.read()
-#                    name = metadata.get('Xmp.dc.title')
-#                    date = metadata.get('Exif.Photo.DateTimeOriginal')
-#                    camera = metadata.get('Exif.Image.Model')
-#                    metadata_dict = {}
-#                    for key, value in metadata.items():
-#                        metadata_dict[key] = str(value.raw_value)
-#
-#                    # Insert the image metadata into the SQLite database
-#                    image_tuple = (md5sum, name, date, camera, str(metadata_dict))
-#                    c = self.conn.cursor()
-#                    c.execute("INSERT INTO images VALUES (?, ?, ?, ?, ?)", image_tuple)
-#                    self.conn.commit()
-#

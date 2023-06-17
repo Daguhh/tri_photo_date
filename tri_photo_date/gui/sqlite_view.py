@@ -45,6 +45,7 @@ class DatabaseViewer(QWidget):
         self.table.horizontalHeader().sectionResized.connect(self.save_column_sizes)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
         self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
+        self.table.setSortingEnabled(True)
 
         layout = QVBoxLayout()
         layout.addWidget(self.filter_edit)
@@ -92,7 +93,6 @@ class DatabaseViewer(QWidget):
     #    self.hidden_callback()
     # super().hideEvent(event)
     # self.hidden.emit()
-
 
 if __name__ == "__main__":
     app = QApplication([])
