@@ -11,8 +11,6 @@ def set_global_config(config):
     else:
         max_length = 1000 * 1000 * 1000 * 5  # 5GB
 
-    print(max_length)
-
 
 def get_file_fingerprint(im_path):
     with open(im_path, "rb") as f:
