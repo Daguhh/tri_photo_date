@@ -88,8 +88,9 @@ Here is typicals steps users should perform to run the program:
 
 ### Command line
 
-A small command line utility is available. It's not very elaborate at the moment, but it should allow dealing with multiple preconfigurations to run scripts in the daily routine```
+A small command line utility is available. It's not very elaborate at the moment, but it should allow dealing with multiple preconfigurations to run scripts in the daily routine
 
+```shell
 usage: tri_photo_date [-h] [--cli] [-d [DUMP] | -D [DUMP_DEFAULT] | -l [LOAD]]
 
 Sort image using metadata placeholder
