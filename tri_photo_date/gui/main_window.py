@@ -44,12 +44,8 @@ class MainWindow(MainWindow_ui):
         super().__init__()
 
         self.create_widget_dct()
-
-        self.setup_interconnections()
-        self.setup_actions()
-
+        self.setup_core_actions()
         self.connect_wdgs_2_config()
-
         self.load_conf()
 
     def create_widget_dct(self):
@@ -68,9 +64,7 @@ class MainWindow(MainWindow_ui):
         wdgs["source.is_recursive"] = self.conf_panel.src_frame.dir_wdg.recursiveBtn
         wdgs["source.excluded_dirs"] = self.conf_panel.src_frame.exclude_wdg.textBox
         wdgs["source.exclude_toggle"] = self.conf_panel.src_frame.exclude_wdg.labelbox
-        wdgs[
-            "source.is_exclude_dir_regex"
-        ] = self.conf_panel.src_frame.exclude_wdg.is_regex
+        wdgs["source.is_exclude_dir_regex"] = self.conf_panel.src_frame.exclude_wdg.is_regex
 
         wdgs["destination.dir"] = self.conf_panel.dest_frame.dir_wdg.textBox
         wdgs["destination.rel_dir"] = self.conf_panel.dest_frame.rel_dir_wdg.textBox
@@ -80,35 +74,17 @@ class MainWindow(MainWindow_ui):
         wdgs["duplicates.mode"] = self.conf_panel.dup_frame.dupBtns.dup_grp
         wdgs["duplicates.is_scan_dest"] = self.conf_panel.dup_frame.dupBtns.scandestBtn
 
-        wdgs[
-            "options.name.guess_fmt"
-        ] = self.conf_panel.opt_frame.guess_date_from_name.textBox
-        wdgs[
-            "options.name.is_guess"
-        ] = self.conf_panel.opt_frame.guess_date_from_name.checkBox
-        wdgs[
-            "options.group.is_group"
-        ] = self.conf_panel.opt_frame.group_by_floating_days.checkBox
-        wdgs[
-            "options.group.display_fmt"
-        ] = self.conf_panel.opt_frame.group_by_floating_days.textBox
-        wdgs[
-            "options.group.floating_nb"
-        ] = self.conf_panel.opt_frame.group_by_floating_days.spinBox
+        wdgs["options.name.guess_fmt"] = self.conf_panel.opt_frame.guess_date_from_name.textBox
+        wdgs["options.name.is_guess"] = self.conf_panel.opt_frame.guess_date_from_name.checkBox
+        wdgs["options.group.is_group"] = self.conf_panel.opt_frame.group_by_floating_days.checkBox
+        wdgs["options.group.display_fmt"] = self.conf_panel.opt_frame.group_by_floating_days.textBox
+        wdgs["options.group.floating_nb"] = self.conf_panel.opt_frame.group_by_floating_days.spinBox
         wdgs["options.gps.is_gps"] = self.conf_panel.opt_frame.gps
-        wdgs[
-            "options.general.is_delete_metadatas"
-        ] = self.conf_panel.opt_frame.is_delete_metadatas
-        wdgs[
-            "options.general.is_date_from_filesystem"
-        ] = self.conf_panel.opt_frame.is_date_from_filesystem
-        wdgs[
-            "options.general.is_force_date_from_filesystem"
-        ] = self.conf_panel.opt_frame.is_force_date_from_filesystem
+        wdgs["options.general.is_delete_metadatas"] = self.conf_panel.opt_frame.is_delete_metadatas
+        wdgs["options.general.is_date_from_filesystem"] = self.conf_panel.opt_frame.is_date_from_filesystem
+        wdgs["options.general.is_force_date_from_filesystem"] = self.conf_panel.opt_frame.is_force_date_from_filesystem
 
-        wdgs[
-            "action.action_mode"
-        ] = self.conf_panel.exec_frame.file_action_wdg.btn_group
+        wdgs["action.action_mode"] = self.conf_panel.exec_frame.file_action_wdg.btn_group
 
         wdgs["interface.mode"] = self.menubar.mode_group
         wdgs["interface.lang"] = self.menubar.lang_group
@@ -116,28 +92,9 @@ class MainWindow(MainWindow_ui):
 
         self.wdgs = wdgs
 
-    def setup_interconnections(self):
-        self.tool_panel.exts.listext_wdg.itemChanged.connect(
-            lambda: self.conf_panel.src_frame.ext_wdg.textBox.setText(
-                self.tool_panel.exts.user_choice_extentions
-            )
-        )
-        self.tool_panel.cam.listapp_wdg.itemChanged.connect(
-            lambda: self.conf_panel.src_frame.cam_wdg.textBox.setText(
-                self.tool_panel.cam.user_choice_cameras
-            )
-        )
-        # self.preview_wdg.filter_edit.textChanged.connect(self.update_preview)
+    def setup_core_actions(self):
 
-        # Link scan lineedit to source and destination sections
-        self.conf_panel.src_frame.dir_wdg.textBox.textChanged.connect(
-            self.conf_panel.scan_frame.srcdir_wdg.textBox.setText
-        )
-        self.conf_panel.dest_frame.dir_wdg.textBox.textChanged.connect(
-            self.conf_panel.scan_frame.destdir_wdg.textBox.setText
-        )
-
-    def setup_actions(self):
+        # Core functions
         self.conf_panel.populateBtn.clicked.connect(self.act_populate)
         self.conf_panel.previewBtn.clicked.connect(self.act_preview)
         self.conf_panel.executeBtn.clicked.connect(self.act_execute)

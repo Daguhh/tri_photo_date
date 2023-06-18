@@ -220,6 +220,29 @@ class MainWindow_ui(QMainWindow):
         self.resize(400, 500)
         preview_frame.collapse(True)
 
+        self.setup_interconnections()
+
+    def setup_interconnections(self):
+        self.tool_panel.exts.listext_wdg.itemChanged.connect(
+            lambda: self.conf_panel.src_frame.ext_wdg.textBox.setText(
+                self.tool_panel.exts.user_choice_extentions
+            )
+        )
+        self.tool_panel.cam.listapp_wdg.itemChanged.connect(
+            lambda: self.conf_panel.src_frame.cam_wdg.textBox.setText(
+                self.tool_panel.cam.user_choice_cameras
+            )
+        )
+        # self.preview_wdg.filter_edit.textChanged.connect(self.update_preview)
+
+        # Link scan lineedit to source and destination sections
+        self.conf_panel.src_frame.dir_wdg.textBox.textChanged.connect(
+            self.conf_panel.scan_frame.srcdir_wdg.textBox.setText
+        )
+        self.conf_panel.dest_frame.dir_wdg.textBox.textChanged.connect(
+            self.conf_panel.scan_frame.destdir_wdg.textBox.setText
+        )
+
 
 class MainTab(QWidget):
     def __init__(self, parent):
