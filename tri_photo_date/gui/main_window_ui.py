@@ -54,6 +54,7 @@ from PyQt5.QtWidgets import (
 )
 
 # Local PyQt widgets
+from tri_photo_date.gui import collapsible_frame
 from tri_photo_date.gui.collapsible_frame import (
     CollapsibleFrame,
     PreviewCollapsibleFrame,
@@ -73,7 +74,7 @@ from tri_photo_date.exif import (
     USEFULL_TAG_DESCRIPTION,
     EXIF_LOCATION_FIELD,
 )
-from tri_photo_date.utils.config_loader import (
+from tri_photo_date.utils.constants import (
     FILE_SIMULATE,
     FILE_COPY,
     FILE_MOVE,
@@ -92,7 +93,7 @@ from tri_photo_date.gui.human_text import (
     ACTION_BUTTONS,
     DUP_RADIO_BUTTONS,
 )
-from tri_photo_date.utils.config_paths import (
+from tri_photo_date.config.config_paths import (
     STRFTIME_HELP_PATH,
     ICON_PATH,
     LOCALES_DIR,
@@ -107,6 +108,7 @@ from tri_photo_date.gui.human_text import MAIN_TAB_BUTTONS as MTB
 def set_global_config(lang='en', size=1, mode=GUI_ADVANCED):
 
     windowmenu.set_global_config(lang, size, mode)
+    collapsible_frame.set_global_config(lang, size, mode)
 
     import gettext
 

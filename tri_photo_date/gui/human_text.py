@@ -1,5 +1,5 @@
-from tri_photo_date.utils.config_loader import CONFIG
-from tri_photo_date.utils.config_paths import LOCALES_DIR
+from tri_photo_date.config.config_loader import CONFIG
+from tri_photo_date.config.config_paths import LOCALES_DIR
 
 import gettext
 

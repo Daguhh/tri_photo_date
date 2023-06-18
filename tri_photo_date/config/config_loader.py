@@ -14,7 +14,8 @@ from tri_photo_date.cli.cli_argparser import (
     CLI_DUMP_DEFAULT,
     CLI_LOAD,
 )
-from tri_photo_date.utils.config_paths import CONFIG_PATH, APP_NAME, DEFAULT_CONFIG_PATH
+from tri_photo_date.config.config_paths import CONFIG_PATH, APP_NAME, DEFAULT_CONFIG_PATH, LOCALES_DIR
+from tri_photo_date.config.config_types import STRING, LIST, PATH, BOOLEAN, INTEGER, FLOAT
 
 cli_mode, config_path = cli_arguments()
 
@@ -32,82 +33,7 @@ if cli_mode == CLI_LOAD:
 
 CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-
-LANG_LIST = ["fr", "en"]
-
-FILE_ACTION_TXT = {
-    1: "Simulation du déplacement de {} vers {}",
-    2: "Copie du fichier {} vers {}",
-    3: "Déplacement du fichier {} vers {}",
-}
-
-FILE_SIMULATE = 1
-FILE_COPY = 2
-FILE_MOVE = 3
-
-GUI_SIMPLIFIED = 1
-GUI_NORMAL = 2
-GUI_ADVANCED = 3
-
-DUP_MD5_FILE = 1
-DUP_MD5_DATA = 2
-DUP_DATETIME = 3
-
-DIR_EXCLUDE = 0
-DIR_INCLUDE = 1
-
-GROUP_PLACEHOLDER = r"{group}"
-DEFAULT_DATE_STR = "1900:01:01 00:00:00"
-
-STRING = (
-    "rel_dir",
-    "filename",
-    "display_fmt",
-    "guess_fmt",
-    "size",
-    "lang",
-    "exif_user_tags",
-    "non_def",
-)
-PATH = ("src_dir", "dir", "dir", "scan_dir")
-INTEGER = (
-    "exclude_toggle",
-    "action_mode",
-    "mode",
-    "floating_nb",
-    "wait",
-    "mode",
-    "max_hash_size",
-    "min_size",
-    "max_size",
-)
-BOOLEAN = (
-    "is_recursive",
-    "is_md5_file",
-    "is_md5_data",
-    "is_meta",
-    "is_use_cached_datas",
-    "is_recursive",
-    "is_exclude_dir_regex",
-    "is_control",
-    "is_scan_dest",
-    "is_delete_metadatas",
-    "is_date_from_filesystem",
-    "is_force_date_from_filesystem",
-    "is_group",
-    "is_guess",
-    "is_gps",
-    "debug",
-    "simulate",
-    "verbose",
-    "unidecode",
-    "is_max_hash_size",
-    "is_min_size",
-    "is_max_size",
-)
-LISTE = ("extentions", "cameras", "excluded_dirs", "accepted_formats")
-FLOAT = ("accuracy",)
-
+LANG_LIST = list(os.listdir(LOCALES_DIR))# ["fr", "en"]
 
 def repr2value(k, v):  # for python
     a = k
@@ -118,7 +44,7 @@ def repr2value(k, v):  # for python
         v = Path(v)
     elif k in BOOLEAN:
         v = int(v)
-    elif k in LISTE:
+    elif k in LIST:
         v = tuple(c.strip() for c in v.split(","))
     elif k in INTEGER:
         v = int(v)
@@ -140,7 +66,7 @@ def value2repr(k, v):  # for pyqt
         v = str(v)
     elif k in BOOLEAN:
         v = int(v)
-    elif k in LISTE:
+    elif k in LIST:
         v = ",".join(v)  # tuple(c.strip() for c in v.split(","))
     elif k in INTEGER:
         v = v
@@ -162,7 +88,7 @@ def value2conf(k, v):  # for config
         v = str(v)
     elif k in BOOLEAN:
         v = str(v)
-    elif k in LISTE:
+    elif k in LIST:
         v = ",".join(v)  # tuple(c.strip() for c in v.split(","))
     elif k in INTEGER:
         v = str(v)

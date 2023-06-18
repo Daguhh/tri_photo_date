@@ -173,6 +173,8 @@ class MainWindow(MainWindow_ui):
 
     def show_set_settings(self):
 
+        popup = SettingFilePopup()
+
         wdgs = {}
         wdgs["files.is_max_hash_size"] = popup.ckb_max_hash
         wdgs["files.max_hash_size"] = popup.spin_max_hash
@@ -184,7 +186,6 @@ class MainWindow(MainWindow_ui):
         self.wdgs_settings = wdgs
         self.load_settings_conf()
 
-        popup = SettingFilePopup()
         res = popup.exec_()
         if res == QDialog.Accepted:
             val = popup.get_values()

@@ -21,7 +21,7 @@ from geopy.geocoders import Nominatim
 from geopy.distance import distance as GEODistance
 
 from tri_photo_date.exif import ExifTags, EXIF_LOCATION_FIELD, EXIF_GPS_FIELD
-from tri_photo_date.utils.config_paths import GPS_DATABASE_PATH
+from tri_photo_date.config.config_paths import GPS_DATABASE_PATH
 from tri_photo_date.gps.gps_constants import LOCATION_TYPES
 
 # except ImportError:

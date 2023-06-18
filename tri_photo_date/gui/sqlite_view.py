@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (
 )
 
 from tri_photo_date.photo_database import ImageMetadataDB
-from tri_photo_date.utils.config_paths import IMAGE_DATABASE_PATH
+from tri_photo_date.config.config_paths import IMAGE_DATABASE_PATH
 
 
 class DatabaseViewer(QWidget):

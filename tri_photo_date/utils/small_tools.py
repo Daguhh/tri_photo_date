@@ -9,7 +9,7 @@ from tri_photo_date.exif import (
     EXIF_DATE_FIELD,
 )
 
-from tri_photo_date.utils.config_loader import (
+from tri_photo_date.utils.constants import (
     FILE_SIMULATE,
     FILE_COPY,
     FILE_MOVE,

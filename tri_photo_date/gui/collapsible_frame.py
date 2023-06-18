@@ -1,14 +1,17 @@
 from PyQt5.QtWidgets import QFrame, QHBoxLayout, QLabel, QWidget, QSizePolicy
 
-from tri_photo_date.utils.config_paths import LOCALES_DIR
-from tri_photo_date.utils.config_loader import CONFIG
+from tri_photo_date.config.config_paths import LOCALES_DIR
+from tri_photo_date.utils.constants import GUI_ADVANCED, GUI_NORMAL, GUI_SIMPLIFIED
 
-import gettext
+def set_global_config(lang='en', size=1, mode=GUI_ADVANCED):
 
-lang = CONFIG[("interface", "lang")]
-trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
-trad.install()
-_ = trad.gettext  # Greek
+    import gettext
+
+    trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
+    trad.install()
+
+    global _
+    _ = trad.gettext  # Greek
 
 
 class CollapsibleFrame(QFrame):

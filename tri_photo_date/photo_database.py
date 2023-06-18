@@ -16,8 +16,8 @@ from tri_photo_date.exif import (
     NoExifError,
     USEFULL_TAG_DESCRIPTION,
 )
-from tri_photo_date.utils.config_paths import IMAGE_DATABASE_PATH
-from tri_photo_date.utils.config_loader import (
+from tri_photo_date.config.config_paths import IMAGE_DATABASE_PATH
+from tri_photo_date.utils.constants import (
     DUP_MD5_FILE,
     DUP_MD5_DATA,
     DUP_DATETIME,

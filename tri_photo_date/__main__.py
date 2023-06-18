@@ -6,7 +6,7 @@ import argparse
 import logging
 from logging.handlers import RotatingFileHandler
 
-from tri_photo_date.utils.config_paths import CONFIG_DIR
+from tri_photo_date.config.config_paths import CONFIG_DIR
 
 ##### Set log file #####
 print("log file : ", str(CONFIG_DIR / "tri_photo_date.log"))

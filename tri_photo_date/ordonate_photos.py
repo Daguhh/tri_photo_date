@@ -12,10 +12,11 @@ import logging
 
 from tri_photo_date.cli.progressbar import cli_progbar
 from tri_photo_date.exif import ExifTags
-from tri_photo_date.utils.config_loader import CONFIG as CFG
+from tri_photo_date.config.config_loader import CONFIG as CFG
 
 # from tri_photo_date.utils.config_paths import CONFIG_PATH
-from tri_photo_date.utils.config_loader import FILE_ACTION_TXT, GROUP_PLACEHOLDER, DEFAULT_DATE_STR
+from tri_photo_date.utils.human_texts import *
+from tri_photo_date.utils.constants import GROUP_PLACEHOLDER, DEFAULT_DATE_STR
 from tri_photo_date import gps
 from tri_photo_date.photo_database import ImageMetadataDB
 from tri_photo_date.utils import fingerprint
@@ -29,8 +30,6 @@ from tri_photo_date.utils.small_tools import (
     bytes2human,
     limited_string
 )
-
-
 
 def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
     fingerprint.set_global_config(CFG)
@@ -47,7 +46,7 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
     media_extentions = CFG["misc.accepted_formats"]
     with ImageMetadataDB() as db:
         db.clean_all_table()
-        progbar.update(0, f"Looking for all files in {CFG['source.dir']} ...")
+        progbar.update(0, PROGBAR_TXT_SCAN_START.format(CFG['source.dir']))
 
         #### Scanning source folder ####
         nb_files = sum([len(f) for *_, f in os.walk(CFG["source.dir"])])
@@ -72,9 +71,7 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                 db.add_image(str(in_path), is_use_cache=is_use_cache)
 
                 # Some user feedback
-                progbar.update(
-                    i, f"{i} / {nb_files} - Calculating hash and loading metadatas ..."
-                )
+                progbar.update(i, PROGBAR_TXT_SCAN_SRCDIR.format(i, nb_files))
 
         if LoopCallBack.run():
             LoopCallBack.stopped = True
@@ -100,9 +97,7 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                 db.add_image(str(in_path), to_process=False, is_use_cache=is_use_cache)
 
                 # Soe user feedback
-                progbar.update(
-                    i, f"{i} / {nb_files} - Scanning files in destination folder..."
-                )
+                progbar.update(i, PROGBAR_TXT_SCAN_DESTDIR.format(i, nb_files))
 
             if LoopCallBack.run():
                 break
@@ -111,28 +106,14 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
     LoopCallBack.stopped = True
 
-
 def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
     gps.set_global_config(CFG)
 
-    # is_hash_reset = CFG["hash_reset"]
-    # in_dir = CFG["source.dir"]
-    # extentions = CFG["source.extentions"]
-    # cameras = CFG["source.cameras"]
-    # out_dir = CFG['out_dir']
-    # excluded_dirs = CFG["source.excluded_dirs"]
-    # is_exclude_dir_regex = bool(CFG["source.is_exclude_dir_regex"])
-    # exclude_toggle = CFG["source.exclude_toggle"]
     exclude = {
         "dirs": CFG["source.excluded_dirs"],
         "is_regex": bool(CFG["source.is_exclude_dir_regex"]),
         "toggle": CFG["source.exclude_toggle"],
     }
-    # is_gps = CFG["options.gps.is_gps"]
-    # recursive = CFG["source.is_recursive"]
-    # is_group_floating_days = CFG["options.group.is_group"]
-    # group_floating_days_nb = CFG["options.group.floating_nb"]
-    # group_floating_days_fmt = CFG["options.group.display_fmt"]
 
     is_control_hash = CFG["duplicates.is_control"]
     control_dest_duplicates = CFG["duplicates.is_scan_dest"]
@@ -213,11 +194,9 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
             db.add_image_to_preview(in_str, out_str, location, date_str)
 
             # Give user some feedbacks
-            progbar.update(
-                i, f"{i} / {nb_files} - {Path(in_str).name} - Resolving new path..."
-            )
+            progbar.update(i, PROGBAR_TXT_COMPUTE_FILES.format(i, nb_files, Path(in_str).name))
 
-        progbar.update(nb_files, "Fait!")
+        progbar.update(nb_files, PROGBAR_TXT_DONE)
 
         # Quit if loop end signal send by user
         if LoopCallBack.run():
@@ -225,7 +204,7 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
             return
 
         if CFG["options.group.is_group"]:
-            progbar.update(i, "Fait! Tri des fichiers pour groupement par date...")
+            progbar.update(i, PROGBAR_TXT_COMPUTE_GROUPS_START)
 
             # compute group for all files
             db.group_by_n_floating_days(CFG["options.group.floating_nb"])
@@ -255,11 +234,9 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                 db.add_out_path(in_str, out_str)
 
                 # SOme user feedbacks
-                progbar.update(
-                    i, f"{i} / {nb_files} - {Path(in_str).name} - Group images by date"
-                )
+                progbar.update(i, PROGBAR_TXT_COMPUTE_GROUPS.format(i, nb_files, Path(in_str).name))
 
-    progbar.update(0, " Fait!")
+    progbar.update(0, PROGBAR_TXT_DONE)
 
     LoopCallBack.stopped = True
 
@@ -295,27 +272,16 @@ def execute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                 ExifTags.clear_all_metadatas(out_str)
 
             # User feedbacks
-            progbar_text_execute = lambda a, b, c, d, e: "".join(
-                (
-                    f"{bytes2human(a)}/ {bytes2human(b)}",
-                    " - ",
-                    FILE_ACTION_TXT[c].format(
-                        Path(d).name, limited_string(Path(e).parent.name)
-                    ),
-                )
-            )
-            progbar.update(
+            progbar.update(bytes_moved, PROGBAR_TXT_EXECUTE_FCT(
                 bytes_moved,
-                progbar_text_execute(
-                    bytes_moved, total_size, CFG["action.action_mode"], in_str, out_str
-                ),
-            )
+                total_size,
+                CFG["action.action_mode"],
+                in_str,
+                out_str
+            ))
 
     progbar.update(
-        bytes_moved,
-        "Fait! {} fichiers ont été déplacés soit un total de {}".format(
-            i, bytes2human(bytes_moved)
-        ),
+        bytes_moved, PROGBAR_TXT_EXECUTE_DONE.format(i, bytes2human(bytes_moved))
     )
 
     LoopCallBack.stopped = True

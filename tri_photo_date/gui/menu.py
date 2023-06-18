@@ -25,7 +25,8 @@ import pkg_resources
 from pathlib import Path
 import os
 
-from tri_photo_date.utils.config_paths import (
+from tri_photo_date.config.config_loader import LANG_LIST
+from tri_photo_date.config.config_paths import (
     LICENSE_PATH,
     AKNOLEG_PATH,
     README_PATH,
@@ -34,11 +35,10 @@ from tri_photo_date.utils.config_paths import (
     LOCALES_DIR,
     HELP_PATH,
 )
-from tri_photo_date.utils.config_loader import (
+from tri_photo_date.utils.constants import (
     GUI_ADVANCED,
     GUI_NORMAL,
     GUI_SIMPLIFIED,
-    LANG_LIST,
 )
 from tri_photo_date.gui.human_text import MENU_TOOL_BUTTON, WARNING_SWITCH_SIMPLIFY_MODE
 

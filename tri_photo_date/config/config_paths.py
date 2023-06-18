@@ -33,7 +33,7 @@ elif "site-packages" in os.path.abspath(tri_photo_date.__file__):
     ABOUT_PATH = RUNTIME_PATH.parent.parent / "resources" / "{}" / "about.md"
     STRFTIME_HELP_PATH = RUNTIME_PATH.parent.parent / "resources" / "strftime_help.html"
     LOCALES_DIR = RUNTIME_PATH.parent / "locales"
-    DEFAULT_CONFIG_PATH = RUNTIME_PATH.parent.parent / "config" / "default_config.ini"
+    DEFAULT_CONFIG_PATH = RUNTIME_PATH.parent / "config" / "default_config.ini"
 
 else:
     logging.info("The package is running as source code")
@@ -48,7 +48,7 @@ else:
     ABOUT_PATH = RUNTIME_PATH.parent.parent / "resources" / "{}" / "about.md"
     STRFTIME_HELP_PATH = RUNTIME_PATH.parent.parent / "resources" / "strftime_help.html"
     LOCALES_DIR = RUNTIME_PATH.parent / "locales"
-    DEFAULT_CONFIG_PATH = RUNTIME_PATH.parent.parent / "config"  / "default_config.ini"
+    DEFAULT_CONFIG_PATH = RUNTIME_PATH.parent / "config"  / "default_config.ini"
 
 
 #### CONFIG ####
