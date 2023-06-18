@@ -246,7 +246,7 @@ class ImageMetadataDB:
 
     def set_image_cache_values(self, im_str, **kwargs):
         query = "UPDATE images_cache SET {} WHERE path = ?".format(
-            " ".join(f"{row} = ?" for row in kwargs.keys())
+            ", ".join(f"{row} = ?" for row in kwargs.keys())
         )
 
         values = list(kwargs.values()) + [im_str]
@@ -266,7 +266,7 @@ class ImageMetadataDB:
             st_size = Path(im_str).stat().st_size
             values_to_set = {
                 "md5_file": md5_file,
-                "metadata": metadata,
+                "metadata": json.dumps(metadata),
                 "date": date,
                 "camera": camera,
                 "st_size": st_size,
@@ -280,7 +280,7 @@ class ImageMetadataDB:
             values_to_set = {
                 "md5_file": md5_file,
                 "md5_data": md5_data,
-                "metadata": metadata,
+                "metadata": json.dumps(metadata),
                 "date": date,
                 "camera": camera,
                 "st_size": st_size,
