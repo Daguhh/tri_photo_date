@@ -1,8 +1,8 @@
-from tri_photo_date import ordonate_photos
+from tri_photo_date import sort_photos
 
 
 def cli_run():
     print("run cli")
-    ordonate_photos.populate_db()
-    ordonate_photos.compute()
-    ordonate_photos.execute()
+    sort_photos.populate_db()
+    sort_photos.compute()
+    sort_photos.execute()

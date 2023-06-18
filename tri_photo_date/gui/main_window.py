@@ -17,8 +17,8 @@ from PyQt5.QtWidgets import (
 )
 
 # Modules
-from tri_photo_date import ordonate_photos
-from tri_photo_date.ordonate_photos import CFG
+from tri_photo_date import sort_photos
+from tri_photo_date.sort_photos import CFG
 
 # database explorer functions
 from tri_photo_date.explore_db import (
@@ -151,19 +151,19 @@ class MainWindow(MainWindow_ui):
 
     def act_populate(self):
         self.conf_panel.run_populate(
-            func=ordonate_photos.populate_db,
+            func=sort_photos.populate_db,
             callback=self.update_selection_tabs
         )
 
     def act_preview(self):
         self.conf_panel.run_preview(
-            func=ordonate_photos.compute,
+            func=sort_photos.compute,
             callback=self.update_preview
         )
 
     def act_execute(self):
         self.conf_panel.run_execute(
-            func=ordonate_photos.execute
+            func=sort_photos.execute
         )
 
     def save_act(self):
@@ -200,7 +200,7 @@ class MainWindow(MainWindow_ui):
     def act_run_gps(self):
         logging.info("Starting processing files...")
 
-        ordonate_photos.add_tags_to_folder(
+        sort_photos.add_tags_to_folder(
             self.progress_bar, self.label_gps_info, self.label_image
         )
         self.progress_bar.setValue(100)

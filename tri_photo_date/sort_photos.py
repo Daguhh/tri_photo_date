@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+"""
+Main functions of TriPhotoDate :
+
+    - populate_db : scan files, get metatdatas and others infos, then store it in a database
+    - compute : work on previous database, walk over files, filter given user options, generate a new path, then store it in a database
+    - execute : simulate/copy/move file given results stored in the database at previous step
+
+"""
+
 import hashlib
 import shutil
 import sys
