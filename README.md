@@ -20,11 +20,11 @@ Depending on the options enabled, the program achieves in order:
 
 <img src="docs/screen_advanced_mode_main_tab_n_preview.png" width="400">
 
-## Install
+## Run & Install
 
 ### Binaries
 
-Compiled binaries are (should) avaible to download for both linux and windows. No dependancies required, no install needed
+Compiled binaries are avaible to download for both linux and windows. No dependancies required, no install needed
 
 ### Python package
 
@@ -37,7 +37,7 @@ poetry install
 ```
 
 ```shell
-some tri_photo_date command
+tri_photo_date
 ```
 
 ### As source code 
@@ -70,11 +70,11 @@ python3 tri_photo_date
 Here is typicals steps users should perform to run the program:
 
 1. Find files, set up filters and fill options
-    1. Fill source folder and destination folder 
+    1. Fill **source** folder and **destination** folder 
     2. Run **'1. Scan'** : it will search for all medias in those folders, it will also populate the **tools** tab
     3. Go to **tools** tab. In the differents toolboxes, you will find all necessary datas to inform remaining 
     fields in sections **source** and **destination** in **main** tab. 
-    Use checkbox when you can or use copy/paste to get placerholders, or fill all manually.
+    Use checkbox when you can or use copy/paste to get placerholders, (or fill all manually).
     4. Set **options** section, use tootlip to get information on waht to do.
 2. Compute new paths for files
     1. Run **'2. Pre-calculate'** : it will use all parameters to pre-generate path where to move photos.
@@ -86,17 +86,36 @@ Here is typicals steps users should perform to run the program:
     1. Please check if you simulate/copy/move the files and run **3. Execute**. Wait until the process end.
     2. You can quit, parameters are automaticly saved for next section.
 
+### Command line
+
+A small command line utility is available. It's not very elaborate at the moment, but it should allow dealing with multiple preconfigurations to run scripts in the daily routine```
+
+usage: tri_photo_date [-h] [--cli] [-d [DUMP] | -D [DUMP_DEFAULT] | -l [LOAD]]
+
+Sort image using metadata placeholder
+
+options:
+  -h, --help            show this help message and exit
+  --cli                 run in cli
+  -d [DUMP], --dump [DUMP]
+                        save actual config to path and exit
+  -D [DUMP_DEFAULT], --dump-default [DUMP_DEFAULT]
+                        save default config to path and exit
+  -l [LOAD], --load [LOAD]
+                        run the program with given config
+```
+
 
 ## Files
 
 Tri-photo-date generated files:
 
-| File | Path | Description |
-|------|------|-------------|
-| config.ini | APPDATA/triphotodate | Store user parameters |
-| gps.db | APPDATA/triphotodate | Cache for gps data (prevent unnecessay call to nominatim api) |
-| images.db | APPDATA/triphotodate | Cache for images datas and store datas during process |
-| triphotodate.log | ??????? | program log file |
+| File             | Path                       | Description                  | 
+|------------------|----------------------------|------------------------------|
+| config.ini       | APPDATA/triphotodate       | Store user parameters        |
+| gps.db           | LOCALAPPDATA"/triphotodate | Cache for gps data (prevent unnecessay call to nominatim api) |
+| images.db        | LOCALAPPDATA"/triphotodate | Cache for images datas and store datas during process |
+| triphotodate.log | ???????                    | program log file             |
 
 ## Credits
 
