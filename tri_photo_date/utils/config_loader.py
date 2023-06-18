@@ -188,6 +188,7 @@ class ConfigDict(dict):
     def __init__(self, config_path=None):
         super(ConfigDict, self).__init__()
 
+        # Try do get user config path
         if config_path is not None:
             self.configfile = Path(config_path)
             if not self.configfile.exists():
@@ -196,19 +197,12 @@ class ConfigDict(dict):
             self.configfile = CONFIG_PATH
 
         if not self.configfile.exists():
-            logging.info("No configfile found, generationg one")
             self.generate_config()
 
-        else:
-            logging.info(f"config is here : {self.configfile}")
-
-        # self.configfile = Path(__file__).parent.resolve() / "config.ini"
         self.load_config()
 
     def generate_config(self):
-        logging.info(f"Creating config at {self.configfile}")
-        #with open(self.configfile, "w") as f:
-        #    f.write(DEFAULT_CONFIG)
+        logging.info(f"Create config at {self.configfile}")
         shutil.copy(DEFAULT_CONFIG_PATH, self.configfile)
 
     def __getitem__(self, k):
@@ -217,7 +211,6 @@ class ConfigDict(dict):
 
         if k not in self.keys():
             logging.info(f"No entry for '{k}' in config")
-            logging.info("Regenerating config file...")
             self.generate_config()
             self.load_config()
 
@@ -226,25 +219,19 @@ class ConfigDict(dict):
     def __setitem__(self, k, v):
         if isinstance(k, tuple):
             k = ".".join(k)
-        # k = ','.join(x.lower() for x in k)
-        # self.repr_dct[k] = v
         k, v = repr2value(k, v)
 
         super().__setitem__(k, v)
 
     def load_config(self):
-        # cfg = self.config['DEFAULT']
+
         self.config = ConfigParser(interpolation=None)
         self.config.read(self.configfile)
-
-        # self.repr_dct = {}
 
         for section in self.config.sections():
             items = self.config.items(section)
             for key, value in items:
                 self[".".join((section.lower(), key))] = value
-        # for k, v in self.config.read_dict():
-        # self[k] = v
 
     def save_config(self):
         for key, value in self.items():

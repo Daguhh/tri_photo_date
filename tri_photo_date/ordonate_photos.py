@@ -18,7 +18,6 @@ from tri_photo_date.utils.config_loader import CONFIG as CFG
 from tri_photo_date.utils.config_loader import FILE_ACTION_TXT, GROUP_PLACEHOLDER, DEFAULT_DATE_STR
 from tri_photo_date import gps
 from tri_photo_date.photo_database import ImageMetadataDB
-from tri_photo_date.utils.converter import bytes2human, limited_string
 from tri_photo_date.utils import fingerprint
 from tri_photo_date.utils.small_tools import (
     fake_LoopCallBack,
@@ -27,6 +26,8 @@ from tri_photo_date.utils.small_tools import (
     move_file,
     create_out_str,
     get_date_from_exifs_or_file,
+    bytes2human,
+    limited_string
 )
 
 

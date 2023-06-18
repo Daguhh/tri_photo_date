@@ -14,6 +14,7 @@ pyinstaller ^
     --add-data "resources/strftime_help.html;." ^
     --add-data "resources/en/*;./resources/en/" ^
     --add-data "resources/fr/*;./resources/fr/" ^
+    --add-data "config/*:./config/" ^
     --add-data "README.md;." ^
     --add-data "LICENSE;." ^
     --add-data "tri_photo_date/locales/fr/LC_MESSAGES/base.mo;./locales/fr/LC_MESSAGES/" ^
