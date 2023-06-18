@@ -11,13 +11,7 @@ from datetime import datetime, timezone
 import logging
 
 from tri_photo_date.cli.progressbar import cli_progbar
-from tri_photo_date.exif import (
-    ExifTags,
-    EXIF_DATE_FIELD,
-    EXIF_LOCATION_FIELD,
-    EXIF_CAMERA_FIELD,
-    NoExifError,
-)
+from tri_photo_date.exif import ExifTags
 from tri_photo_date.utils.config_loader import CONFIG as CFG
 
 # from tri_photo_date.utils.config_paths import CONFIG_PATH
@@ -26,7 +20,7 @@ from tri_photo_date import gps
 from tri_photo_date.photo_database import ImageMetadataDB
 from tri_photo_date.utils.converter import bytes2human, limited_string
 from tri_photo_date.utils import fingerprint
-from tri_photo_date.utils.small_tools import fake_LoopCallBack, Timer, gen_regex_index, rename_with_incr, move_file, create_out_str, get_date_from_file_system, get_date_from_exifs_or_file
+from tri_photo_date.utils.small_tools import fake_LoopCallBack, Timer, rename_with_incr, move_file, create_out_str, get_date_from_exifs_or_file
 
 GROUP_PLACEHOLDER = r"{group}"
 DEFAULT_DATE_STR = "1900:01:01 00:00:00"
