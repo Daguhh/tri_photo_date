@@ -138,11 +138,11 @@ class MainWindow(MainWindow_ui):
         )
 
     def setup_actions(self):
-        self.conf_panel.populateBtn.clicked.connect(self.populate_act)
-        self.conf_panel.previewBtn.clicked.connect(self.preview_act)
-        self.conf_panel.executeBtn.clicked.connect(self.run_act)
+        self.conf_panel.populateBtn.clicked.connect(self.act_populate)
+        self.conf_panel.previewBtn.clicked.connect(self.act_preview)
+        self.conf_panel.executeBtn.clicked.connect(self.act_execute)
 
-        self.tool_panel.gps.runBtn.clicked.connect(self.run_gps_act)
+        self.tool_panel.gps.runBtn.clicked.connect(self.act_run_gps)
 
     def connect_wdgs_2_config(self):
         for prop, wdg in self.wdgs.items():
@@ -249,7 +249,7 @@ class MainWindow(MainWindow_ui):
         self.save_act()
         super().closeEvent(event)
 
-    def populate_act(self):
+    def act_populate(self):
         logging.info("Starting processing files...")
 
         self.conf_panel.move_progbar(self.conf_panel.scan_frame.progbar_layout)
@@ -269,7 +269,7 @@ class MainWindow(MainWindow_ui):
         self.conf_panel.timer.timeout.connect(self.update_selection_tabs)
         self.conf_panel.timer.start(1000)  # waits for 1 second
 
-    def preview_act(self):
+    def act_preview(self):
         logging.info("Starting processing files...")
 
         self.conf_panel.move_progbar(self.conf_panel.compute_act_prog_holder)
@@ -288,10 +288,10 @@ class MainWindow(MainWindow_ui):
         self.conf_panel.timer.timeout.connect(self.update_preview)
         self.conf_panel.timer.start(1000)  # waits for 1 second
 
-    def run_act(self):
+    def act_execute(self):
         logging.info("Starting processing files...")
 
-        self.conf_panel.move_progbar(self.conf_panel.execute_act_prog_holder)
+        self.conf_panel.move_progbar(self.conf_panel.act_execute_prog_holder)
 
         self.save_act()
         self.conf_panel.executeBtn.setHidden(True)
@@ -336,7 +336,7 @@ class MainWindow(MainWindow_ui):
             CFG["files.is_max_size"] = val["max_size"][0]
             CFG["files.max_size"] = val["max_size"][1]
 
-    def run_gps_act(self):
+    def act_run_gps(self):
         logging.info("Starting processing files...")
 
         ordonate_photos.add_tags_to_folder(
