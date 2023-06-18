@@ -7,7 +7,7 @@ import logging
 import re
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QThread, QTimer, QEventLoop, QSize
+from PyQt5.QtCore import Qt, QThread, QTimer, QEventLoop, QSize, pyqtSignal, QPoint, QRect
 from PyQt5.QtGui import (
     QKeySequence,
     QIcon,
@@ -53,12 +53,6 @@ from PyQt5.QtWidgets import (
     QScrollArea,
 )
 
-# Modules
-from tri_photo_date.gui.sqlite_view import DatabaseViewer
-from tri_photo_date import ordonate_photos
-from tri_photo_date.ordonate_photos import CFG
-from tri_photo_date.gui.menu import WindowMenu, SettingFilePopup
-
 # Local PyQt widgets
 from tri_photo_date.gui.collapsible_frame import (
     CollapsibleFrame,
@@ -70,6 +64,8 @@ from tri_photo_date.gui.small_widgets import (
     simpleStopButton,
     MyRadioButton,
 )
+from tri_photo_date.gui import menu as windowmenu
+from tri_photo_date.gui.sqlite_view import DatabaseViewer
 
 # Constants
 from tri_photo_date.exif import (
@@ -96,8 +92,6 @@ from tri_photo_date.gui.human_text import (
     ACTION_BUTTONS,
     DUP_RADIO_BUTTONS,
 )
-from tri_photo_date.gui.human_text import MAIN_TAB_WIDGETS as MTW
-from tri_photo_date.gui.human_text import MAIN_TAB_BUTTONS as MTB
 from tri_photo_date.utils.config_paths import (
     STRFTIME_HELP_PATH,
     ICON_PATH,
@@ -105,19 +99,27 @@ from tri_photo_date.utils.config_paths import (
     IMAGE_DATABASE_PATH,
 )
 
+# Texts
+from tri_photo_date.gui.human_text import MAIN_TAB_WIDGETS as MTW
+from tri_photo_date.gui.human_text import MAIN_TAB_BUTTONS as MTB
 
-lang = CFG["interface.lang"]
-import gettext
 
-trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
-trad.install()
-_ = trad.gettext  # Greek
+def set_global_config(lang='en', size=1, mode=GUI_ADVANCED):
 
-os.environ["QT_SCALE_FACTOR"] = CFG["interface.size"]
+    windowmenu.set_global_config(lang, size, mode)
 
-from PyQt5.QtCore import Qt, pyqtSignal, QPoint, QRect
-from PyQt5.QtGui import QPixmap, QPainter
-from PyQt5.QtWidgets import QSplitterHandle, QPushButton
+    import gettext
+
+    trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
+    trad.install()
+
+    global _
+    _ = trad.gettext  # Greek
+
+    os.environ["QT_SCALE_FACTOR"] = size
+
+    global GUI_MODE
+    GUI_MODE = mode
 
 
 class LoopCallBack:
@@ -143,7 +145,7 @@ class MainWindow_ui(QMainWindow):
         self.setWindowTitle("Tri photo")
         self.setWindowIcon(QIcon(str(ICON_PATH)))
 
-        self.menubar = WindowMenu(self)
+        self.menubar = windowmenu.WindowMenu(self)
         self.setMenuBar(self.menubar)
 
         main_windows_wdg = QWidget()
@@ -197,11 +199,11 @@ class MainWindow_ui(QMainWindow):
         conf_panel_content.layout().addWidget(self.conf_panel)
         scroll_area.setWidget(conf_panel_content)
 
-        if CFG["interface.mode"] == GUI_SIMPLIFIED:
+        if GUI_MODE == GUI_SIMPLIFIED:
             splitter.addWidget(self.conf_panel)
             tabs.setHidden(True)
 
-        elif CFG["interface.mode"] == GUI_ADVANCED:
+        elif GUI_MODE == GUI_ADVANCED:
             tabs.addTab(scroll_area, "Main")
 
         tabs.addTab(toolscroll_area, _("Outils"))
@@ -282,7 +284,7 @@ class MainTab(QWidget):
 
         layout.addLayout(src_frame.dir_wdg)
         layout.addLayout(src_frame.ext_wdg)
-        if not CFG["interface.mode"] == GUI_SIMPLIFIED:
+        if not GUI_MODE == GUI_SIMPLIFIED:
             layout.addLayout(src_frame.cam_wdg)
             layout.addLayout(src_frame.exclude_wdg)
         src_frame.setLayout(layout)
@@ -367,7 +369,7 @@ class MainTab(QWidget):
         self.previewBtn = simplePushButton(main_layout, **ACTION_BUTTONS["calculate"])
         self.stopBtn1 = simpleStopButton(main_layout, self.stop)
 
-        if CFG["interface.mode"] == GUI_SIMPLIFIED:
+        if GUI_MODE == GUI_SIMPLIFIED:
             self.opt_frame.setHidden(True)
 
         self.compute_act_prog_holder = QVBoxLayout()
@@ -539,7 +541,7 @@ class LabelNLineEdit(QHBoxLayout):
         self.addWidget(combo)
         self.combo = combo
 
-        if CFG["interface.mode"] == GUI_SIMPLIFIED:
+        if GUI_MODE == GUI_SIMPLIFIED:
             combo.addItems(options)
             combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             self.textBox = QLineEdit()
@@ -567,7 +569,7 @@ class LabelNLineEdit(QHBoxLayout):
         combo.activated.connect(callback)
 
         # Set default values (need to load values from textBox intead of config at MainTab.__init__)
-        if CFG["interface.mode"] == GUI_SIMPLIFIED:
+        if GUI_MODE == GUI_SIMPLIFIED:
             combo.setCurrentIndex(0)
             combo.currentIndexChanged.emit(0)
 
@@ -618,7 +620,6 @@ class DuplicateWdg(QHBoxLayout):
         self.duplicateBtn.stateChanged.emit(False)
 
     def set_dup_toggle(self, val):
-        # CFG['is_control_duplicates'] = val
         self.scandestBtn.setDisabled(not val)
         for btn in self.dup_grp.buttons():
             btn.setDisabled(not val)
@@ -679,21 +680,15 @@ class GPSTab(CollapsibleFrame):
         self.progress_bar = MyProgressBar()
         btn_layout.addWidget(self.progress_bar)
         btn_layout.setContentsMargins(0, 0, 0, 0)
-        btn.clicked.connect(self.run_act)
+        #btn.clicked.connect(self.run_gps_act)
+
+        self.runBtn = btn
 
         layout.addLayout(btn_layout)
         # frame.setLayout(layout)
         main_layout.addLayout(layout)
         self.setLayout(main_layout)
         self.collapse(True)
-
-    def run_act(self):
-        logging.info("Starting processing files...")
-
-        ordonate_photos.add_tags_to_folder(
-            self.progress_bar, self.label_gps_info, self.label_image
-        )
-        self.progress_bar.setValue(100)
 
     def populate_list(self):
         tags = EXIF_LOCATION_FIELD.values()

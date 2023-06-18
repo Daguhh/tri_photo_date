@@ -40,15 +40,23 @@ from tri_photo_date.utils.config_loader import (
     GUI_SIMPLIFIED,
     LANG_LIST,
 )
-from tri_photo_date.ordonate_photos import CFG
 from tri_photo_date.gui.human_text import MENU_TOOL_BUTTON, WARNING_SWITCH_SIMPLIFY_MODE
 
-lang = CFG["interface.lang"]
-import gettext
+def set_global_config(lang='en', size=1, mode=GUI_ADVANCED):
 
-trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
-trad.install()
-_ = trad.gettext  # Greek
+    import gettext
+
+    trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
+    trad.install()
+
+    global _
+    _ = trad.gettext  # Greek
+
+    os.environ["QT_SCALE_FACTOR"] = size
+
+    global GUI_MODE
+    GUI_MODE = mode
+
 
 
 class WindowMenu(QMenuBar):
@@ -98,7 +106,7 @@ class WindowMenu(QMenuBar):
         mode_menu.addAction(self.mode_group.addAction(simplify_action))
 
         # for action in self.mode_group.actions():
-        #    if action.data() == CFG["interface.mode"]:
+        #    if action.data() == GUI_MODE
         #        action.setChecked(True)
         # mode_menu.setDisabled(True)
 
@@ -115,8 +123,8 @@ class WindowMenu(QMenuBar):
             # size_act.triggered.connect(lambda x: self.set_interface_size(s))
 
         # for action in self.size_group.actions():
-        #    # print(action.data(), CFG['size'], type(action.data()))
-        #    if action.data() == CFG["interface.size"]:
+        #    # print(action.data(), GUI_SIZE
+        #    if action.data() == GUI_SIZE
         #        action.setChecked(True)
 
         lang_menu = QMenu(_("Langue"), self)
@@ -130,7 +138,7 @@ class WindowMenu(QMenuBar):
             lang_menu.addAction(self.lang_group.addAction(lang_act))
 
         # for action in self.lang_group.actions():
-        #    if action.data() == CFG["interface.lang"]:
+        #    if action.data() == GUI_LANG
         #        action.setChecked(True)
 
         view_menu.addMenu(mode_menu)
@@ -146,11 +154,6 @@ class WindowMenu(QMenuBar):
             _("Affiche les étapes du programme dans le terminal")
         )
 
-        # simulate_action = QAction("Simuler", self, checkable=True)
-        # tool_menu.addAction(simulate_action)
-        # simulate_action.triggered.connect(self.simulate_toggle)
-        # simulate_action.setChecked(CFG['simulate'])
-        # simulate_action.setToolTip("Ne copie aucun fichier")
         self.mode_group.triggered.connect(self.set_interface_mode)
         self.size_group.triggered.connect(self.set_interface_size)
         self.lang_group.triggered.connect(self.set_language)
@@ -248,12 +251,7 @@ class WindowMenu(QMenuBar):
             subprocess.run(("xdg-open", str(CONFIG_PATH)))
 
     def debug_toggle(self, value):
-        CFG["misc.verbose"] = 2 * int(value)
-
-    # def simulate_toggle(self, value):
-
-    #    CFG['simulate'] = 2 * int(value)
-
+        pass
 
 class SettingFilePopup(QDialog):
     def __init__(self):

@@ -19,15 +19,24 @@ from PyQt5.QtWidgets import (
 # Modules
 from tri_photo_date import ordonate_photos
 from tri_photo_date.ordonate_photos import CFG
-from tri_photo_date.gui.menu import SettingFilePopup
 
-from tri_photo_date.gui.main_window_ui import MainWindow_ui, LoopCallBack
-
+# database explorer functions
 from tri_photo_date.explore_db import (
     list_available_camera_model,
     list_available_exts,
     list_available_tags,
 )
+
+# Load and init ui
+from  tri_photo_date.gui import main_window_ui
+main_window_ui.set_global_config(
+    CFG['interface.lang'],
+    CFG['interface.size'],
+    CFG['interface.mode']
+)
+from tri_photo_date.gui.main_window_ui import MainWindow_ui, LoopCallBack
+
+from tri_photo_date.gui.menu import SettingFilePopup
 
 
 class MainWindow(MainWindow_ui):
@@ -133,6 +142,8 @@ class MainWindow(MainWindow_ui):
         self.conf_panel.previewBtn.clicked.connect(self.update_selection_tabs)
         self.conf_panel.executeBtn.clicked.connect(self.run_act)
         self.conf_panel.runBtn.clicked.connect(self.populate_act)
+
+        self.tool_panel.gps.runBtn.clicked.connect(self.run_gps_act)
 
     def connect_wdgs_2_config(self):
         for prop, wdg in self.wdgs.items():
@@ -325,3 +336,12 @@ class MainWindow(MainWindow_ui):
             CFG["files.min_size"] = val["min_size"][1]
             CFG["files.is_max_size"] = val["max_size"][0]
             CFG["files.max_size"] = val["max_size"][1]
+
+    def run_gps_act(self):
+        logging.info("Starting processing files...")
+
+        ordonate_photos.add_tags_to_folder(
+            self.progress_bar, self.label_gps_info, self.label_image
+        )
+        self.progress_bar.setValue(100)
+
