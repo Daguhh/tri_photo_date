@@ -10,6 +10,7 @@ trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
 trad.install()
 _ = trad.gettext  # Greek
 
+
 class CollapsibleFrame(QFrame):
     widget_list = []
 

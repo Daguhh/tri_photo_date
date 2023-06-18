@@ -2,26 +2,26 @@ import hashlib
 import os
 import struct
 
-def set_global_config(config):
 
+def set_global_config(config):
     global max_length
-    is_max_hash = config['files.is_max_hash_size']
+    is_max_hash = config["files.is_max_hash_size"]
     if is_max_hash:
-        max_length = config['files.max_hash_size'] * 1000*1000 # 1 MB ->5000 MB
+        max_length = config["files.max_hash_size"] * 1000 * 1000  # 1 MB ->5000 MB
     else:
-        max_length = 1000*1000*1000*5 # 5GB
+        max_length = 1000 * 1000 * 1000 * 5  # 5GB
 
     print(max_length)
 
-def get_file_fingerprint(im_path):
 
+def get_file_fingerprint(im_path):
     with open(im_path, "rb") as f:
         md5_file = hashlib.md5()
         i = 0
-        while chunk := f.read(4*1024*1024):
+        while chunk := f.read(4 * 1024 * 1024):
             md5_file.update(chunk)
 
-            i += 4*1024*1024
+            i += 4 * 1024 * 1024
             if i > max_length:
                 break
 
@@ -65,7 +65,7 @@ def png_data_fingerprint(im_str):
             break
         if fh.read(4) == b"IDAT":
             hash.update(fh.readm(min(mlength, length)))
-            mlength = max(mlength-length, 0)
+            mlength = max(mlength - length, 0)
             if mlength == 0:
                 break
             fh.read(4)  # CRC
@@ -83,10 +83,10 @@ def jpeg_data_fingerprint(im_str):
         assert marker & 0xFF00 == 0xFF00
         if marker == 0xFFDA:  # Start of stream
             i = 0
-            while chunk := fh.read(4*1024*1024):
+            while chunk := fh.read(4 * 1024 * 1024):
                 hash.update(chunk)
 
-                i += 4*1024*1024
+                i += 4 * 1024 * 1024
                 if i > max_length:
                     break
             break
@@ -111,7 +111,7 @@ def mp4_data_fingerprint(im_str):
         tmp = fh.read(4)
         if tmp == b"mdat":
             hash.update(fh.read(min(mlength, length)))
-            mlength = max(mlength-length, 0)
+            mlength = max(mlength - length, 0)
             if mlength == 0:
                 break
             fh.read(4)  # crc

@@ -1,4 +1,3 @@
-
 import re
 from pathlib import Path
 from datetime import datetime, timezone
@@ -15,6 +14,7 @@ from tri_photo_date.utils.config_loader import (
     FILE_COPY,
     FILE_MOVE,
 )
+
 
 class fake_LoopCallBack:
     stopped = False
@@ -109,6 +109,7 @@ def move_file(in_str, out_str, mode=FILE_SIMULATE):
 
     return True
 
+
 def create_out_str(in_str, out_path_str, out_filename):
     in_path = Path(in_str)
 
@@ -121,8 +122,8 @@ def create_out_str(in_str, out_path_str, out_filename):
 
     return out_str
 
-def get_date_from_file_system(in_str):
 
+def get_date_from_file_system(in_str):
     timestamp = Path(in_str).stat().st_mtime
     date = datetime.fromtimestamp(timestamp, tz=timezone.utc)
     out_fmt = "%Y:%m:%d %H:%M:%S"
@@ -130,7 +131,15 @@ def get_date_from_file_system(in_str):
 
     return date_str
 
-def get_date_from_exifs_or_file(in_str, metadatas, is_guess, guess_fmt, is_date_from_filesystem, is_force_date_from_filesystem):
+
+def get_date_from_exifs_or_file(
+    in_str,
+    metadatas,
+    is_guess,
+    guess_fmt,
+    is_date_from_filesystem,
+    is_force_date_from_filesystem,
+):
     date_str = ""
 
     # First start looking at file name (user option)
@@ -138,9 +147,8 @@ def get_date_from_exifs_or_file(in_str, metadatas, is_guess, guess_fmt, is_date_
         date_fmt = guess_fmt
         date_str = ExifTags.get_date_from_name(date_fmt, in_str)
 
-    is_force_date_filesystem = (
-        bool(is_date_from_filesystem) and
-        bool(is_force_date_from_filesystem)
+    is_force_date_filesystem = bool(is_date_from_filesystem) and bool(
+        is_force_date_from_filesystem
     )
     if not date_str and is_force_date_filesystem:
         date_str = get_date_from_file_system(in_str)
@@ -160,4 +168,3 @@ def get_date_from_exifs_or_file(in_str, metadatas, is_guess, guess_fmt, is_date_
 
     # Finally get last modification date (user set option)
     return date_str
-

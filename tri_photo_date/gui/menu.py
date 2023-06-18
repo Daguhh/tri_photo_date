@@ -73,7 +73,6 @@ class WindowMenu(QMenuBar):
         self.config_action = QAction(_("Ouvrir le fichier de configuration"), self)
         edit_menu.addAction(self.config_action)
 
-
         self.set_settings_action = QAction(_("Ouvrir la configuration globale"), self)
         edit_menu.addAction(self.set_settings_action)
 
@@ -92,11 +91,13 @@ class WindowMenu(QMenuBar):
         simplify_action.setData(GUI_SIMPLIFIED)
 
         self.mode_group = QActionGroup(self)
-        self.mode_group.setExclusionPolicy(QActionGroup.ExclusionPolicy.ExclusiveOptional)
+        self.mode_group.setExclusionPolicy(
+            QActionGroup.ExclusionPolicy.ExclusiveOptional
+        )
         mode_menu.addAction(self.mode_group.addAction(full_action))
         mode_menu.addAction(self.mode_group.addAction(simplify_action))
 
-        #for action in self.mode_group.actions():
+        # for action in self.mode_group.actions():
         #    if action.data() == CFG["interface.mode"]:
         #        action.setChecked(True)
         # mode_menu.setDisabled(True)
@@ -113,7 +114,7 @@ class WindowMenu(QMenuBar):
             size_menu.addAction(self.size_group.addAction(size_act))
             # size_act.triggered.connect(lambda x: self.set_interface_size(s))
 
-        #for action in self.size_group.actions():
+        # for action in self.size_group.actions():
         #    # print(action.data(), CFG['size'], type(action.data()))
         #    if action.data() == CFG["interface.size"]:
         #        action.setChecked(True)
@@ -128,7 +129,7 @@ class WindowMenu(QMenuBar):
             lang_act.setData(lang)
             lang_menu.addAction(self.lang_group.addAction(lang_act))
 
-        #for action in self.lang_group.actions():
+        # for action in self.lang_group.actions():
         #    if action.data() == CFG["interface.lang"]:
         #        action.setChecked(True)
 
@@ -141,7 +142,9 @@ class WindowMenu(QMenuBar):
 
         self.debug_action = QAction("Debug", self, checkable=True)
         tool_menu.addAction(self.debug_action)
-        self.debug_action.setToolTip(_("Affiche les étapes du programme dans le terminal"))
+        self.debug_action.setToolTip(
+            _("Affiche les étapes du programme dans le terminal")
+        )
 
         # simulate_action = QAction("Simuler", self, checkable=True)
         # tool_menu.addAction(simulate_action)
@@ -169,7 +172,6 @@ class WindowMenu(QMenuBar):
         help_action = QAction(_("Aide"), self)
         about_menu.addAction(help_action)
         help_action.triggered.connect(self.show_help)
-
 
     def load(self):
         pass
@@ -252,6 +254,7 @@ class WindowMenu(QMenuBar):
 
     #    CFG['simulate'] = 2 * int(value)
 
+
 class SettingFilePopup(QDialog):
     def __init__(self):
         super().__init__()
@@ -265,7 +268,7 @@ class SettingFilePopup(QDialog):
         label = QLabel(_("Empreinte partielles maximum"))
         self.spin_max_hash = QSpinBox()
         self.spin_max_hash.setRange(0, 10000)
-        unit = QLabel('MB')
+        unit = QLabel("MB")
         sublayout.addWidget(self.ckb_max_hash)
         sublayout.addWidget(label)
         sublayout.addWidget(self.spin_max_hash)
@@ -276,8 +279,8 @@ class SettingFilePopup(QDialog):
         self.ckb_min_size = QCheckBox()
         label = QLabel(_("Ignorer fichiers plus petit que"))
         self.spin_min_size = QSpinBox()
-        self.spin_min_size.setRange(0, 1000*1000)
-        unit = QLabel('KB')
+        self.spin_min_size.setRange(0, 1000 * 1000)
+        unit = QLabel("KB")
         sublayout.addWidget(self.ckb_min_size)
         sublayout.addWidget(label)
         sublayout.addWidget(self.spin_min_size)
@@ -287,7 +290,7 @@ class SettingFilePopup(QDialog):
         sublayout = QHBoxLayout()
         self.ckb_max_size = QCheckBox()
         label = QLabel(_("Ignorer les fichiers plus grand que"))
-        unit = QLabel('MB')
+        unit = QLabel("MB")
         self.spin_max_size = QSpinBox()
         self.spin_max_size.setRange(1, 100000)
         sublayout.addWidget(self.ckb_max_size)
@@ -302,13 +305,11 @@ class SettingFilePopup(QDialog):
 
         self.setLayout(layout)
 
-
     def get_values(self):
         # Return the entered values as a tuple of integers
         dct = {
             "max_hash": (self.ckb_max_hash.checkState(), self.spin_max_hash.value()),
             "max_size": (self.ckb_max_size.checkState(), self.spin_max_size.value()),
-            "min_size": (self.ckb_min_size.checkState(), self.spin_min_size.value())
+            "min_size": (self.ckb_min_size.checkState(), self.spin_min_size.value()),
         }
         return dct
-

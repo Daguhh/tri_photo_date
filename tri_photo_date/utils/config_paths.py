@@ -48,7 +48,6 @@ else:
     LOCALES_DIR = RUNTIME_PATH.parent / "locales"
 
 
-
 #### CONFIG ####
 if os.name == "nt":
     CONFIG_DIR = Path(os.environ["APPDATA"]) / APP_NAME
@@ -61,10 +60,9 @@ CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 CONFIG_PATH = CONFIG_DIR / "config.ini"
 
 
-
 #### CACHE ####
 if os.name == "nt":
-    CACHE_DIR = Path(os.environ['LOCALAPPDATA']) / APP_NAME
+    CACHE_DIR = Path(os.environ["LOCALAPPDATA"]) / APP_NAME
 else:
     CACHE_DIR = Path.home() / ".cache" / APP_NAME
 
@@ -74,4 +72,3 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 IMAGE_DATABASE_PATH = CACHE_DIR / "images.db"
 GPS_DATABASE_PATH = CACHE_DIR / "nominatim.db"
 # IMAGE_DATABASE_PATH = IMAGE_DATABASE_PATH.resolve()
-

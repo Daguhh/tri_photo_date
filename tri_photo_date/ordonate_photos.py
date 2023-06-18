@@ -20,23 +20,30 @@ from tri_photo_date import gps
 from tri_photo_date.photo_database import ImageMetadataDB
 from tri_photo_date.utils.converter import bytes2human, limited_string
 from tri_photo_date.utils import fingerprint
-from tri_photo_date.utils.small_tools import fake_LoopCallBack, Timer, rename_with_incr, move_file, create_out_str, get_date_from_exifs_or_file
+from tri_photo_date.utils.small_tools import (
+    fake_LoopCallBack,
+    Timer,
+    rename_with_incr,
+    move_file,
+    create_out_str,
+    get_date_from_exifs_or_file,
+)
 
 GROUP_PLACEHOLDER = r"{group}"
 DEFAULT_DATE_STR = "1900:01:01 00:00:00"
 
 
-
 def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
-
     CFG.load_config()
     fingerprint.set_global_config(CFG)
 
-    #in_dir = CFG["source.dir"]
-    #out_dir = CFG["destination.dir"]
+    # in_dir = CFG["source.dir"]
+    # out_dir = CFG["destination.dir"]
     is_use_cache = CFG["scan.is_use_cached_datas"]
-    min_size = CFG['files.min_size'] *1000 if CFG['files.is_min_size'] else 0
-    max_size = CFG['files.max_size'] *1000*1000 if CFG['files.is_max_size'] else sys.maxsize
+    min_size = CFG["files.min_size"] * 1000 if CFG["files.is_min_size"] else 0
+    max_size = (
+        CFG["files.max_size"] * 1000 * 1000 if CFG["files.is_max_size"] else sys.maxsize
+    )
 
     # update image database
     media_extentions = CFG["misc.accepted_formats"]
@@ -45,11 +52,11 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
         progbar.update(0, f"Looking for all files in {CFG['source.dir']} ...")
 
         #### Scanning source folder ####
-        nb_files = sum([len(f) for *_, f in os.walk(CFG['source.dir'])])
+        nb_files = sum([len(f) for *_, f in os.walk(CFG["source.dir"])])
         progbar.init(nb_files)
 
         i = 0
-        for folder, _, filenames in os.walk(CFG['source.dir']):
+        for folder, _, filenames in os.walk(CFG["source.dir"]):
             for filename in filenames:
                 i += 1
 
@@ -76,11 +83,11 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
             return
 
         #### Scanning destination folder ####
-        nb_files = sum([len(f) for *_, f in os.walk(CFG['destination.dir'])])
+        nb_files = sum([len(f) for *_, f in os.walk(CFG["destination.dir"])])
         progbar.init(nb_files)
 
         i = 0
-        for folder, _, filenames in os.walk(CFG['destination.dir']):
+        for folder, _, filenames in os.walk(CFG["destination.dir"]):
             for filename in filenames:
                 i += 1
 
@@ -108,24 +115,23 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
 
 def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
-
     gps.set_global_config(CFG)
 
     # is_hash_reset = CFG["hash_reset"]
-    #in_dir = CFG["source.dir"]
-    #extentions = CFG["source.extentions"]
-    #cameras = CFG["source.cameras"]
+    # in_dir = CFG["source.dir"]
+    # extentions = CFG["source.extentions"]
+    # cameras = CFG["source.cameras"]
     # out_dir = CFG['out_dir']
-    #excluded_dirs = CFG["source.excluded_dirs"]
-    #is_exclude_dir_regex = bool(CFG["source.is_exclude_dir_regex"])
-    #exclude_toggle = CFG["source.exclude_toggle"]
+    # excluded_dirs = CFG["source.excluded_dirs"]
+    # is_exclude_dir_regex = bool(CFG["source.is_exclude_dir_regex"])
+    # exclude_toggle = CFG["source.exclude_toggle"]
     exclude = {
         "dirs": CFG["source.excluded_dirs"],
         "is_regex": bool(CFG["source.is_exclude_dir_regex"]),
         "toggle": CFG["source.exclude_toggle"],
     }
     # is_gps = CFG["options.gps.is_gps"]
-    #recursive = CFG["source.is_recursive"]
+    # recursive = CFG["source.is_recursive"]
     # is_group_floating_days = CFG["options.group.is_group"]
     # group_floating_days_nb = CFG["options.group.floating_nb"]
     # group_floating_days_fmt = CFG["options.group.display_fmt"]
@@ -169,16 +175,18 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                     continue
 
             # Generate a path string from user configuration
-            out_str = create_out_str(in_str, CFG["destination.rel_dir"], CFG["destination.filename"])
+            out_str = create_out_str(
+                in_str, CFG["destination.rel_dir"], CFG["destination.filename"]
+            )
 
             # Get date and format output path string
             date_str = get_date_from_exifs_or_file(
                 in_str,
                 metadatas,
-                CFG['options.name.is_guess'],
-                CFG['options.name.guess_fmt'],
-                CFG['options.general.is_date_from_filesystem'],
-                CFG['options.general.is_force_date_from_filesystem'],
+                CFG["options.name.is_guess"],
+                CFG["options.name.guess_fmt"],
+                CFG["options.general.is_date_from_filesystem"],
+                CFG["options.general.is_force_date_from_filesystem"],
             )
             out_str = ExifTags.format_ym(date_str, out_str)
 
@@ -259,7 +267,6 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
 
 def execute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
-
     with ImageMetadataDB() as db:
         nb_files, total_size = db.count_preview()
         progbar.init(total_size)  # progbar.init(nb_files)

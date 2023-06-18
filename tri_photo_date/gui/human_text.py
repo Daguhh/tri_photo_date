@@ -9,7 +9,9 @@ trad.install()
 _ = trad.gettext  # Greek
 
 
-WARNING_SWITCH_SIMPLIFY_MODE = _("Attention, les paramètres de la section 'options' seront conservés\nmais ne seront plus modifiables en mode 'simplifié'")
+WARNING_SWITCH_SIMPLIFY_MODE = _(
+    "Attention, les paramètres de la section 'options' seront conservés\nmais ne seront plus modifiables en mode 'simplifié'"
+)
 
 MEDIA_FORMATS = {
     _(
@@ -42,12 +44,16 @@ REL_PATH_FORMATS = {
 MAIN_TAB_WIDGETS = {
     "dir": {
         "label": _("Dossier source"),
-        "tooltip": _("Chemin du dossier à analyser, Ajustez le chemin dans la section 'Source'"),
+        "tooltip": _(
+            "Chemin du dossier à analyser, Ajustez le chemin dans la section 'Source'"
+        ),
         "placeholder": _("D:\CleUsb"),
     },
     "dir": {
         "label": _("Dossier destination"),
-        "tooltip": _("Chemin du dossier à analyser, Ajuster le chemin dans la section 'Destination'"),
+        "tooltip": _(
+            "Chemin du dossier à analyser, Ajuster le chemin dans la section 'Destination'"
+        ),
         "placeholder": _(r"D:\User\Images"),
     },
     "scan_exts": {
@@ -184,7 +190,9 @@ MAIN_TAB_BUTTONS = {
     },
     "is_use_cached_datas": {
         "label": _("données du cache"),
-        "tooltip": _("Ne recalcule pas les empreintes des fichiers,\nutilise directement les données du cache associées au chemin du fichier.\n/!\\ N'activez uniquement si les données n'ont pas été modifiées depuis le dernier lancement du programme."),
+        "tooltip": _(
+            "Ne recalcule pas les empreintes des fichiers,\nutilise directement les données du cache associées au chemin du fichier.\n/!\\ N'activez uniquement si les données n'ont pas été modifiées depuis le dernier lancement du programme."
+        ),
     },
     "gps": {
         "label": "GPS",
@@ -218,7 +226,7 @@ MAIN_TAB_BUTTONS = {
             "Cherche aussi la date de création de fichier à défaut d'informations trouvées dans les métadonnées"
         ),
     },
-    "is_force_date_from_filesystem" : {
+    "is_force_date_from_filesystem": {
         "label": _("Forcer"),
         "tooltip": _(
             "Prendre la date de création du fichier plutôt que de chercher dans les métadonnées"

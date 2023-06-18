@@ -94,6 +94,7 @@ class DatabaseViewer(QWidget):
     # super().hideEvent(event)
     # self.hidden.emit()
 
+
 if __name__ == "__main__":
     app = QApplication([])
     viewer = DatabaseViewer(str(IMAGE_DATABASE_PATH))

@@ -33,19 +33,18 @@ def _colliding(filename, item):
     reg = re.compile(path.stem + r"(?:\s\([0-9]+\))?" + path.suffix.lower())
     return reg.search(item) is not None
 
+
 def _match_reg(reg, item):
     reg = re.compile(".*" + reg + ".*")
     match = reg.search(item)
     return match is not None
 
-def get_image_metadatas(im_str):
 
+def get_image_metadatas(im_str):
     try:
         with ExifTags(im_str) as exifs:
             metadata = {
-                k: v
-                for k, v in exifs.items()
-                if k in USEFULL_TAG_DESCRIPTION.keys()
+                k: v for k, v in exifs.items() if k in USEFULL_TAG_DESCRIPTION.keys()
             }
     except NoExifError as e:
         metadata = {}
@@ -57,6 +56,7 @@ def get_image_metadatas(im_str):
     camera = camera.strip() if camera else None
 
     return metadata, date, camera
+
 
 class ImageMetadataDB:
     def __init__(self):
@@ -196,7 +196,6 @@ class ImageMetadataDB:
         self.conn.commit()
 
     def get_image_fingerprint(self, im_str):
-
         c = self.conn.cursor()
 
         c.execute(
@@ -210,7 +209,6 @@ class ImageMetadataDB:
         return c.fetchone()
 
     def get_file_size(self, im_str):
-
         c = self.conn.cursor()
 
         c.execute(
@@ -224,18 +222,16 @@ class ImageMetadataDB:
         return c.fetchone()[0]
 
     def add_image_to_scanned_list(self, im_str):
-
         c = self.conn.cursor()
         c.execute("""INSERT INTO images_to_process VALUES (?)""", (im_str,))
         self.conn.commit()
 
     def add_image_to_scanned_dest_list(self, im_str):
-
         c = self.conn.cursor()
         c.execute("""INSERT INTO images_in_dest VALUES (?)""", (im_str,))
         self.conn.commit()
 
-    #def set_image_cache_metadatas(self, im_str, md5_file,  metadata):
+    # def set_image_cache_metadatas(self, im_str, md5_file,  metadata):
 
     #    c = self.conn.cursor()
     #    c.execute(
@@ -249,7 +245,6 @@ class ImageMetadataDB:
     #    self.conn.commit()
 
     def set_image_cache_values(self, im_str, **kwargs):
-
         query = "UPDATE images_cache SET {} WHERE path = ?".format(
             " ".join(f"{row} = ?" for row in kwargs.keys())
         )
@@ -261,7 +256,6 @@ class ImageMetadataDB:
         self.conn.commit()
 
     def update_cache(self, im_str, db_md5_file, db_md5_data):
-
         # no changes
         if (md5_file := get_file_fingerprint(im_str)) == db_md5_file:
             pass
@@ -271,11 +265,11 @@ class ImageMetadataDB:
             metadata, date, camera = get_image_metadatas(im_str)
             st_size = Path(im_str).stat().st_size
             values_to_set = {
-                'md5_file' : md5_file,
-                'metadata' : metadata,
-                'date' : date,
-                'camera' : camera,
-                'st_size' : st_size
+                "md5_file": md5_file,
+                "metadata": metadata,
+                "date": date,
+                "camera": camera,
+                "st_size": st_size,
             }
             self.set_image_cache_values(im_str, **values_to_set)
 
@@ -284,17 +278,16 @@ class ImageMetadataDB:
             metadata, date, camera = get_image_metadatas(im_str)
             st_size = Path(im_str).stat().st_size
             values_to_set = {
-                'md5_file' : md5_file,
-                'md5_data' : md5_data,
-                'metadata' : metadata,
-                'date' : date,
-                'camera' : camera,
-                'st_size' : st_size,
+                "md5_file": md5_file,
+                "md5_data": md5_data,
+                "metadata": metadata,
+                "date": date,
+                "camera": camera,
+                "st_size": st_size,
             }
             self.set_image_cache_values(im_str, **values_to_set)
 
     def set_cache(self, im_str):
-
         md5_file = get_file_fingerprint(im_str)
         md5_data = get_data_fingerprint(im_str)
         folder = str(Path(im_str).parent)
@@ -327,12 +320,11 @@ class ImageMetadataDB:
         self.conn.commit()
 
     def add_image(self, im_str, to_process=True, is_use_cache=False):
-
         cached_fingerprints = self.get_image_fingerprint(im_str)
 
-        if cached_fingerprints and is_use_cache: # force cache
+        if cached_fingerprints and is_use_cache:  # force cache
             pass
-        elif cached_fingerprints: # exist in db
+        elif cached_fingerprints:  # exist in db
             self.update_cache(im_str, *cached_fingerprints)
         else:
             self.set_cache(im_str)
@@ -342,19 +334,17 @@ class ImageMetadataDB:
         else:
             self.add_image_to_scanned_dest_list(im_str)
 
+    # def scan_dest(self, im_str, is_use_cache=False):
+    #     # Same as add_image but for destination folder
 
-   # def scan_dest(self, im_str, is_use_cache=False):
-   #     # Same as add_image but for destination folder
+    #     cached_fingerprints = self.get_image_fingerprint(im_str)
 
-   #     cached_fingerprints = self.get_image_fingerprint(im_str)
-
-   #     if cached_fingerprints and is_use_cache: # force cache
-   #         pass
-   #     elif cached_fingerprints: # exist in db
-   #         self.update_cache(im_str, *cached_fingerprints)
-   #     else:
-   #         self.set_cache(im_str)
-
+    #     if cached_fingerprints and is_use_cache: # force cache
+    #         pass
+    #     elif cached_fingerprints: # exist in db
+    #         self.update_cache(im_str, *cached_fingerprints)
+    #     else:
+    #         self.set_cache(im_str)
 
     def count(self, *args, **kwargs):
         nb_files = 0
@@ -362,7 +352,7 @@ class ImageMetadataDB:
 
         for f in self.list_files(*args, **kwargs):
             nb_files += 1
-            nb_bytes += self.get_file_size(f) #Path(f).stat().st_size
+            nb_bytes += self.get_file_size(f)  # Path(f).stat().st_size
 
         return nb_files, nb_bytes
 
@@ -408,9 +398,7 @@ class ImageMetadataDB:
             cmd = "SELECT path, md5_file, MAX(path) FROM images_to_process_view"
         elif dup_mode == DUP_MD5_DATA:
             # Prevent missing md5_data
-            cmd = (
-                "SELECT path, COALESCE(md5_data, md5_file), MAX(path) FROM images_to_process_view"
-            )
+            cmd = "SELECT path, COALESCE(md5_data, md5_file), MAX(path) FROM images_to_process_view"
         elif dup_mode == DUP_DATETIME:
             cmd = "SELECT path, date, MAX(path) FROM images_to_process_view"
 
@@ -477,9 +465,7 @@ class ImageMetadataDB:
             query = "SELECT  md5_file FROM images_to_process_view WHERE path = ?"
         elif dup_mode == DUP_MD5_DATA:
             # Prevent missing md5_data
-            query = (
-                "SELECT COALESCE(md5_data, md5_file) FROM images_to_process_view WHERE path = ?"
-            )
+            query = "SELECT COALESCE(md5_data, md5_file) FROM images_to_process_view WHERE path = ?"
         elif dup_mode == DUP_DATETIME:
             query = "SELECT date FROM images_to_process_view WHERE path = ?"
 
@@ -541,7 +527,9 @@ class ImageMetadataDB:
 
     def get_exifs(self, im_path):
         c = self.conn.cursor()
-        c.execute("""SELECT metadata FROM images_to_process_view WHERE path=?""", (im_path,))
+        c.execute(
+            """SELECT metadata FROM images_to_process_view WHERE path=?""", (im_path,)
+        )
         res = c.fetchone()
         return json.loads(res[0])
 
@@ -655,7 +643,7 @@ class ImageMetadataDB:
                 grp_date = date
             elif (date - prev_date).days < n:
                 pass
-            else: # new group
+            else:  # new group
                 grp_date = date
             self.set_group_preview(path, datetime.strftime(grp_date, date_fmt))
             prev_date = date
@@ -697,7 +685,7 @@ class ImageMetadataDB:
         if res:
             return res
 
-    #def get_metadatas(self, im_path):
+    # def get_metadatas(self, im_path):
     #    return self.get_exifs(im_path)
 
     def get_location(self, im_str):
@@ -784,4 +772,3 @@ class ImageMetadataDB:
 
         while row := c.fetchone():
             yield row
-

@@ -135,6 +135,7 @@ class LoopCallBack:
             return True
         return False
 
+
 class MainWindow_ui(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -178,7 +179,6 @@ class MainWindow_ui(QMainWindow):
         conf_panel_content.layout().addWidget(self.tool_panel)
         toolscroll_area.setWidget(conf_panel_content)
 
-
         preview_frame = PreviewCollapsibleFrame(" Afficher un aperçu", "green")
         self.preview_wdg = DatabaseViewer(str(IMAGE_DATABASE_PATH))
         preview_frame.setWidget(self.preview_wdg)
@@ -218,6 +218,7 @@ class MainWindow_ui(QMainWindow):
         self.resize(400, 500)
         preview_frame.collapse(True)
 
+
 class MainTab(QWidget):
     def __init__(self, parent):
         super().__init__()
@@ -235,10 +236,12 @@ class MainTab(QWidget):
         scan_frame.destdir_wdg = LabelNLineEdit(self, **MTW["dir"])
         layout.addLayout(scan_frame.destdir_wdg)
         sub_layout = QHBoxLayout()
-        #scan_frame.is_metaBtn = simpleCheckBox(sub_layout, **MTB["is_meta"])
-        #scan_frame.is_md5_file = simpleCheckBox(sub_layout, **MTB["is_md5_file"])
-        #scan_frame.is_md5_data = simpleCheckBox(sub_layout, **MTB["is_md5_data"])
-        scan_frame.is_use_cache = simpleCheckBox(sub_layout, **MTB["is_use_cached_datas"])
+        # scan_frame.is_metaBtn = simpleCheckBox(sub_layout, **MTB["is_meta"])
+        # scan_frame.is_md5_file = simpleCheckBox(sub_layout, **MTB["is_md5_file"])
+        # scan_frame.is_md5_data = simpleCheckBox(sub_layout, **MTB["is_md5_data"])
+        scan_frame.is_use_cache = simpleCheckBox(
+            sub_layout, **MTB["is_use_cached_datas"]
+        )
         layout.addLayout(sub_layout)
 
         scan_frame.setLayout(layout)
@@ -254,11 +257,11 @@ class MainTab(QWidget):
         # Disable "coming soon"
         scan_frame.srcdir_wdg.textBox.setReadOnly(True)
         scan_frame.destdir_wdg.textBox.setReadOnly(True)
-        #scan_frame.dir_wdg.btn_selector.setDisabled(True)
-        #scan_frame.dir_wdg.recursiveBtn.setDisabled(True)
-        #scan_frame.is_metaBtn.setDisabled(True)
-        #scan_frame.is_md5_file.setDisabled(True)
-        #scan_frame.is_md5_data.setDisabled(True)
+        # scan_frame.dir_wdg.btn_selector.setDisabled(True)
+        # scan_frame.dir_wdg.recursiveBtn.setDisabled(True)
+        # scan_frame.is_metaBtn.setDisabled(True)
+        # scan_frame.is_md5_file.setDisabled(True)
+        # scan_frame.is_md5_data.setDisabled(True)
 
         self.scan_frame = scan_frame
 
@@ -349,7 +352,7 @@ class MainTab(QWidget):
             sub_layout, **MTB["is_force_date_from_filesystem"]
         )
         opt_frame.is_date_from_filesystem.stateChanged.connect(
-            lambda e : opt_frame.is_force_date_from_filesystem.setEnabled(bool(e))
+            lambda e: opt_frame.is_force_date_from_filesystem.setEnabled(bool(e))
         )
         opt_frame.is_date_from_filesystem.stateChanged.emit(False)
 
@@ -400,8 +403,8 @@ class MainTab(QWidget):
 
         main_layout.addStretch()
 
-        #size = self.sizeHint()
-        #self.setMinimumHeight(size.height())
+        # size = self.sizeHint()
+        # self.setMinimumHeight(size.height())
 
         self.setLayout(main_layout)
 
@@ -419,7 +422,6 @@ class MainTab(QWidget):
         self.prev_progbar_layout.update()
 
         self.prev_progbar_layout = new_layout
-
 
     def run_function(self, func, *args, **kwargs):
         if not LoopCallBack.stopped:
@@ -910,6 +912,7 @@ class MyProgressBar(QProgressBar):
         QApplication.processEvents()  # keep the GUI responsive
         self.text_label.setText(text)
 
+
 class CounterWdg(QWidget):
     def __init__(self):
         super().__init__()
@@ -948,7 +951,6 @@ class DateTab(CollapsibleFrame):
         text_widget = QTextEdit()
         text_widget.setHtml(strftime_help)
         self.layout.addWidget(text_widget)
-
 
     def link_clicked(self, url):
         QDesktopServices.openUrl(url)
