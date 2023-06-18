@@ -291,7 +291,7 @@ class MainWindow(MainWindow_ui):
     def act_execute(self):
         logging.info("Starting processing files...")
 
-        self.conf_panel.move_progbar(self.conf_panel.act_execute_prog_holder)
+        self.conf_panel.move_progbar(self.conf_panel.execute_act_prog_holder)
 
         self.save_act()
         self.conf_panel.executeBtn.setHidden(True)
