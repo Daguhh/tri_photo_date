@@ -94,11 +94,9 @@ class MainWindow(MainWindow_ui):
 
     def setup_core_actions(self):
 
-        # Core functions
         self.conf_panel.populateBtn.clicked.connect(self.act_populate)
         self.conf_panel.previewBtn.clicked.connect(self.act_preview)
         self.conf_panel.executeBtn.clicked.connect(self.act_execute)
-
         self.tool_panel.gps.runBtn.clicked.connect(self.act_run_gps)
 
     def connect_wdgs_2_config(self):
@@ -114,17 +112,16 @@ class MainWindow(MainWindow_ui):
                 wdg.currentIndexChanged.connect(callback)
             elif isinstance(wdg, QButtonGroup):
                 wdg.buttonClicked[int].connect(callback)
-            elif isinstance(wdg, QAction):
-                pass  # link manually to specific action
             elif isinstance(wdg, QActionGroup):
                 wdg.triggered.connect(lambda s, prop=prop: callback(s.data(), prop))
+            elif isinstance(wdg, QAction):
+                pass  # link manually to specific action
 
         # self.menubar.load_action.triggered.connect(self.load)
         # self.menubar.save_action.triggered.connect(self.save)
         self.menubar.config_action.triggered.connect(self.menubar.open_file_browser)
         self.menubar.set_settings_action.triggered.connect(self.show_set_settings)
         self.menubar.debug_action.triggered.connect(self.menubar.debug_toggle)
-        self.menubar.debug_action.setChecked(CFG["misc.verbose"])
 
     def load_conf(self):
         for prop, wdg in self.wdgs.items():
@@ -150,18 +147,84 @@ class MainWindow(MainWindow_ui):
             elif isinstance(wdg, QSpinBox):
                 wdg.setValue(CFG.get_repr(prop))
 
-    # def update_cameras(self):
-    #    txt = self.tool_panel.cam.user_choice_cameras
-    #    self.conf_panel.src_frame.cam_wdg.textBox.setText(txt)
+    def act_populate(self):
 
-    # def update_extensions(self):
-    #    txt = self.tool_panel.exts.user_choice_extentions
-    #    self.conf_panel.src_frame.ext_wdg.textBox.setText(txt)
+        LoopCallBack.stopped = False
+        self.conf_panel.timer = QTimer()
+
+        self.conf_panel.timer.timeout.connect(
+            lambda: self.conf_panel.run_function(
+                ordonate_photos.populate_db, self.conf_panel.progress_bar, LoopCallBack
+            )
+        )
+        self.conf_panel.timer.timeout.connect(self.update_selection_tabs)
+        self.conf_panel.timer.start(1000)  # waits for 1 second
+
+    def act_preview(self):
+
+        LoopCallBack.stopped = False
+        self.conf_panel.timer = QTimer()
+        self.conf_panel.timer.timeout.connect(
+            lambda: self.conf_panel.run_function(
+                ordonate_photos.compute, self.conf_panel.progress_bar, LoopCallBack
+            )
+        )
+        self.conf_panel.timer.timeout.connect(self.update_preview)
+        self.conf_panel.timer.start(1000)  # waits for 1 second
+
+    def act_execute(self):
+
+        LoopCallBack.stopped = False
+        self.conf_panel.timer = QTimer()
+        self.conf_panel.timer.timeout.connect(
+            lambda: self.conf_panel.run_function(
+                ordonate_photos.execute, self.conf_panel.progress_bar, LoopCallBack
+            )
+        )
+        self.conf_panel.timer.start(1000)  # waits for 1 second
+
+    def save_act(self):
+
+        logging.info(f"Saving config to {CFG.configfile} ...")
+        CFG.save_config()
+
+    def show_set_settings(self):
+
+        wdgs = {}
+        wdgs["files.is_max_hash_size"] = popup.ckb_max_hash
+        wdgs["files.max_hash_size"] = popup.spin_max_hash
+        wdgs["files.is_min_size"] = popup.ckb_min_size
+        wdgs["files.min_size"] = popup.spin_min_size
+        wdgs["files.is_max_size"] = popup.ckb_max_size
+        wdgs["files.max_size"] = popup.spin_max_size
+
+        self.wdgs_settings = wdgs
+        self.load_settings_conf()
+
+        popup = SettingFilePopup()
+        res = popup.exec_()
+        if res == QDialog.Accepted:
+            val = popup.get_values()
+
+            CFG["files.is_max_hash_size"] = val["max_hash"][0]
+            CFG["files.max_hash_size"] = val["max_hash"][1]
+            CFG["files.is_min_size"] = val["min_size"][0]
+            CFG["files.min_size"] = val["min_size"][1]
+            CFG["files.is_max_size"] = val["max_size"][0]
+            CFG["files.max_size"] = val["max_size"][1]
+
+    def act_run_gps(self):
+        logging.info("Starting processing files...")
+
+        ordonate_photos.add_tags_to_folder(
+            self.progress_bar, self.label_gps_info, self.label_image
+        )
+        self.progress_bar.setValue(100)
 
     def update_preview(self):
         timer = QTimer()
 
-        if not timer.isActive():
+        if not timer.isActive(): # if job is finished
             filter_text = self.preview_wdg.filter_edit.text()
             self.preview_wdg.update_table(filter_text)
 
@@ -205,99 +268,4 @@ class MainWindow(MainWindow_ui):
     def closeEvent(self, event):
         self.save_act()
         super().closeEvent(event)
-
-    def act_populate(self):
-        logging.info("Starting processing files...")
-
-        self.conf_panel.move_progbar(self.conf_panel.scan_frame.progbar_layout)
-
-        self.save_act()
-        self.conf_panel.populateBtn.setHidden(True)
-        self.conf_panel.stopBtn.setHidden(False)
-
-        LoopCallBack.stopped = False
-        self.conf_panel.timer = QTimer()
-
-        self.conf_panel.timer.timeout.connect(
-            lambda: self.conf_panel.run_function(
-                ordonate_photos.populate_db, self.conf_panel.progress_bar, LoopCallBack
-            )
-        )
-        self.conf_panel.timer.timeout.connect(self.update_selection_tabs)
-        self.conf_panel.timer.start(1000)  # waits for 1 second
-
-    def act_preview(self):
-        logging.info("Starting processing files...")
-
-        self.conf_panel.move_progbar(self.conf_panel.compute_act_prog_holder)
-
-        self.save_act()
-        self.conf_panel.previewBtn.setHidden(True)
-        self.conf_panel.stopBtn1.setHidden(False)
-
-        LoopCallBack.stopped = False
-        self.conf_panel.timer = QTimer()
-        self.conf_panel.timer.timeout.connect(
-            lambda: self.conf_panel.run_function(
-                ordonate_photos.compute, self.conf_panel.progress_bar, LoopCallBack
-            )
-        )
-        self.conf_panel.timer.timeout.connect(self.update_preview)
-        self.conf_panel.timer.start(1000)  # waits for 1 second
-
-    def act_execute(self):
-        logging.info("Starting processing files...")
-
-        self.conf_panel.move_progbar(self.conf_panel.execute_act_prog_holder)
-
-        self.save_act()
-        self.conf_panel.executeBtn.setHidden(True)
-        self.conf_panel.stopBtn2.setHidden(False)
-
-        LoopCallBack.stopped = False
-        self.conf_panel.timer = QTimer()
-        self.conf_panel.timer.timeout.connect(
-            lambda: self.conf_panel.run_function(
-                ordonate_photos.execute, self.conf_panel.progress_bar, LoopCallBack
-            )
-        )
-        self.conf_panel.timer.start(1000)  # waits for 1 second
-
-    def save_act(self):
-        logging.info(f"Saving config to {CFG.configfile} ...")
-        # self.get_config()
-        CFG.save_config()
-
-    def show_set_settings(self):
-        popup = SettingFilePopup()
-
-        wdgs = {}
-        wdgs["files.is_max_hash_size"] = popup.ckb_max_hash
-        wdgs["files.max_hash_size"] = popup.spin_max_hash
-        wdgs["files.is_min_size"] = popup.ckb_min_size
-        wdgs["files.min_size"] = popup.spin_min_size
-        wdgs["files.is_max_size"] = popup.ckb_max_size
-        wdgs["files.max_size"] = popup.spin_max_size
-
-        self.wdgs_settings = wdgs
-        self.load_settings_conf()
-
-        res = popup.exec_()
-        if res == QDialog.Accepted:
-            val = popup.get_values()
-
-            CFG["files.is_max_hash_size"] = val["max_hash"][0]
-            CFG["files.max_hash_size"] = val["max_hash"][1]
-            CFG["files.is_min_size"] = val["min_size"][0]
-            CFG["files.min_size"] = val["min_size"][1]
-            CFG["files.is_max_size"] = val["max_size"][0]
-            CFG["files.max_size"] = val["max_size"][1]
-
-    def act_run_gps(self):
-        logging.info("Starting processing files...")
-
-        ordonate_photos.add_tags_to_folder(
-            self.progress_bar, self.label_gps_info, self.label_image
-        )
-        self.progress_bar.setValue(100)
 

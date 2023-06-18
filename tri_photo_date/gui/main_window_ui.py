@@ -274,6 +274,7 @@ class MainTab(QWidget):
         main_layout.addWidget(scan_frame)
 
         self.populateBtn = simplePushButton(main_layout, **ACTION_BUTTONS["populate"])
+        self.populateBtn.clicked.connect(self.populate_event)
         self.stopBtn = simpleStopButton(main_layout, self.stop)
 
         scan_frame.progbar_layout = QVBoxLayout()
@@ -390,6 +391,7 @@ class MainTab(QWidget):
         self.opt_frame = opt_frame
 
         self.previewBtn = simplePushButton(main_layout, **ACTION_BUTTONS["calculate"])
+        self.previewBtn.clicked.connect(self.preview_event)
         self.stopBtn1 = simpleStopButton(main_layout, self.stop)
 
         if GUI_MODE == GUI_SIMPLIFIED:
@@ -409,6 +411,7 @@ class MainTab(QWidget):
         self.exec_frame = exec_frame
 
         self.executeBtn = simplePushButton(main_layout, **ACTION_BUTTONS["execute"])
+        self.executeBtn.clicked.connect(self.execute_event)
         self.stopBtn2 = simpleStopButton(main_layout, self.stop)
 
         self.execute_act_prog_holder = QVBoxLayout()
@@ -432,6 +435,30 @@ class MainTab(QWidget):
         # self.setMinimumHeight(size.height())
 
         self.setLayout(main_layout)
+
+    def populate_event(self):
+        logging.info("Starting processing files...")
+
+        self.move_progbar(self.scan_frame.progbar_layout)
+
+        self.populateBtn.setHidden(True)
+        self.stopBtn.setHidden(False)
+
+    def preview_event(self):
+        logging.info("Starting processing files...")
+
+        self.move_progbar(self.compute_act_prog_holder)
+
+        self.previewBtn.setHidden(True)
+        self.stopBtn1.setHidden(False)
+
+    def execute_event(self):
+        logging.info("Starting processing files...")
+
+        self.move_progbar(self.execute_act_prog_holder)
+
+        self.executeBtn.setHidden(True)
+        self.stopBtn2.setHidden(False)
 
     def move_progbar(self, new_layout):
         self.prev_progbar_layout.removeWidget(self.progress_bar)
