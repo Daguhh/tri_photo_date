@@ -138,10 +138,9 @@ class MainWindow(MainWindow_ui):
         )
 
     def setup_actions(self):
+        self.conf_panel.populateBtn.clicked.connect(self.populate_act)
         self.conf_panel.previewBtn.clicked.connect(self.preview_act)
-        self.conf_panel.previewBtn.clicked.connect(self.update_selection_tabs)
         self.conf_panel.executeBtn.clicked.connect(self.run_act)
-        self.conf_panel.runBtn.clicked.connect(self.populate_act)
 
         self.tool_panel.gps.runBtn.clicked.connect(self.run_gps_act)
 
@@ -256,7 +255,7 @@ class MainWindow(MainWindow_ui):
         self.conf_panel.move_progbar(self.conf_panel.scan_frame.progbar_layout)
 
         self.save_act()
-        self.conf_panel.runBtn.setHidden(True)
+        self.conf_panel.populateBtn.setHidden(True)
         self.conf_panel.stopBtn.setHidden(False)
 
         LoopCallBack.stopped = False

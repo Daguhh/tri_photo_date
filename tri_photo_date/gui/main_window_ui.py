@@ -250,7 +250,7 @@ class MainTab(QWidget):
         scan_frame.collapse(True)
         main_layout.addWidget(scan_frame)
 
-        self.runBtn = simplePushButton(main_layout, **ACTION_BUTTONS["populate"])
+        self.populateBtn = simplePushButton(main_layout, **ACTION_BUTTONS["populate"])
         self.stopBtn = simpleStopButton(main_layout, self.stop)
 
         scan_frame.progbar_layout = QVBoxLayout()
@@ -430,7 +430,7 @@ class MainTab(QWidget):
             func(*args, **kwargs)
         if LoopCallBack.stopped:
             self.timer.stop()
-            self.runBtn.setHidden(False)
+            self.populateBtn.setHidden(False)
             self.executeBtn.setHidden(False)
             self.previewBtn.setHidden(False)
             self.stopBtn.setHidden(True)
@@ -441,7 +441,7 @@ class MainTab(QWidget):
     def stop(self):
         self.timer.stop()
         LoopCallBack.stopped = True
-        self.runBtn.setHidden(False)
+        self.populateBtn.setHidden(False)
         self.executeBtn.setHidden(False)
         self.previewBtn.setHidden(False)
         self.stopBtn.setHidden(True)
