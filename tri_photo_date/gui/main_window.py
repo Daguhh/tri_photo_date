@@ -148,40 +148,21 @@ class MainWindow(MainWindow_ui):
                 wdg.setValue(CFG.get_repr(prop))
 
     def act_populate(self):
-
-        LoopCallBack.stopped = False
-        self.conf_panel.timer = QTimer()
-
-        self.conf_panel.timer.timeout.connect(
-            lambda: self.conf_panel.run_function(
-                ordonate_photos.populate_db, self.conf_panel.progress_bar, LoopCallBack
-            )
+        self.conf_panel.run_populate(
+            func=ordonate_photos.populate_db,
+            callback=self.update_selection_tabs
         )
-        self.conf_panel.timer.timeout.connect(self.update_selection_tabs)
-        self.conf_panel.timer.start(1000)  # waits for 1 second
 
     def act_preview(self):
-
-        LoopCallBack.stopped = False
-        self.conf_panel.timer = QTimer()
-        self.conf_panel.timer.timeout.connect(
-            lambda: self.conf_panel.run_function(
-                ordonate_photos.compute, self.conf_panel.progress_bar, LoopCallBack
-            )
+        self.conf_panel.run_preview(
+            func=ordonate_photos.compute,
+            callback=self.update_preview
         )
-        self.conf_panel.timer.timeout.connect(self.update_preview)
-        self.conf_panel.timer.start(1000)  # waits for 1 second
 
     def act_execute(self):
-
-        LoopCallBack.stopped = False
-        self.conf_panel.timer = QTimer()
-        self.conf_panel.timer.timeout.connect(
-            lambda: self.conf_panel.run_function(
-                ordonate_photos.execute, self.conf_panel.progress_bar, LoopCallBack
-            )
+        self.conf_panel.run_execute(
+            func=ordonate_photos.execute
         )
-        self.conf_panel.timer.start(1000)  # waits for 1 second
 
     def save_act(self):
 

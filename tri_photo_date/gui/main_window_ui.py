@@ -274,10 +274,11 @@ class MainTab(QWidget):
         main_layout.addWidget(scan_frame)
 
         self.populateBtn = simplePushButton(main_layout, **ACTION_BUTTONS["populate"])
-        self.populateBtn.clicked.connect(self.populate_event)
+        #self.populateBtn.clicked.connect(self.populate_event)
         self.stopBtn = simpleStopButton(main_layout, self.stop)
 
         scan_frame.progbar_layout = QVBoxLayout()
+
         main_layout.addLayout(scan_frame.progbar_layout)
 
         # Disable "coming soon"
@@ -290,6 +291,12 @@ class MainTab(QWidget):
         # scan_frame.is_md5_data.setDisabled(True)
 
         self.scan_frame = scan_frame
+
+        self.run_populate = self.gen_run_function(
+            self.populateBtn,
+            self.stopBtn,
+            self.scan_frame.progbar_layout
+        )
 
         ########## Source ##########
         src_frame = CollapsibleFrame(_("Source"))
@@ -391,7 +398,7 @@ class MainTab(QWidget):
         self.opt_frame = opt_frame
 
         self.previewBtn = simplePushButton(main_layout, **ACTION_BUTTONS["calculate"])
-        self.previewBtn.clicked.connect(self.preview_event)
+        #self.previewBtn.clicked.connect(self.preview_event)
         self.stopBtn1 = simpleStopButton(main_layout, self.stop)
 
         if GUI_MODE == GUI_SIMPLIFIED:
@@ -399,6 +406,12 @@ class MainTab(QWidget):
 
         self.compute_act_prog_holder = QVBoxLayout()
         main_layout.addLayout(self.compute_act_prog_holder)
+
+        self.run_preview = self.gen_run_function(
+            self.previewBtn,
+            self.stopBtn1,
+            self.compute_act_prog_holder
+        )
 
         ########## Save & Run ##########
         exec_frame = CollapsibleFrame("Executer", color="red")
@@ -411,7 +424,7 @@ class MainTab(QWidget):
         self.exec_frame = exec_frame
 
         self.executeBtn = simplePushButton(main_layout, **ACTION_BUTTONS["execute"])
-        self.executeBtn.clicked.connect(self.execute_event)
+        #self.executeBtn.clicked.connect(self.execute_event)
         self.stopBtn2 = simpleStopButton(main_layout, self.stop)
 
         self.execute_act_prog_holder = QVBoxLayout()
@@ -419,74 +432,53 @@ class MainTab(QWidget):
 
         # Progress bar
         self.progress_bar = MyProgressBar()
-        self.progress_bar_label = self.progress_bar.add_label()
 
+        self.run_execute = self.gen_run_function(
+            self.executeBtn,
+            self.stopBtn2,
+            self.execute_act_prog_holder
+        )
         # Counters
         # self.couter_wdg = CounterWdg()
 
-        fake_layout = QVBoxLayout()
-        fake_layout.addWidget(self.progress_bar_label)
-        fake_layout.addWidget(self.progress_bar)
-        self.prev_progbar_layout = fake_layout
 
         main_layout.addStretch()
 
         # size = self.sizeHint()
         # self.setMinimumHeight(size.height())
 
+        # Create run functions
+
         self.setLayout(main_layout)
 
-    def populate_event(self):
-        logging.info("Starting processing files...")
+    def gen_run_function(self, runBtn, stopBtn, progbarLyt):
 
-        self.move_progbar(self.scan_frame.progbar_layout)
+        def _function(func, callback=lambda:None):
+            logging.info("Starting processing files...")
 
-        self.populateBtn.setHidden(True)
-        self.stopBtn.setHidden(False)
+            self.progress_bar.move_to_layout(progbarLyt)
 
-    def preview_event(self):
-        logging.info("Starting processing files...")
+            runBtn.setHidden(True)
+            stopBtn.setHidden(False)
 
-        self.move_progbar(self.compute_act_prog_holder)
+            LoopCallBack.stopped = False
+            self.timer = QTimer()
 
-        self.previewBtn.setHidden(True)
-        self.stopBtn1.setHidden(False)
+            self.timer.timeout.connect(
+                lambda: self.run_function(
+                    func, self.progress_bar, LoopCallBack
+                )
+            )
+            self.timer.timeout.connect(callback)
+            self.timer.start(1000)  # waits for 1 second
 
-    def execute_event(self):
-        logging.info("Starting processing files...")
-
-        self.move_progbar(self.execute_act_prog_holder)
-
-        self.executeBtn.setHidden(True)
-        self.stopBtn2.setHidden(False)
-
-    def move_progbar(self, new_layout):
-        self.prev_progbar_layout.removeWidget(self.progress_bar)
-        self.prev_progbar_layout.removeWidget(self.progress_bar_label)
-
-        self.progress_bar.setParent(new_layout.parentWidget())
-        self.progress_bar_label.setParent(new_layout.parentWidget())
-
-        new_layout.addWidget(self.progress_bar_label)
-        new_layout.addWidget(self.progress_bar)
-
-        new_layout.update()
-        self.prev_progbar_layout.update()
-
-        self.prev_progbar_layout = new_layout
+        return _function
 
     def run_function(self, func, *args, **kwargs):
         if not LoopCallBack.stopped:
             func(*args, **kwargs)
         if LoopCallBack.stopped:
-            self.timer.stop()
-            self.populateBtn.setHidden(False)
-            self.executeBtn.setHidden(False)
-            self.previewBtn.setHidden(False)
-            self.stopBtn.setHidden(True)
-            self.stopBtn1.setHidden(True)
-            self.stopBtn2.setHidden(True)
-            self.progress_bar.setValue(100)
+            self.stop()
 
     def stop(self):
         self.timer.stop()
@@ -944,6 +936,13 @@ class MyProgressBar(QProgressBar):
         self.setContentsMargins(0, 0, 0, 0)
         self._progbar_nb_val = 1
 
+        self.label = self.add_label()
+
+        fake_layout = QVBoxLayout()
+        fake_layout.addWidget(self.label)
+        fake_layout.addWidget(self)
+        self.prev_layout = fake_layout
+
     def add_label(self):
         self.text_label = QLabel("")
         return self.text_label
@@ -957,6 +956,21 @@ class MyProgressBar(QProgressBar):
         QApplication.processEvents()  # keep the GUI responsive
         self.text_label.setText(text)
 
+    def move_to_layout(self, new_layout):
+
+        self.prev_layout.removeWidget(self)
+        self.prev_layout.removeWidget(self.label)
+
+        self.setParent(new_layout.parentWidget())
+        self.label.setParent(new_layout.parentWidget())
+
+        new_layout.addWidget(self.label)
+        new_layout.addWidget(self)
+
+        new_layout.update()
+        self.prev_layout.update()
+
+        self.prev_layout = new_layout
 
 class CounterWdg(QWidget):
     def __init__(self):
