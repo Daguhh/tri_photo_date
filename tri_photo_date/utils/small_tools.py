@@ -13,6 +13,7 @@ from tri_photo_date.utils.config_loader import (
     FILE_SIMULATE,
     FILE_COPY,
     FILE_MOVE,
+    DEFAULT_DATE_STR,
 )
 
 

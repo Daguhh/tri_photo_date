@@ -18,6 +18,7 @@ if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
     ABOUT_PATH = RUNTIME_PATH / "resources" / "{}" / "about.md"
     STRFTIME_HELP_PATH = RUNTIME_PATH / "strftime_help.html"
     LOCALES_DIR = RUNTIME_PATH / "locales"
+    DEFAULT_CONFIG_PATH = RUNTIME_PATH / "config" / "default_config.ini"
 
 elif "site-packages" in os.path.abspath(tri_photo_date.__file__):
     logging.info("running in a normal Python process")
@@ -32,6 +33,7 @@ elif "site-packages" in os.path.abspath(tri_photo_date.__file__):
     ABOUT_PATH = RUNTIME_PATH.parent.parent / "resources" / "{}" / "about.md"
     STRFTIME_HELP_PATH = RUNTIME_PATH.parent.parent / "resources" / "strftime_help.html"
     LOCALES_DIR = RUNTIME_PATH.parent / "locales"
+    DEFAULT_CONFIG_PATH = RUNTIME_PATH.parent.parent / "config" / "default_config.ini"
 
 else:
     logging.info("The package is running as source code")
@@ -46,6 +48,7 @@ else:
     ABOUT_PATH = RUNTIME_PATH.parent.parent / "resources" / "{}" / "about.md"
     STRFTIME_HELP_PATH = RUNTIME_PATH.parent.parent / "resources" / "strftime_help.html"
     LOCALES_DIR = RUNTIME_PATH.parent / "locales"
+    DEFAULT_CONFIG_PATH = RUNTIME_PATH.parent.parent / "config"  / "default_config.ini"
 
 
 #### CONFIG ####

@@ -15,7 +15,7 @@ from tri_photo_date.exif import ExifTags
 from tri_photo_date.utils.config_loader import CONFIG as CFG
 
 # from tri_photo_date.utils.config_paths import CONFIG_PATH
-from tri_photo_date.utils.config_loader import FILE_ACTION_TXT
+from tri_photo_date.utils.config_loader import FILE_ACTION_TXT, GROUP_PLACEHOLDER, DEFAULT_DATE_STR
 from tri_photo_date import gps
 from tri_photo_date.photo_database import ImageMetadataDB
 from tri_photo_date.utils.converter import bytes2human, limited_string
@@ -29,12 +29,9 @@ from tri_photo_date.utils.small_tools import (
     get_date_from_exifs_or_file,
 )
 
-GROUP_PLACEHOLDER = r"{group}"
-DEFAULT_DATE_STR = "1900:01:01 00:00:00"
 
 
 def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
-    CFG.load_config()
     fingerprint.set_global_config(CFG)
 
     # in_dir = CFG["source.dir"]

@@ -40,6 +40,8 @@ from tri_photo_date.gui.menu import SettingFilePopup
 
 
 class MainWindow(MainWindow_ui):
+    """Connect ui to config and program core functions"""
+
     def __init__(self):
         super().__init__()
 

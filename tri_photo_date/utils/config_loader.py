@@ -14,145 +14,7 @@ from tri_photo_date.cli.cli_argparser import (
     CLI_DUMP_DEFAULT,
     CLI_LOAD,
 )
-from tri_photo_date.utils.config_paths import CONFIG_PATH, APP_NAME
-
-DEFAULT_CONFIG = """
-# TriPhotoDate configuration file
-#
-# /!\ boolean use PyQt5 "notation":
-#     - 2 : True
-#     - 0 : False
-#
-
-[FILES]
-# Partially hashs files given the maximum size in Mo
-is_max_hash_size = 0
-max_hash_size = 0
-
-# Only find files between min and max in Mo
-is_min_size = 0
-min_size = 0
-is_max_size = 0
-max_size = 5000
-
-[SCAN]
-# Keep empty at this time (overided by source.dir and destination.dir)
-src_dir =
-dest_dir =
-
-# Useless at this time
-is_recursive = 0
-is_md5_file = 0
-is_md5_data = 0
-is_meta = 0
-
-# Directly load from cache if path already exist : doesn't verify if file is the same
-is_use_cached_datas = 0
-
-[SOURCE]
-# absolute directory of files to process
-dir =
-
-# filter file by extentions, extentions separated by commas
-extentions = jpg,png,jpeg
-
-# filter by cameras, cameras models deparated by commas (check Exif.ImageModel to find a camera name)
-cameras =
-
-# process also <dir> subdirectories
-is_recursive = 2
-
-# filter by excluding or including folder or using regex
-# relative folder to <dir> or regex, use commas to separate elments in case of multiples values
-excluded_dirs =
-# activate regex mode
-is_exclude_dir_regex = 2
-# toggle exclude (0) / include (1)
-exclude_toggle = 0
-
-[DESTINATION] =
-# Absolute directory where to move/copy photos
-dir =
-# relative directory to <dir>. This path can be personalized using metadata ro date placeholders
-rel_dir =
-# file name, follow same format as <rel_dir>, keep empty to keep original filename
-filename =
-
-[ACTION]
-# action to perform when processing files : simulate (1) / copy (2) / move (3)
-action_mode = 1
-
-[DUPLICATES]
-# Activate control of duplicates. Only one file in match will be processed
-is_control = 2
-# Matching mode : md6 file (1) / md5 data (2) / datetime (3)
-mode = 1
-# Look for match in destination directory too
-is_scan_dest = 2
-
-[OPTIONS.GENERAL]
-# remove metadata of copied/moved files
-is_delete_metadatas = 0
-# try to get date from filesystem if no other methods works
-is_date_from_filesystem = 0
-# Force to take date from filesystem
-is_force_date_from_filesystem = 0
-
-[OPTIONS.GROUP]
-# Activate grouping photo by day floating
-is_group = 0
-# floating window size in days
-floating_nb = 1
-# A placeholder for {group} can be set in customizable paths, it will use this format (use strftime formats)
-display_fmt =
-
-[OPTIONS.NAME]
-# Try to get date from file name
-is_guess = 0
-# Format of the date to strip
-guess_fmt =
-
-[OPTIONS.GPS]
-# Activate location resolution using gps metadatas
-is_gps = 0
-
-# Not working yet
-debug = 0
-
-# set a fake address
-simulate = 0
-
-# gps accuracy in km. If distance between 2 photo in less than accuracy, cached data will be used, avoiding unnecessary call to api
-accuracy = 2
-
-# Time between 2 api calls. Prevent api overload
-wait = 5
-
-[INTERFACE]
-# Gui scale factor
-size = 1
-# Adjust shown options number and how user interact with the interface : simplified (1) / advanced (3)
-mode = 3
-# Set interface language en / fr
-lang = en
-
-[MISC]
-# Not working yet
-verbose = 0
-
-# Not implemented yet
-exif_user_tags =
-
-# Obolete
-unidecode = 0
-
-# Default word if no datas found to fill placeholder
-non_def = non_def
-
-# Filter extentions when scanning
-accepted_formats = jpg, jpeg, png, webp, bmp, ico, tiff, heif, heic, svg, raw, arw, cr2, nrw, k25, apng, avif, gif, svg, webm, mkv, flv, ogg, gif, avi, mov, asf, mp4, m4v, mpg, mp2, mpeg, mpv, 3gp, 3g2, flv
-"""
-
+from tri_photo_date.utils.config_paths import CONFIG_PATH, APP_NAME, DEFAULT_CONFIG_PATH
 
 cli_mode, config_path = cli_arguments()
 
@@ -161,8 +23,7 @@ if cli_mode == CLI_DUMP:
     sys.exit(0)
 
 if cli_mode == CLI_DUMP_DEFAULT:
-    with open(str(config_path), "w") as f:
-        f.write(DEFAULT_CONFIG)
+    shutil.copy(DEFAULT_CONFIG_PATH, config_path)
     sys.exit(0)
 
 if cli_mode == CLI_LOAD:
@@ -179,6 +40,7 @@ FILE_ACTION_TXT = {
     2: "Copie du fichier {} vers {}",
     3: "Déplacement du fichier {} vers {}",
 }
+
 FILE_SIMULATE = 1
 FILE_COPY = 2
 FILE_MOVE = 3
@@ -193,6 +55,9 @@ DUP_DATETIME = 3
 
 DIR_EXCLUDE = 0
 DIR_INCLUDE = 1
+
+GROUP_PLACEHOLDER = r"{group}"
+DEFAULT_DATE_STR = "1900:01:01 00:00:00"
 
 STRING = (
     "rel_dir",
@@ -342,8 +207,9 @@ class ConfigDict(dict):
 
     def generate_config(self):
         logging.info(f"Creating config at {self.configfile}")
-        with open(self.configfile, "w") as f:
-            f.write(DEFAULT_CONFIG)
+        #with open(self.configfile, "w") as f:
+        #    f.write(DEFAULT_CONFIG)
+        shutil.copy(DEFAULT_CONFIG_PATH, self.configfile)
 
     def __getitem__(self, k):
         if isinstance(k, tuple):
