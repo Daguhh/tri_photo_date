@@ -44,6 +44,9 @@ from tri_photo_date.gui.human_text import MENU_TOOL_BUTTON, WARNING_SWITCH_SIMPL
 
 def set_global_config(lang='en', size=1, mode=GUI_ADVANCED):
 
+    global LANG
+    LANG = lang
+
     import gettext
 
     trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
@@ -218,7 +221,7 @@ class WindowMenu(QMenuBar):
         QMessageBox.about(self, _("License"), license_text)
 
     def show_about(self):
-        text = open(str(ABOUT_PATH).format(lang)).read()
+        text = open(str(ABOUT_PATH).format(LANG)).read()
         msgBox = QMessageBox()
         msgBox.setWindowTitle(_("A propos"))
         msgBox.setTextFormat(Qt.MarkdownText)
@@ -226,7 +229,7 @@ class WindowMenu(QMenuBar):
         msgBox.exec_()
 
     def load_acknowledgments(self):
-        text = open(str(AKNOLEG_PATH).format(lang)).read()
+        text = open(str(AKNOLEG_PATH).format(LANG)).read()
         msgBox = QMessageBox()
         msgBox.setWindowTitle(_("README"))
         msgBox.setTextFormat(Qt.MarkdownText)
@@ -234,7 +237,7 @@ class WindowMenu(QMenuBar):
         msgBox.exec_()
 
     def show_help(self):
-        readme_text = open(str(HELP_PATH).format(lang)).read()
+        readme_text = open(str(HELP_PATH).format(LANG)).read()
         msgBox = QMessageBox()
         msgBox.setWindowTitle(_("README"))
         msgBox.setTextFormat(Qt.MarkdownText)

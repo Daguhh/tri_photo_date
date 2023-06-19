@@ -85,7 +85,7 @@ from tri_photo_date.utils.constants import (
     DUP_MD5_DATA,
     DUP_DATETIME,
 )
-from tri_photo_date.gui.strftime_help import DATE_STRFTIME_FORMAT
+#from tri_photo_date.gui.strftime_help import DATE_STRFTIME_FORMAT
 from tri_photo_date.gui.human_text import (
     GPS_HELP_TEXT,
     MEDIA_FORMATS,
@@ -907,6 +907,8 @@ class ListMetaTab(CollapsibleFrame):
         list_layout.addWidget(list_widget)
         self.setLayout(list_layout)
         self.collapse(True)
+
+        self.exifs_lists = []
 
     def set_tag_list(self, tags_list):
         self.exifs_lists = tags_list
