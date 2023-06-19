@@ -7,16 +7,25 @@ So feel free to give any feedbacks.
 
 ## About
 
-The program offers, through an interface, to sort your photo folders based on their metadata. 
-Paths can be customized with placeholders to be then replaced by datas specific to each photo.
+The program offers an interface to sort your photo folders based on their metadata. Paths can be customized with placeholders to then be replaced by specific data for each photo.
 
-Depending on the options enabled, the program achieves in order:
+Depending on the options enabled, the program achieves the following:
 
-1. Calculation of file fingerprints for duplicate identification (md5) 
-2. Recover metadata 
-3. Resolution of the location name/addresse of the shotting using gps coordinates (module geopy and the service [Nomeinatim proposed by OpenStreetMap](https://nominatim.openstreetmap.org/ui/search.html) 
-4. Generation of a new path to record photos 
-5. Copy of the photo
+1. Scan folders, get fingerprints, parse metadatas
+2. Generate new paths given filter and options:
+    1. Filter files:
+        - extensions, 
+        - camera model, 
+        - folder / regex 
+        - duplicates
+    2. Perform actions:
+        - parse photo date through filename 
+        - group photo applying a floating window over multiples days
+        - resolve place of the shot using GPS datas (module geopy and the service [Nominatim proposed by OpenStreetMap](https://nominatim.openstreetmap.org/ui/search.html))
+        - force date from filesystem timestamp
+3. Execute:
+    1. Simulate/copy/move files
+    1. Delete metadats / add new metadatas
 
 <img src="docs/screen_advanced_mode_main_tab_n_preview.png" width="400">
 
@@ -24,7 +33,7 @@ Depending on the options enabled, the program achieves in order:
 
 ### Binaries
 
-Compiled binaries are avaible to download for both linux and windows. No dependancies required, no install needed
+Compiled binaries are [available to download](https://github.com/Daguhh/tri_photo_date/releases/latest) for both linux and windows. No dependancies required, no install needed
 
 ### Python package
 
@@ -35,7 +44,6 @@ git clone https://github.com/Daguhh/tri_photo_date.git
 cd tri_photo_date
 poetry install
 ```
-
 ```shell
 tri_photo_date
 ```
@@ -56,35 +64,63 @@ python3 tri_photo_date
 
 ## Usage
 
+### TL;DR
+
+Fill and execute action (push button) from top to down.
+Use tooltip to get hints on [parameters](tri_photo_date/config/default_config.ini) function and format.
+
 ### Simplified mode
 
-1. Fill source and destination sections, set path,  choose preselection using combobox
-2. Run **'1. Scan'** : it will search for all medias in those folders.
-3. Run **'2. Pre-calculate'** : program generate output path for you images and fill preview pane
-4. CHeck preview pane using vertical button on the right. Repeat previous step until you're fine with parameters
-5. Choose if you want to simulate/copy/move files 
-6. Run **'3. Execute'** : program will perform action you choose, wait until it ends
-
+```
+┌──────────────────┐
+│ Set source and   │
+│ destination      │
+└───────┬──────────┘
+        ▼
+┌──────────────────┐
+│    1. Scan       │
+└───────┬──────────┘
+        ▼
+┌──────────────────┐
+│ Set paths format │
+│ set filters      │◀────┐
+│ set options      │  ┌──┴────────────┐
+└───────┬──────────┘  │ Check preview │
+        ▼             │     panel     │
+┌──────────────────┐  └──┬────────────┘
+│ 2. Pre-calculate ├─────┘              
+└───────┬──────────┘  Update preview
+        ▼
+┌──────────────────┐
+│   3. Execute     │
+└──────────────────┘
+```
 ### Advanced mode
 
-Here is typicals steps users should perform to run the program:
-
-1. Find files, set up filters and fill options
-    1. Fill **source** folder and **destination** folder 
-    2. Run **'1. Scan'** : it will search for all medias in those folders, it will also populate the **tools** tab
-    3. Go to **tools** tab. In the differents toolboxes, you will find all necessary datas to inform remaining 
-    fields in sections **source** and **destination** in **main** tab. 
-    Use checkbox when you can or use copy/paste to get placerholders, (or fill all manually).
-    4. Set **options** section, use tootlip to get information on waht to do.
-2. Compute new paths for files
-    1. Run **'2. Pre-calculate'** : it will use all parameters to pre-generate path where to move photos.
-    It include getting photo metadata, resolving location, replacing placerholders and all options you checked.
-    2. On right side click the vertical button "Show preview". It will display a table showing gathered 
-    data and calculated folders and filenames for each photos.
-    3. Adapt parameters in **main** tab if needed and re-run **2. Pre-calculate** until you fine with the parameters.
-3. If you're fine with the result, execute
-    1. Please check if you simulate/copy/move the files and run **3. Execute**. Wait until the process end.
-    2. You can quit, parameters are automaticly saved for next section.
+```
+                          ┌──────────────────┐
+                          │  Set source and  │
+                          │    destination   │
+                          └───────┬──────────┘
+                                  ▼
+      Update toolboxes    ┌──────────────────┐
+           ┌──────────────┤     1. Scan      │
+           │              └───────┬──────────┘
+           ▼                      ▼
+  ┌──────────────────┐    ┌──────────────────┐
+  │   Set checkbox   │    │ Set paths format │
+  │ Copy placeholder │◀──▶│ set filters      │◀────┐
+  └──────────────────┘    │ set options      │  ┌──┴────────────┐
+                          └───────┬──────────┘  │ Check preview │
+                                  ▼             │     panel     │
+                          ┌──────────────────┐  └──┬────────────┘
+                          │ 2. Pre-calculate ├─────┘              
+                          └───────┬──────────┘   Update preview
+                                  ▼
+                          ┌──────────────────┐
+                          │   3. Execute     │
+                          └──────────────────┘
+```
 
 ### Command line
 
