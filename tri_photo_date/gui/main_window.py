@@ -48,7 +48,7 @@ class MainWindow(MainWindow_ui):
         self.create_widget_dct()
         self.setup_core_actions()
         self.connect_wdgs_2_config()
-        self.load_conf()
+        self.load_conf(self.wdgs)
 
     def create_widget_dct(self):
         wdgs = {}
@@ -125,8 +125,8 @@ class MainWindow(MainWindow_ui):
         self.menubar.set_settings_action.triggered.connect(self.show_set_settings)
         self.menubar.debug_action.triggered.connect(self.menubar.debug_toggle)
 
-    def load_conf(self):
-        for prop, wdg in self.wdgs.items():
+    def load_conf(self, wdgs):
+        for prop, wdg in wdgs.items():
             if isinstance(wdg, QLineEdit):
                 wdg.setText(CFG.get_repr(prop))
             elif isinstance(wdg, QCheckBox):
@@ -141,13 +141,6 @@ class MainWindow(MainWindow_ui):
                 for act in wdg.actions():
                     if act.data() == CFG.get_repr(prop):
                         act.setChecked(True)
-
-    def load_settings_conf(self):
-        for prop, wdg in self.wdgs_settings.items():
-            if isinstance(wdg, QCheckBox):
-                wdg.setCheckState(CFG.get_repr(prop))
-            elif isinstance(wdg, QSpinBox):
-                wdg.setValue(CFG.get_repr(prop))
 
     def act_populate(self):
         self.conf_panel.run_populate(
@@ -184,7 +177,7 @@ class MainWindow(MainWindow_ui):
         wdgs["files.max_size"] = popup.spin_max_size
 
         self.wdgs_settings = wdgs
-        self.load_settings_conf()
+        self.load_conf(self.wdgs_settings)
 
         res = popup.exec_()
         if res == QDialog.Accepted:
@@ -253,3 +246,6 @@ class MainWindow(MainWindow_ui):
         self.save_act()
         super().closeEvent(event)
 
+    def quit_n_reset(self):
+        CFG.reset()
+        self.quit()

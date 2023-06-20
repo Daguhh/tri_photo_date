@@ -10,16 +10,16 @@ _ = trad.gettext  # Greek
 
 
 WARNING_SWITCH_SIMPLIFY_MODE = _(
-    "Attention, les paramètres de la section 'options' seront conservés\nmais ne seront plus modifiables en mode 'simplifié'"
+    "Attention, les paramètres de la section 'options' ne seront plus\naccessibles mais garderont leur effets.\n\nVous pouvez garder les paramètres actuels ou revenir aux paramètres par défaut."
 )
 
 MEDIA_FORMATS = {
     _(
         r"{media_photos}"
-    ): "jpg, jpeg, png, webp, bmp, ico, tiff, heif, heic, svg, raw, arw, cr2, nrw, k25, apng, avif, gif, svg",
+    ):"jpg,jpeg,png,webp,bmp,ico,tiff,heif,heic,svg,raw,arw,cr2,nrw,k25,apng,avif,gif,svg",
     _(
         r"{media_videos}"
-    ): "webm, mkv, flv, ogg, gif, avi, mov, asf, mp4, m4v, mpg, mp2, mpeg, mpv, 3gp, 3g2, flv",
+    ):"webm,mkv,flv,ogg,gif,avi,mov,asf,mp4,m4v,mpg,mp2,mpeg,mpv,3gp,3g2,flv",
 }
 
 REL_PATH_FORMATS = {

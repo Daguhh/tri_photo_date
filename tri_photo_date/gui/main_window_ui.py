@@ -145,7 +145,7 @@ class MainWindow_ui(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Tri photo")
+        self.setWindowTitle("TriPhotoDate")
         self.setWindowIcon(QIcon(str(ICON_PATH)))
 
         self.menubar = windowmenu.WindowMenu(self)
@@ -184,7 +184,7 @@ class MainWindow_ui(QMainWindow):
         conf_panel_content.layout().addWidget(self.tool_panel)
         toolscroll_area.setWidget(conf_panel_content)
 
-        preview_frame = PreviewCollapsibleFrame(" Afficher un aperçu", "green")
+        preview_frame = PreviewCollapsibleFrame(_(" Afficher un aperçu"), "green")
         self.preview_wdg = sqlite_view.DatabaseViewer(str(IMAGE_DATABASE_PATH))
         preview_frame.setWidget(self.preview_wdg)
 
@@ -207,7 +207,7 @@ class MainWindow_ui(QMainWindow):
             tabs.setHidden(True)
 
         elif GUI_MODE == GUI_ADVANCED:
-            tabs.addTab(scroll_area, "Main")
+            tabs.addTab(scroll_area, _("Main"))
 
         tabs.addTab(toolscroll_area, _("Outils"))
         splitter.addWidget(tabs)
@@ -589,7 +589,8 @@ class LabelNLineEdit(QHBoxLayout):
         if GUI_MODE == GUI_SIMPLIFIED:
             combo.addItems(options)
             combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            self.textBox = QLineEdit()
+            #self.textBox = QLineEdit()
+            self.textBox = CustomQLineEdit(combo=combo)
             self.textBox.setHidden(True)
 
         else:
@@ -629,6 +630,39 @@ class LabelNLineEdit(QHBoxLayout):
 
         if directory:
             self.textBox.setText(directory)
+
+class CustomQLineEdit(QLineEdit):
+    def __init__(self, combo):
+        super().__init__()
+        self.combo = combo
+
+    def setText(self, lineedit_txt):
+
+        # If called manually (at startup to load config)
+        # Set combobox element that match hidden QLineEdit
+        if self.sender() is None:
+            match = False
+            for i in range(self.combo.count()):
+                combo_txt = self.combo.itemText(i)
+
+                #import ipdb; ipdb.set_trace()
+                dcts = MEDIA_FORMATS | REL_PATH_FORMATS
+                combo_txt = re.sub(combo_txt, dcts.get(combo_txt,''), combo_txt)
+
+                if lineedit_txt == combo_txt:
+                    self.combo.setCurrentIndex(i)
+                    super().setText(combo_txt)
+                    match = True
+                    break
+
+            # If no match set the first element
+            if not match:
+                self.combo.setCurrentIndex(0)
+                super().setText(self.combo.currentText())
+
+        # If call by another widget : continue as normal
+        else:
+            super().setText(lineedit_txt)
 
 
 class DuplicateWdg(QHBoxLayout):

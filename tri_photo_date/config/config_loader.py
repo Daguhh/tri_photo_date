@@ -180,5 +180,18 @@ class ConfigDict(dict):
         k, v = value2repr(k, self[k])
         return v  # .config["DEFAULT"][k]
 
+    def reset(self):
+
+        param2keep = ['interface.size','interface.mode','interface.lang']
+        config_2_keep = {p:self[p] for p in param2keep}
+
+        self.configfile, conf_swap = DEFAULT_CONFIG_PATH, self.configfile
+        self.load_config()
+        self.configfile = conf_swap
+
+        for p in param2keep:
+            self[p] = config_2_keep[p]
+
+
 
 CONFIG = ConfigDict()

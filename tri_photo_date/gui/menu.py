@@ -192,7 +192,9 @@ class WindowMenu(QMenuBar):
         msg = ""
         if mode.data() == GUI_SIMPLIFIED:
             msg = WARNING_SWITCH_SIMPLIFY_MODE
-        QTimer.singleShot(0, lambda msg=msg: self.show_message_box(msg))
+            QTimer.singleShot(0, lambda msg=msg: self.show_message_box_2(msg))
+        else:
+            QTimer.singleShot(0, lambda msg=msg: self.show_message_box(msg))
 
     def set_interface_size(self, size):
         QTimer.singleShot(0, self.show_message_box)
@@ -215,6 +217,36 @@ class WindowMenu(QMenuBar):
         if button_clicked == QMessageBox.Ok:
             self.parent.quit()
         # elif button_clicked == QMessageBox.Cancel:
+
+    def show_message_box_2(self, msg=""):
+        msg = (
+            msg
+            + "\n\n" * bool(msg)
+            + _(
+                "Les changements prendrons effet au prochain lancement.\nQuitter l'interface ?"
+            )
+        )
+        msg_box = QMessageBox()
+        msg_box.setText(msg)
+        msg_box.addButton("Apply and continue", QMessageBox.RejectRole)
+        msg_box.addButton("Quit and keep config", QMessageBox.AcceptRole)
+        reset_button = msg_box.addButton("Quit and reset config", QMessageBox.DestructiveRole)
+        #apply_button = msg_box.addButton("Apply and Continue", QMessageBox.ActionRole)
+
+        msg_box.exec_()
+
+        if msg_box.clickedButton() == reset_button:
+            # Perform the reset action
+            self.parent.quit_n_reset()
+            pass  # Replace 'pass' with your reset code
+        elif msg_box.result() == QMessageBox.Accepted:
+            # Perform the quit action
+            self.parent.quit()
+            pass  # Replace 'pass' with your quit code
+        #elif msg_box.clickedButton() == apply_button:
+        else:
+            # Continue running the application
+            pass  # Replace 'pass' with any other code to run when the user clicks "Don't Quit"
 
     def show_license(self):
         license_text = open(LICENSE_PATH).read()
