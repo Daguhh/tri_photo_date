@@ -213,7 +213,7 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
             return
 
         if CFG["options.group.is_group"]:
-            progbar.update(i, PROGBAR_TXT_COMPUTE_GROUPS_START)
+            progbar.update(0, PROGBAR_TXT_COMPUTE_GROUPS_START)
 
             # compute group for all files
             db.group_by_n_floating_days(CFG["options.group.floating_nb"])
