@@ -15,6 +15,17 @@ from PyQt5.QtWidgets import (
 from tri_photo_date.photo_database import ImageMetadataDB
 from tri_photo_date.config.config_paths import IMAGE_DATABASE_PATH
 
+from tri_photo_date.config.config_paths import LOCALES_DIR
+
+def set_global_config(lang='en', size=1, mode=None):
+
+    import gettext
+
+    trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
+    trad.install()
+
+    global _
+    _ = trad.gettext  # Greek
 
 class DatabaseViewer(QWidget):
     def __init__(self, db_file):
@@ -23,7 +34,7 @@ class DatabaseViewer(QWidget):
 
         self.filter_edit = QLineEdit()
         self.filter_edit.setPlaceholderText(
-            "Entrez une chaine de caractères pour filtrer"
+            _("Entrez une chaine de caractères pour filtrer")
         )
         self.filter_edit.textChanged.connect(self.update_table_act)
 
@@ -31,13 +42,13 @@ class DatabaseViewer(QWidget):
         self.table.setColumnCount(7)
         self.table.setHorizontalHeaderLabels(
             [
-                "folder",
-                "name",
-                "new folder",
-                "new_filename",
-                "location",
-                "group",
-                "date",
+                _("Dossier"),
+                _("Nom"),
+                _("Nouveau dossier"),
+                _("Nouveau nom"),
+                _("Lieu"),
+                _("Groupe"),
+                _("Date"),
             ]
         )
         # self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)

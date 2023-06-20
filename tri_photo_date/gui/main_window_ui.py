@@ -66,7 +66,7 @@ from tri_photo_date.gui.small_widgets import (
     MyRadioButton,
 )
 from tri_photo_date.gui import menu as windowmenu
-from tri_photo_date.gui.sqlite_view import DatabaseViewer
+from tri_photo_date.gui import sqlite_view
 
 # Constants
 from tri_photo_date.exif import (
@@ -109,6 +109,7 @@ def set_global_config(lang='en', size=1, mode=GUI_ADVANCED):
 
     windowmenu.set_global_config(lang, size, mode)
     collapsible_frame.set_global_config(lang, size, mode)
+    sqlite_view.set_global_config(lang, size, mode)
 
     import gettext
 
@@ -184,7 +185,7 @@ class MainWindow_ui(QMainWindow):
         toolscroll_area.setWidget(conf_panel_content)
 
         preview_frame = PreviewCollapsibleFrame(" Afficher un aperçu", "green")
-        self.preview_wdg = DatabaseViewer(str(IMAGE_DATABASE_PATH))
+        self.preview_wdg = sqlite_view.DatabaseViewer(str(IMAGE_DATABASE_PATH))
         preview_frame.setWidget(self.preview_wdg)
 
         tabs = QTabWidget()
@@ -1010,10 +1011,12 @@ class DateTab(CollapsibleFrame):
 
         self.collapse(True)
 
+        layout = QHBoxLayout()
         strftime_help = open(STRFTIME_HELP_PATH).read()
         text_widget = QTextEdit()
         text_widget.setHtml(strftime_help)
-        self.layout.addWidget(text_widget)
+        layout.addWidget(text_widget)
+        self.setLayout(layout)
 
     def link_clicked(self, url):
         QDesktopServices.openUrl(url)

@@ -15,13 +15,11 @@ binaries = []
 
 # Get the system Python library path
 python_lib_path = sysconfig.get_path('platlib')
-print('sysconfig path : ', python_lib_path)
 
 if os.name == "nt":
     libexiv2_path = f"{python_lib_path}/pyexiv2/lib/exiv2.dll"
     pyd_path = f"{python_lib_path}/pyexiv2/lib/py{python_version}-win/exiv2api.pyd"
     cpp_path = f"{python_lib_path}/pyexiv2/lib/exiv2api.cpp"
-    print('============================', pyd_path, cpp_path, libexiv2_path)
 
     # Append the binary files and their destination paths to the binaries list
     binaries.append((libexiv2_path, "pyexiv2/lib"))
