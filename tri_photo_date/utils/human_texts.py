@@ -4,10 +4,11 @@ import gettext
 
 from tri_photo_date.config.config_loader import CONFIG
 from tri_photo_date.config.config_paths import LOCALES_DIR
-from tri_photo_date.utils.small_tools import limited_string, bytes2human
+from tri_photo_date.utils.small_tools import limited_string, bytes2human, get_lang
 
 
 lang = CONFIG[("interface", "lang")]
+lang = get_lang(lang)
 trad = gettext.translation("base", localedir=LOCALES_DIR, languages=[lang])
 trad.install()
 _ = trad.gettext  # Greek

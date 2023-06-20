@@ -16,6 +16,7 @@ from tri_photo_date.utils.constants import (
     DEFAULT_DATE_STR,
 )
 
+from tri_photo_date.config.config_loader import LANG_LIST
 
 class fake_LoopCallBack:
     stopped = False
@@ -117,6 +118,14 @@ def rename_with_incr(db, out_str):
 
     return str(directory / filename)
 
+def get_lang(lang):
+
+    if lang == "locale":
+        import locale
+        lang = locale.getlocale()[0].split('_')[0]
+        if not lang in LANG_LIST:
+            lang = 'en'
+    return lang
 
 def move_file(in_str, out_str, mode=FILE_SIMULATE):
     in_path = Path(in_str)

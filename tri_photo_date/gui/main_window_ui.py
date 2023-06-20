@@ -104,9 +104,12 @@ from tri_photo_date.config.config_paths import (
 from tri_photo_date.gui.human_text import MAIN_TAB_WIDGETS as MTW
 from tri_photo_date.gui.human_text import MAIN_TAB_BUTTONS as MTB
 
+from tri_photo_date.utils.small_tools import get_lang
+
 
 def set_global_config(lang='en', size=1, mode=GUI_ADVANCED):
 
+    lang = get_lang(lang)
     windowmenu.set_global_config(lang, size, mode)
     collapsible_frame.set_global_config(lang, size, mode)
     sqlite_view.set_global_config(lang, size, mode)

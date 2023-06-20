@@ -135,7 +135,8 @@ class WindowMenu(QMenuBar):
         self.lang_group.setExclusionPolicy(
             QActionGroup.ExclusionPolicy.ExclusiveOptional
         )
-        for lang in LANG_LIST:
+
+        for lang in [_('locale')] + LANG_LIST:
             lang_act = QAction(lang, checkable=True)
             lang_act.setData(lang)
             lang_menu.addAction(self.lang_group.addAction(lang_act))
@@ -346,3 +347,4 @@ class SettingFilePopup(QDialog):
             "min_size": (self.ckb_min_size.checkState(), self.spin_min_size.value()),
         }
         return dct
+
