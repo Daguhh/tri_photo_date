@@ -908,7 +908,7 @@ class ListMetaTab(CollapsibleFrame):
         self.setLayout(list_layout)
         self.collapse(True)
 
-        self.exifs_lists = []
+        self.exifs_lists = ([],[])
 
     def set_tag_list(self, tags_list):
         self.exifs_lists = tags_list

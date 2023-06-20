@@ -1,20 +1,23 @@
 [tool.poetry]
 name = "tri-photo-date"
-version = "0.1.1"
 description = "Sort image using metadata placeholder"
 authors = ["Daguhh"]
+version = "0.1.1"
 license = "LICENSE"
 readme = "README.md"
 packages = [{include = "tri_photo_date"}]
 # Include license and readme files in the distribution package
-include = ["resources/acknowledgments.md", "resources/icon.ico", "LICENSE", "README.md", "about.md"]
+include = ["resources/acknowledgments.md", "resources/icon.ico", "LICENSE", "README.md", "about.md", "resources/strftime_help.html"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.9,<3.12"
 PyQt5 = "^5.15.9"
 geopy = "^2.3.0"
 pyexiv2 = "^2.8.1"
 certifi = "^2023.5.7"
+
+[tool.poetry.group.build_bin.dependencies]
+pyinstaller = "^5.12.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -22,4 +25,4 @@ build-backend = "poetry.core.masonry.api"
 #build = "poetry run pyinstaller main.py --collect-submodules application --onefile --name myapi"
 
 [tool.poetry.scripts]
-tri_photo_date = 'tri_photo_date.run:main'
+tri_photo_date = 'tri_photo_date.__main__:main'

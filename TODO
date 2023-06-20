@@ -2,38 +2,30 @@
 Functionnalities:
 - Permit to stop process and start it again (maybe add a bool column in images table for processed files) : show a popup at start : "do you want to continue your processing or drop it all?"
 - add tab to set custom tag
-- create folder/filter following pattern ie: move only images like "IMG_XXXX-XX-XX.jpg" 
-- save/load a config file (cli & gui) to make custom profiles
+- save/load a config file (cli & gui) to make custom profiles => almost done for cli
 - permit to custom presets
-- partial hash big files
-- skip files based on their size more or less than X
 - remove empty folders after moving
 
 CLI:
 - permit to load multiple script : a sequence could be to create multiple script to handle differents camera (with differents camera filters) and save them, so next time :
-```bash
-tri_photo_date -l camera_1.ini, camera_2.ini
-```
-Do the same in gui?
-```
-=> configure => save script => select scripts to run
-    |             |
-    ^-------------<
-```
+    ```bash
+    tri_photo_date -l camera_1.ini, camera_2.ini
+    ```
+    Do the same in gui?
+    ```
+    => configure => save script => select scripts to run
+        |             |
+        ^-------------<
+    ```
 
 Code bugs and major lacks:
-- command for package install (poetry)
 - program doesn't compare dates of destination folder
 
 Duplicates:
 - more control over duplicates : just rename / move in specific folder
-- replace hash option by : check only name/check file/check image datas + check destination folder
+- check only name option
 - permit to preserve structure and only filter duplicate?? Is it really a good idea?
 
-Increase process speed:
-- add button to skip metadatas?
-
 Misc:
-- move requirement to a specific file to permit installs with pip
 - add changelog
 - Better handle version number : automatic naming package? version file?

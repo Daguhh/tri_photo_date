@@ -37,6 +37,18 @@ Compiled binaries are [available to download](https://github.com/Daguhh/tri_phot
 
 ### Python package
 
+Get [python wheel](https://github.com/Daguhh/tri_photo_date/releases/latest), then,
+in a virtual env
+
+```shell
+python3 -m pip install tri_photo_date-0.1.0-py3-none-any.whl
+```
+```shell
+tri_photo_date
+```
+
+### From source code
+
 With poetry:
 
 ```shell
@@ -45,21 +57,7 @@ cd tri_photo_date
 poetry install
 ```
 ```shell
-tri_photo_date
-```
-
-### As source code 
-
-In a virtual environnement :
-
-```shell
-git clone https://github.com/Daguhh/tri_photo_date.git
-cd tri_photo_date
-poetry shell
-poetry install --no-root
-```
-```shell
-python3 tri_photo_date
+poetry run tri_photo_date
 ```
 
 ## Usage
@@ -72,28 +70,28 @@ Use tooltip to get hints on [parameters](tri_photo_date/config/default_config.in
 ### Simplified mode
 
 ```
-┌──────────────────┐
-│ Set source and   │
-│ destination      │
-└───────┬──────────┘
-        ▼
-┌──────────────────┐
-│    1. Scan       │
-└───────┬──────────┘
-        ▼
-┌──────────────────┐
-│ Set paths format │
-│ set filters      │◀────┐
-│ set options      │  ┌──┴────────────┐
-└───────┬──────────┘  │ Check preview │
-        ▼             │     panel     │
-┌──────────────────┐  └──┬────────────┘
-│ 2. Pre-calculate ├─────┘              
-└───────┬──────────┘  Update preview
-        ▼
-┌──────────────────┐
-│   3. Execute     │
-└──────────────────┘
+            ┌──────────────────┐
+            │ Set source and   │
+            │ destination      │
+            └───────┬──────────┘
+                    ▼
+            ┌──────────────────┐
+            │    1. Scan       │
+            └───────┬──────────┘
+                    ▼
+            ┌──────────────────┐
+            │ Set paths format │
+            │ set filters      │◀────┐
+            │ set options      │  ┌──┴────────────┐
+            └───────┬──────────┘  │ Check preview │
+                    ▼             │     panel     │
+            ┌──────────────────┐  └──┬────────────┘
+            │ 2. Pre-calculate ├─────┘              
+            └───────┬──────────┘  Update preview
+                    ▼
+            ┌──────────────────┐
+            │   3. Execute     │
+            └──────────────────┘
 ```
 ### Advanced mode
 

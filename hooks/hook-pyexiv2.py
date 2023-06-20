@@ -5,31 +5,35 @@ pyexiv2 hooks from https://github.com/orgs/pyinstaller/discussions/6404#discussi
 
 
 import os
+import sys
 import sysconfig
 from PyInstaller.utils.hooks import collect_data_files
 
+python_version = ".".join((str(sys.version_info.major), str(sys.version_info.minor)))
 # Collect the required binary files
 binaries = []
 
 # Get the system Python library path
 python_lib_path = sysconfig.get_path('platlib')
+print('sysconfig path : ', python_lib_path)
 
 if os.name == "nt":
     libexiv2_path = f"{python_lib_path}/pyexiv2/lib/exiv2.dll"
-    pyd_path = f"{python_lib_path}/pyexiv2/lib/py3.10-win/exiv2api.pyd"
+    pyd_path = f"{python_lib_path}/pyexiv2/lib/py{python_version}-win/exiv2api.pyd"
     cpp_path = f"{python_lib_path}/pyexiv2/lib/exiv2api.cpp"
+    print('============================', pyd_path, cpp_path, libexiv2_path)
 
     # Append the binary files and their destination paths to the binaries list
     binaries.append((libexiv2_path, "pyexiv2/lib"))
-    binaries.append((pyd_path, "pyexiv2/lib/py3.10-win"))
+    binaries.append((pyd_path, f"pyexiv2/lib/py{python_version}-win"))
     binaries.append((cpp_path, "pyexiv2/lib"))
 else:
     libexiv2_path = f"{python_lib_path}/pyexiv2/lib/libexiv2.so"
-    exiv2api_path = f"{python_lib_path}/pyexiv2/lib/py3.11-linux/exiv2api.so"
+    exiv2api_path = f"{python_lib_path}/pyexiv2/lib/py{python_version}-linux/exiv2api.so"
 
     # Append the binary files and their destination paths to the binaries list
     binaries.append((libexiv2_path, "pyexiv2/lib"))
-    binaries.append((exiv2api_path, "pyexiv2/lib/py3.11-linux"))
+    binaries.append((exiv2api_path, f"pyexiv2/lib/py{python_version}-linux"))
 
 # Collect any data files if needed
 datas = collect_data_files('pyexiv2')
