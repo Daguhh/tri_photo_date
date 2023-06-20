@@ -185,7 +185,7 @@ def get_date_from_exifs_or_file(
                 date_str = metadatas[date_tag]
                 break
 
-    if not date_str and is_force_date_from_filesystem:
+    if not date_str and is_date_from_filesystem:
         date_str = get_date_from_file_system(in_str)
 
     if not date_str:
