@@ -621,19 +621,21 @@ class LabelNLineEdit(QHBoxLayout):
 
         def callback():
             text = combo.currentText()
+            print('callback', text)
             for k, v in MEDIA_FORMATS.items():
                 text = re.sub(k, v, text)
             for k, v in REL_PATH_FORMATS.items():
                 text = re.sub(k, v, text)
             self.textBox.setText(text)
+            self.textBox.textChanged.emit(text)
             self.combo.clearFocus()  # prevent combo to capture all signals
 
         combo.activated.connect(callback)
 
         # Set default values (need to load values from textBox intead of config at MainTab.__init__)
-        if GUI_MODE == GUI_SIMPLIFIED:
-            combo.setCurrentIndex(0)
-            combo.currentIndexChanged.emit(0)
+        #if GUI_MODE == GUI_SIMPLIFIED:
+        #    combo.setCurrentIndex(0)
+        #    combo.currentIndexChanged.emit(0)
 
         return self.textBox
 
@@ -667,14 +669,18 @@ class CustomQLineEdit(QLineEdit):
 
                 if lineedit_txt == combo_txt:
                     self.combo.setCurrentIndex(i)
-                    super().setText(combo_txt)
+                    #super().setText(combo_txt)
+                    self.combo.activated.emit(0)
                     match = True
                     break
 
             # If no match set the first element
             if not match:
+                print("not match", lineedit_txt)
                 self.combo.setCurrentIndex(0)
-                super().setText(self.combo.currentText())
+                self.combo.activated.emit(0)
+                #super().setText(self.combo.currentText())
+            print('bye')
 
         # If call by another widget : continue as normal
         else:
