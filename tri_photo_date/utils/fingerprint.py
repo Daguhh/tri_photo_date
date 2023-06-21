@@ -62,7 +62,7 @@ def png_data_fingerprint(im_str):
         except struct.error:
             break
         if fh.read(4) == b"IDAT":
-            hash.update(fh.readm(min(mlength, length)))
+            hash.update(fh.read(min(mlength, length)))
             mlength = max(mlength - length, 0)
             if mlength == 0:
                 break

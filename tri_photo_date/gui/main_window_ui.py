@@ -5,6 +5,12 @@ import sys, os
 from pathlib import Path
 import logging
 import re
+import time
+from collections import deque
+
+#from PyQt5.QtWidgets import QApplication, QWidget, QProgressBar
+from PyQt5.QtGui import QPainter, QBrush, QColor, QPen
+from PyQt5.QtChart import QChart, QChartView, QPieSeries, QPieSlice, QValueAxis
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QThread, QTimer, QEventLoop, QSize, pyqtSignal, QPoint, QRect
@@ -17,7 +23,11 @@ from PyQt5.QtGui import (
     QPixmap,
     QPainter,
     QFontMetrics,
+    QBrush,
+    QColor,
+    QPen,
 )
+from PyQt5.QtChart import QChart, QChartView, QPieSeries, QPieSlice, QValueAxis
 from PyQt5.QtWidgets import (
     QApplication,
     QWidget,
@@ -31,7 +41,6 @@ from PyQt5.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
     QFrame,
-    QProgressBar,
     QFileDialog,
     QStyle,
     QTabWidget,
@@ -59,11 +68,15 @@ from tri_photo_date.gui.collapsible_frame import (
     CollapsibleFrame,
     PreviewCollapsibleFrame,
 )
+from tri_photo_date.gui import small_widgets
 from tri_photo_date.gui.small_widgets import (
     simpleCheckBox,
     simplePushButton,
     simpleStopButton,
     MyRadioButton,
+    ItemWidget,
+    OptionBool,
+    ComboBox
 )
 from tri_photo_date.gui import menu as windowmenu
 from tri_photo_date.gui import sqlite_view
@@ -103,6 +116,7 @@ from tri_photo_date.config.config_paths import (
 # Texts
 from tri_photo_date.gui.human_text import MAIN_TAB_WIDGETS as MTW
 from tri_photo_date.gui.human_text import MAIN_TAB_BUTTONS as MTB
+from tri_photo_date.gui.progressbar import MyProgressBar
 
 from tri_photo_date.utils.small_tools import get_lang
 
@@ -113,6 +127,7 @@ def set_global_config(lang='en', size=1, mode=GUI_ADVANCED):
     windowmenu.set_global_config(lang, size, mode)
     collapsible_frame.set_global_config(lang, size, mode)
     sqlite_view.set_global_config(lang, size, mode)
+    small_widgets.set_global_config(lang, size, mode)
 
     import gettext
 
@@ -142,7 +157,6 @@ class LoopCallBack:
         if cls.stopped:
             return True
         return False
-
 
 class MainWindow_ui(QMainWindow):
     def __init__(self):
@@ -437,7 +451,7 @@ class MainTab(QWidget):
         main_layout.addLayout(self.execute_act_prog_holder)
 
         # Progress bar
-        self.progress_bar = MyProgressBar()
+        self.progress_bar = MyProgressBar(self)
 
         self.run_execute = self.gen_run_function(
             self.executeBtn,
@@ -445,7 +459,6 @@ class MainTab(QWidget):
             self.execute_act_prog_holder
         )
         # Counters
-        # self.couter_wdg = CounterWdg()
 
 
         main_layout.addStretch()
@@ -495,7 +508,7 @@ class MainTab(QWidget):
         self.stopBtn.setHidden(True)
         self.stopBtn1.setHidden(True)
         self.stopBtn2.setHidden(True)
-        self.progress_bar.setValue(100)
+        #self.progress_bar.setValue(100)
 
 
 class LabelNLineEdit(QHBoxLayout):
@@ -667,6 +680,7 @@ class CustomQLineEdit(QLineEdit):
         else:
             super().setText(lineedit_txt)
 
+        #self.combo.activated.emit()
 
 class DuplicateWdg(QHBoxLayout):
     def __init__(self, parent):
@@ -706,7 +720,6 @@ class DuplicateWdg(QHBoxLayout):
         for btn in self.dup_grp.buttons():
             btn.setDisabled(not val)
 
-
 class fileActionWdg(QHBoxLayout):
     def __init__(self, parent):
         super().__init__()
@@ -727,7 +740,6 @@ class fileActionWdg(QHBoxLayout):
         self.addWidget(file_action_Btns[FILE_MOVE])
 
         self.btn_group = ckb_grp
-
 
 class GPSTab(CollapsibleFrame):
     def __init__(self):
@@ -780,7 +792,6 @@ class GPSTab(CollapsibleFrame):
             self.list_wdg.addItem(item)
         self.list_wdg.repaint()
 
-
 class CopyableListWidget(QListWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -806,45 +817,6 @@ class CopyableListWidget(QListWidget):
     def copy_to_clipboard(self, item):
         text = "<" + item.text().split("\t")[0].strip() + ">"
         QApplication.clipboard().setText(text)
-
-
-class ComboBox(QComboBox):
-    def __init__(self, callback):
-        super().__init__()
-
-        def combo_changed():
-            callback(self.currentText())
-
-        model = self.model()
-
-        # Add items to the QComboBox and set the foreground color
-        options = (_("toutes"), _("en commun"), _("utiles"))
-        for option in options:
-            entry = QStandardItem(option)
-            model.appendRow(entry)
-
-        self.setCurrentIndex(2)
-
-        # Connect QComboBox signal to combo_changed() slot
-        self.currentIndexChanged.connect(combo_changed)
-
-
-def OptionBool(QHBoxLayout):
-    def __init__(self, label, tooltip):
-        super().__init__()
-
-        self.addWidget(QLabel(f"{label}:"))
-
-        self.checkbox = QCheckBox()
-        self.checkbox.setToolTip(tooltip)
-        self.addWidget(self.checkbox)
-
-
-class ItemWidget(QListWidgetItem):
-    def __init__(self, text, parent=None):
-        super().__init__(parent)
-        self.setText(text)
-
 
 class ListExtsTab(CollapsibleFrame):
     def __init__(self):
@@ -887,7 +859,6 @@ class ListExtsTab(CollapsibleFrame):
             self.listext_wdg.addItem(item)
         self.listext_wdg.repaint()
 
-
 class ListCameraTab(CollapsibleFrame):
     def __init__(self):
         super().__init__(_("Appareil"), color="blue")
@@ -927,7 +898,6 @@ class ListCameraTab(CollapsibleFrame):
             item.setCheckState(Qt.Unchecked)
             self.listapp_wdg.addItem(item)
         self.listapp_wdg.repaint()
-
 
 class ListMetaTab(CollapsibleFrame):
     def __init__(self):
@@ -969,78 +939,6 @@ class ListMetaTab(CollapsibleFrame):
             text = f"{tag:38} \t{TAG_DESCRIPTION.get(tag,'')}"
             item = QListWidgetItem(text)
             self.listmeta_wdg.addItem(item)
-
-
-class MyProgressBar(QProgressBar):
-    def __init__(self):
-        super().__init__()
-        self.setGeometry(50, 50, 200, 20)
-        self.setContentsMargins(0, 0, 0, 0)
-        self._progbar_nb_val = 1
-
-        self.label = self.add_label()
-
-        fake_layout = QVBoxLayout()
-        fake_layout.addWidget(self.label)
-        fake_layout.addWidget(self)
-        self.prev_layout = fake_layout
-
-    def add_label(self):
-        self.text_label = QLabel("")
-        return self.text_label
-
-    def init(self, n):
-        n = n if n else 1  # prevent no files founded
-        self._progbar_nb_val = n
-
-    def update(self, v, text="", text2=""):
-        self.setValue(int(100 * v / self._progbar_nb_val))
-        QApplication.processEvents()  # keep the GUI responsive
-        self.text_label.setText(text)
-
-    def move_to_layout(self, new_layout):
-
-        self.prev_layout.removeWidget(self)
-        self.prev_layout.removeWidget(self.label)
-
-        self.setParent(new_layout.parentWidget())
-        self.label.setParent(new_layout.parentWidget())
-
-        new_layout.addWidget(self.label)
-        new_layout.addWidget(self)
-
-        new_layout.update()
-        self.prev_layout.update()
-
-        self.prev_layout = new_layout
-
-class CounterWdg(QWidget):
-    def __init__(self):
-        super().__init__()
-
-        sublayout = QHBoxLayout()
-
-        label = QLabel(_("Nombre de fichiers :"))
-        text = QLabel("")
-        sublayout.addWidget(label)
-        sublayout.addWidget(text)
-        self.nb_files = text
-
-        label = QLabel(_("Dupliqués :"))
-        text = QLabel("")
-        sublayout.addWidget(label)
-        sublayout.addWidget(text)
-        self.duplicates = text
-
-        self.setLayout(sublayout)
-
-        size = self.sizeHint()
-        self.setMinimumHeight(size.height())
-
-    def update(self, counter):
-        self.nb_files.setText(str(counter.nb_files))
-        self.duplicates.setText(str(counter.duplicates))
-
 
 class DateTab(CollapsibleFrame):
     def __init__(self):

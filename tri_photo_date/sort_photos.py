@@ -31,7 +31,6 @@ from tri_photo_date.photo_database import ImageMetadataDB
 from tri_photo_date.utils import fingerprint
 from tri_photo_date.utils.small_tools import (
     fake_LoopCallBack,
-    Timer,
     rename_with_incr,
     move_file,
     create_out_str,
@@ -55,7 +54,7 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
     media_extentions = CFG["misc.accepted_formats"]
     with ImageMetadataDB() as db:
         db.clean_all_table()
-        progbar.update(0, PROGBAR_TXT_SCAN_START.format(CFG['source.dir']))
+        progbar.text_label.setText(PROGBAR_TXT_SCAN_START.format(CFG['source.dir']))
 
         #### Scanning source folder ####
         nb_files = sum([len(f) for *_, f in os.walk(CFG["source.dir"])])
@@ -146,9 +145,10 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
         nb_files, total_size = db.count(**list_files_params)
         progbar.init(nb_files if nb_files else 1)
 
-        Timer.tic()
         for i, in_str in enumerate(db.list_files(**list_files_params)):
-            Timer.toc()
+
+            # Give user some feedbacks
+            progbar.update(i, PROGBAR_TXT_COMPUTE_FILES.format(i, nb_files, Path(in_str).name))
 
             # get source image metadata
             metadatas = db.get_exifs(in_str)
@@ -202,9 +202,6 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
             # Update the datas base
             db.add_image_to_preview(in_str, out_str, location, date_str)
 
-            # Give user some feedbacks
-            progbar.update(i, PROGBAR_TXT_COMPUTE_FILES.format(i, nb_files, Path(in_str).name))
-
         progbar.update(nb_files, PROGBAR_TXT_DONE)
 
         # Quit if loop end signal send by user
@@ -219,9 +216,10 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
             db.group_by_n_floating_days(CFG["options.group.floating_nb"])
 
             # progbar.init(nb_files)
-            Timer.tic()
             for i, in_str in enumerate(db.list_files(**list_files_params)):
-                Timer.toc()
+
+                # Some user feedbacks
+                progbar.update(i, PROGBAR_TXT_COMPUTE_GROUPS.format(i, nb_files, Path(in_str).name))
 
                 # PyQt5 callback to stop loop
                 if LoopCallBack.run():
@@ -242,9 +240,6 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                 # Save to db
                 db.add_out_path(in_str, out_str)
 
-                # SOme user feedbacks
-                progbar.update(i, PROGBAR_TXT_COMPUTE_GROUPS.format(i, nb_files, Path(in_str).name))
-
     progbar.update(0, PROGBAR_TXT_DONE)
 
     LoopCallBack.stopped = True
@@ -255,7 +250,7 @@ def execute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
         nb_files, total_size = db.count_preview()
         progbar.init(total_size)  # progbar.init(nb_files)
 
-        bytes_moved = 0
+        bytes_moved = 0; i=0
         for i, in_str in enumerate(db.get_preview_files()):
             bytes_moved += Path(in_str).stat().st_size
 

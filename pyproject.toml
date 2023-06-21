@@ -15,6 +15,16 @@ PyQt5 = "^5.15.9"
 geopy = "^2.3.0"
 pyexiv2 = "^2.8.1"
 certifi = "^2023.5.7"
+pyqtchart = "^5.15.6"
+
+[tool.poetry.group.speedbar]
+optional = true
+
+[tool.poetry.group.speedbar.dependencies]
+pyqtgraph = "^0.13.3"
+
+[tool.poetry.group.build_bin]
+optional = true
 
 [tool.poetry.group.build_bin.dependencies]
 pyinstaller = "^5.12.0"

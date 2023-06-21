@@ -18,6 +18,7 @@ if [[ " $@ " =~ " -h " ]] || [[ " $@ " =~ " --help " ]] ; then help; exit 0; fi
 if [[ " $@ " =~ " -b " ]] || [[ " $@ " =~ " --build-package " ]] ; then BUILD_PACKAGE=true; fi
 if [[ " $@ " =~ " -B " ]] || [[ " $@ " =~ " --build-bin " ]] ; then BUILD_BIN=true; fi
 if [[ " $@ " =~ " -d " ]] || [[ " $@ " =~ " --delete-venv " ]] ; then DELETE_VENV=true; fi
+if [[ " $@ " =~ " --with-speedbar " ]] ; then SPEED_BAR="--with speedbar"; fi
 
 # test python installation
 if ! type "python3" > /dev/null; then
@@ -47,7 +48,7 @@ if [[ "${BUILD_BIN}" == true ]]; then
     version=$(poetry version | cut -d" " -f2)
 
     # Install deps and build deps
-    poetry install --no-root --with build_bin
+    poetry install --no-root --with build_bin $SPEED_BAR
 
     # RUn pyinstaller
     poetry run pyinstaller \

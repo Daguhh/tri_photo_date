@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 import sys
 import time
+import shutil
 
 from tri_photo_date.exif import (
     ExifTags,
