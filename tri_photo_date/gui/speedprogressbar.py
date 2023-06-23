@@ -30,7 +30,7 @@ class SpeedProgressBar(pg.PlotWidget):
         self.plotItem.showGrid(False)
 
         # Store last speed values to smooth_window the graph
-        self.speeds = deque([10**-15], maxlen=smooth_window)
+        self.speeds = deque([0], maxlen=smooth_window)
 
         # Disable mouse interactions
         self.setMouseEnabled(False)
@@ -54,17 +54,19 @@ class SpeedProgressBar(pg.PlotWidget):
             Set to 100 to work in percentage
         """
 
-        self.nb_sections = int(min(self.nb_sections, max_value)) # max bar number
+        if max_value == 0: # no bar
+            return
+
         self.bar_width = max_value / self.nb_sections # "width" of bar
-        self.bar_index = 0 # count bar index
-        self._bar_previous_index = 0 # hold previous bar index
+        self.bar_index = -1 # count bar index
+        self._bar_previous_index = -1 # hold previous bar index
 
         # remove last bar and clean plot
         del(self.bargraph)
         self.clear()
 
         # Init bar at 0
-        x = range(self.nb_sections + 1)
+        x = range(self.nb_sections)
         y = [0 for _ in x]
         self.bargraph = pg.BarGraphItem(x = x, height = y, width = 1, brush ='c', pen=pg.mkPen(None))
         self.addItem(self.bargraph)
@@ -75,7 +77,7 @@ class SpeedProgressBar(pg.PlotWidget):
         self.timer.start(100)  # 50ms
 
         # Start to mesure time
-        self.tic = None# time.time()
+        self.tic = 1 # init in s #time.time()
 
         # Store bargraph values
         self.new_ys = self.bargraph.opts['height']
@@ -97,12 +99,16 @@ class SpeedProgressBar(pg.PlotWidget):
         # Create a new bar on graph
         bar_index = int(progress_value // self.bar_width)
 
+        # Pass the 100%
+        if bar_index > self.nb_sections:
+            bar_index = self.nb_sections - 1
+
         # while bar is not complete skip
-        if bar_index == self._bar_previous_index:
+        elif bar_index == self._bar_previous_index:
             return
 
         # get last elapsed time
-        toc = time.time() - self.tic if self.tic else 3600 # first time init
+        toc = time.time() - self.tic
         self.tic = time.time()
 
         # (let's say we loop over 1 Go (max_value) of files, and all are 1Ko

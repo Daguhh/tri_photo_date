@@ -66,6 +66,8 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
             for filename in filenames:
                 i += 1
 
+                # Some user feedback
+                progbar.update(i, PROGBAR_TXT_SCAN_SRCDIR.format(i, nb_files))
                 # PyQt5 callback to break loop
                 if LoopCallBack.run():
                     break
@@ -73,21 +75,23 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                 in_path = Path(folder, filename)
                 # if not filename.lower().endswith(media_extentions):
                 #    continue
+                if not in_path.is_file():
+                    continue
+
                 if not (min_size < in_path.stat().st_size < max_size):
                     continue
 
                 # Add entry to db
                 db.add_image(str(in_path), is_use_cache=is_use_cache)
 
-                # Some user feedback
-                progbar.update(i, PROGBAR_TXT_SCAN_SRCDIR.format(i, nb_files))
 
         if LoopCallBack.run():
             LoopCallBack.stopped = True
             return
 
+        progbar.update(nb_files, PROGBAR_TXT_DONE)
         #### Scanning destination folder ####
-        nb_files = sum([len(f) for *_, f in os.walk(CFG["destination.dir"])])
+        nb_files = sum([len(f) for *_, f in os.walk(CFG["destination.dir"])]) or 1
         progbar.init(nb_files)
 
         i = 0
@@ -111,7 +115,7 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
             if LoopCallBack.run():
                 break
 
-        progbar.update(i, f"{i} / {nb_files} - Fait.")
+        progbar.update(nb_files, f"{i} / {nb_files} - Fait.")
 
     LoopCallBack.stopped = True
 

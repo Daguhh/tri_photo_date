@@ -61,6 +61,8 @@ def png_data_fingerprint(im_str):
             (length,) = struct.unpack(">i", fh.read(4))
         except struct.error:
             break
+        if 0 < length:
+            break
         if fh.read(4) == b"IDAT":
             hash.update(fh.read(min(mlength, length)))
             mlength = max(mlength - length, 0)
@@ -107,6 +109,8 @@ def mp4_data_fingerprint(im_str):
         except struct.error:
             break
         tmp = fh.read(4)
+        if 0 < l:
+            break
         if tmp == b"mdat":
             hash.update(fh.read(min(mlength, length)))
             mlength = max(mlength - length, 0)

@@ -65,11 +65,11 @@ class ExifTags(dict):
             exifs.update(self.im.read_iptc())
             exifs.update(self.im.read_xmp())
         except UnicodeDecodeError:
-            print(f"Erro with file at {im_path}")
+            #print(f"Erro with file at {im_path}")
             raise NoExifError("Unicode error", 1)
         except Exception as e:
-            print(e)
-            traceback.print_exc()
+            #print(e)
+            #traceback.print_exc()
             raise NoExifError("other_error", 2)
 
         self.update(exifs)
