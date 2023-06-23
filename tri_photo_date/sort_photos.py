@@ -56,7 +56,6 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
     media_extentions = CFG["misc.accepted_formats"]
     with ImageMetadataDB() as db:
         db.clean_all_table()
-        progbar.text_label.setText(PROGBAR_TXT_SCAN_START.format(CFG['source.dir']))
 
         #### Scanning source folder ####
         nb_files = sum([len(f) for *_, f in os.walk(CFG["source.dir"])])
