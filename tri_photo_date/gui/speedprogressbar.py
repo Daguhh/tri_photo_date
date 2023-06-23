@@ -114,12 +114,12 @@ class SpeedProgressBar(pg.PlotWidget):
         new_speed = nb_bars * self.bar_width / toc # speed of bar
 
         # if new progress_value is larger than bar width
+        ys = self.bargraph.opts['height']
         for index in range(self._bar_previous_index + 1, bar_index + 1):
 
             self.speeds.append(new_speed)
 
             # Set mean speed at bar_index
-            ys = self.bargraph.opts['height']
             ys[index] = sum(self.speeds) / len(self.speeds)
 
         self.new_ys = ys
