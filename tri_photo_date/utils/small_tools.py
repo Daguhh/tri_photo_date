@@ -108,10 +108,11 @@ def rename_with_incr(db, out_str):
     filename = stem + ext
 
     count = 1
-    collidable_files = db.exist_in_preview(out_path)
+    #collidable_files = db.exist_in_preview(out_path)
 
-    get_ind = gen_regex_index(filename)
-    indexes = [get_ind(s) for s in collidable_files]
+    #get_ind = gen_regex_index(filename)
+    #indexes = [get_ind(s) for s in collidable_files]
+    indexes = list(db.exist_in_preview(out_path))
 
     if indexes:  # duplicates found
         m = max(indexes) + 1

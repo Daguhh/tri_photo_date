@@ -27,8 +27,14 @@ from tri_photo_date.utils.constants import (
 
 from tri_photo_date.utils.fingerprint import get_data_fingerprint, get_file_fingerprint
 
+global GLOBAL_COUNT
+GLOBAL_COUNT = 0
 
 def _colliding(filename, item):
+    global GLOBAL_COUNT
+    GLOBAL_COUNT += 1
+#    print(GLOBAL_COUNT)
+#    print("collide call")
     path = Path(filename)
     reg = re.compile(path.stem + r"(?:\s\([0-9]+\))?" + path.suffix.lower())
     return reg.search(item) is not None
@@ -579,25 +585,48 @@ class ImageMetadataDB:
     #        )
 
     def exist_in_preview(self, im_path):
+        # too much call to collide
         new_folder = str(im_path.parent)
         new_filename = str(im_path.name)
 
         c = self.conn.cursor()
 
-        query = "SELECT new_filename FROM process_preview WHERE new_folder = ? AND COLLIDE(?,new_filename)"
+        query = "SELECT new_filename FROM process_preview WHERE new_folder = ?" # AND COLLIDE(?,new_filename)"
+        #query = "SELECT new_filename FROM process_preview WHERE new_folder = ? AND COLLIDE(?,new_filename)"
+        #query = """
+        #SELECT
+        #    new_filename,
+        #    CASE WHEN new_folder = ?
+        #        THEN
+        #            COLLIDE(?, new_filename)
+        #        ELSE
+        #            Null
+        #    END
+        #FROM process_preview
+        #"""
         # query = 'SELECT new_filename FROM process_preview WHERE new_folder = ? AND new_filename REGEXP ? '
 
         c.execute(
             query,
             (
                 new_folder,
-                new_filename,
             ),
         )
 
+        filenames = c.fetchall()
+        #reg = re.compile(im_path.stem + r"(?:\s\([0-9]+\))?" + im_path.suffix.lower())
+        #reg = re.compile(im_path.stem + r"(?:\s\(([0-9]+)*\))?" + im_path.suffix.lower())
+        reg = re.compile(im_path.stem + r"(?:\s\(([0-9]+)\){0,1})?" + im_path.suffix.lower())
+
+        #return (filename for filename,*_ in filenames if reg.search(filename) is not None)
+        for filename,*_ in filenames:
+            match = reg.fullmatch(filename)
+            if match is not None:
+                yield int(match.group(1) or 0)
+
         # return [row[0] for row in c.fetchall()]
-        while row := c.fetchone():
-            yield row[0]
+        #while row := c.fetchone():
+        #    yield row[0]
 
     def add_out_path(self, in_str, out_str):
         out_path = Path(out_str)

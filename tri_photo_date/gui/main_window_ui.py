@@ -621,7 +621,6 @@ class LabelNLineEdit(QHBoxLayout):
 
         def callback():
             text = combo.currentText()
-            print('callback', text)
             for k, v in MEDIA_FORMATS.items():
                 text = re.sub(k, v, text)
             for k, v in REL_PATH_FORMATS.items():
@@ -676,11 +675,9 @@ class CustomQLineEdit(QLineEdit):
 
             # If no match set the first element
             if not match:
-                print("not match", lineedit_txt)
                 self.combo.setCurrentIndex(0)
                 self.combo.activated.emit(0)
                 #super().setText(self.combo.currentText())
-            print('bye')
 
         # If call by another widget : continue as normal
         else:

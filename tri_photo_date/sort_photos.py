@@ -39,6 +39,8 @@ from tri_photo_date.utils.small_tools import (
     limited_string
 )
 
+PLACEHOLDER_REGEX = re.compile(r"[{<]([^}>]+)[}>]")
+
 def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
     fingerprint.set_global_config(CFG)
 
@@ -187,8 +189,7 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                     db.add_location(in_str, location)
 
             # Format output string with image metadatas
-            placeholder_regex = re.compile(r"[{<]([^}>]+)[}>]")
-            for tag_key in placeholder_regex.findall(out_str):
+            for tag_key in PLACEHOLDER_REGEX.findall(out_str):
                 if tag_key == "group":
                     continue  # skip group, done separatly in another loop
                 tag_value = metadatas.get(tag_key, "")
@@ -196,6 +197,7 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                 out_str = ExifTags.format_tag(out_str, tag_key, tag_value)
 
             # rename files with duplicates names in same folder
+            # Take too much time
             if not CFG["options.group.is_group"]:
                 out_str = rename_with_incr(db, out_str)
 
