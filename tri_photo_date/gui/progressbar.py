@@ -3,6 +3,8 @@ import time
 
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QApplication, QProgressBar
 
+from tri_photo_date.utils.small_tools import limited_string
+
 PROG_SPEED_BAR = 0
 PROG_NORMAL = 1
 
@@ -30,7 +32,7 @@ if progress_bar_mode == PROG_SPEED_BAR:
         def update(self, v, text="", text2=""):
             super().update(v)
             QApplication.processEvents()  # keep the GUI responsive
-            self.text_label.setText(text)
+            self.text_label.setText(limited_string(text,limit=40) + '-' + text2)
 
         def add_label(self):
 
@@ -80,7 +82,7 @@ else:
         def update(self, v, text="", text2=""):
             self.setValue(int(100 * v / self._progbar_nb_val))
             QApplication.processEvents()  # keep the GUI responsive
-            self.text_label.setText(text)
+            self.text_label.setText(limited_string(text, limit=40), '-', text2)
 
         def move_to_layout(self, new_layout):
 

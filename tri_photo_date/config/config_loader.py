@@ -192,6 +192,13 @@ class ConfigDict(dict):
         for p in param2keep:
             self[p] = config_2_keep[p]
 
+    def walk(self):
+
+        for k,v in self.items():
+            yield k.rsplit('.', 1), v
+
+
+
 
 
 CONFIG = ConfigDict()

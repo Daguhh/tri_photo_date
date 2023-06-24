@@ -77,7 +77,7 @@ class SpeedProgressBar(pg.PlotWidget):
         self.timer.start(100)  # 50ms
 
         # Start to mesure time
-        self.tic = 1 # init in s #time.time()
+        self.tic = 1/3600 # init in s #time.time()
 
         # Store bargraph values
         self.new_ys = self.bargraph.opts['height']
@@ -100,7 +100,7 @@ class SpeedProgressBar(pg.PlotWidget):
         bar_index = int(progress_value // self.bar_width)
 
         # Pass the 100%
-        if bar_index > self.nb_sections:
+        if bar_index >= self.nb_sections:
             bar_index = self.nb_sections - 1
 
         # while bar is not complete skip

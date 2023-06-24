@@ -19,24 +19,29 @@ FILE_ACTION_TXT = {
     3: _("Déplacement du fichier {} vers {}"),
 }
 
+FILE_ACTION_DONE_EXECUTE_TXT = {
+    1: _("Fin de simulation! {} fichiers, {}"),
+    2: _("Fait! {} fichiers ont été copiés, soit un total de {}"),
+    3: _("Fait! {} fichiers ont été déplacés soit un total de {}")
+}
+
 
 PROGBAR_TXT_SCAN_START = _("Recherche des fichiers dans {} ...")
-PROGBAR_TXT_SCAN_SRCDIR = _("{} / {} - Calcul de l'empreinte et chargement des métadonnées...")
-PROGBAR_TXT_SCAN_DESTDIR = _("{} / {} - Scan des fichiers dans le dossier de destination...")
-PROGBAR_TXT_COMPUTE_FILES = _("{} / {} - {} - Résolution des nouveaux chemins...")
+PROGBAR_TXT_SCAN_SRCDIR = _("Calcul de l'empreinte et chargement des métadonnées...")
+PROGBAR_TXT_SCAN_DESTDIR = _("Scan des fichiers dans le dossier de destination...")
+PROGBAR_TXT_COMPUTE_FILES = _("{} - Résolution des nouveaux chemins...")
 PROGBAR_TXT_DONE = _("Fait!")
 PROGBAR_TXT_COMPUTE_GROUPS_START = _("Fait! Tri des fichiers pour groupement par date...")
-PROGBAR_TXT_COMPUTE_GROUPS = _("{} / {} - {} - Groupement des fichiers par date")
-PROGBAR_TXT_EXECUTE_FCT = lambda a, b, c, d, e: limited_string("".join(
+PROGBAR_TXT_COMPUTE_GROUPS = _("{} - Groupement des fichiers par date")
+PROGBAR_TXT_EXECUTE_FCT = lambda c, d, e: limited_string("".join(
                 (
-                    f"{bytes2human(a)}/ {bytes2human(b)}",
                     " - ",
-                    FILE_ACTION_TXT[c].format(
-                        Path(d).name, limited_string(Path(e).parent.name)
-                    ),
+                    limited_string(FILE_ACTION_TXT[c].format(
+                        Path(d).name, Path(e).parent.name
+                    )),
                 )
             ), limit=90)
 
-PROGBAR_TXT_EXECUTE_DONE = _("Fait! {} fichiers ont été déplacés soit un total de {}")
+PROGBAR_TXT_EXECUTE_DONE_FCT = lambda a,b,c : FILE_ACTION_DONE_EXECUTE_TXT[c].format(a,c)
 
 

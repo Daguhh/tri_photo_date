@@ -67,7 +67,8 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                 i += 1
 
                 # Some user feedback
-                progbar.update(i, PROGBAR_TXT_SCAN_SRCDIR.format(i, nb_files))
+                progbar.update(i, f"{i}/{nb_files}", PROGBAR_TXT_SCAN_SRCDIR)
+
                 # PyQt5 callback to break loop
                 if LoopCallBack.run():
                     break
@@ -110,12 +111,12 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                 db.add_image(str(in_path), to_process=False, is_use_cache=is_use_cache)
 
                 # Soe user feedback
-                progbar.update(i, PROGBAR_TXT_SCAN_DESTDIR.format(i, nb_files))
+                progbar.update(i, f"{i}/{nb_files}", PROGBAR_TXT_SCAN_DESTDIR)
 
             if LoopCallBack.run():
                 break
 
-        progbar.update(nb_files, f"{i} / {nb_files} - Fait.")
+        progbar.update(nb_files, f"{i} / {nb_files}", " - Fait.")
 
     LoopCallBack.stopped = True
 
@@ -153,7 +154,7 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
         for i, in_str in enumerate(db.list_files(**list_files_params)):
 
             # Give user some feedbacks
-            progbar.update(i, PROGBAR_TXT_COMPUTE_FILES.format(i, nb_files, Path(in_str).name))
+            progbar.update(i, f"{i} / {nb_files}", PROGBAR_TXT_COMPUTE_FILES.format(Path(in_str).name))
 
             # get source image metadata
             metadatas = db.get_exifs(in_str)
@@ -224,7 +225,7 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
             for i, in_str in enumerate(db.list_files(**list_files_params)):
 
                 # Some user feedbacks
-                progbar.update(i, PROGBAR_TXT_COMPUTE_GROUPS.format(i, nb_files, Path(in_str).name))
+                progbar.update(i, f"{i}/{nb_files}",  PROGBAR_TXT_COMPUTE_GROUPS.format(Path(in_str).name))
 
                 # PyQt5 callback to stop loop
                 if LoopCallBack.run():
@@ -281,16 +282,14 @@ def execute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
                 ExifTags.clear_all_metadatas(out_str)
 
             # User feedbacks
-            progbar.update(bytes_moved, PROGBAR_TXT_EXECUTE_FCT(
-                bytes_moved,
-                total_size,
+            progbar.update(bytes_moved, f"{bytes2human(bytes_moved)}/{bytes2human(total_size)}", PROGBAR_TXT_EXECUTE_FCT(
                 CFG["action.action_mode"],
                 in_str,
                 out_str
             ))
 
     progbar.update(
-        bytes_moved, PROGBAR_TXT_EXECUTE_DONE.format(i, bytes2human(bytes_moved))
+        bytes_moved, f"{i}/{bytes2human(bytes_moved)}", PROGBAR_TXT_EXECUTE_DONE_FCT(i, bytes2human(bytes_moved), CFG["action.action_mode"])
     )
 
     LoopCallBack.stopped = True
