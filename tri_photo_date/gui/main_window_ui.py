@@ -276,14 +276,11 @@ class MainTab(QWidget):
         scan_frame = CollapsibleFrame(_("Scan"), color="darkGreen")
         layout = QVBoxLayout()
 
-        scan_frame.srcdir_wdg = LabelNLineEdit(self, **MTW["dir"])
+        scan_frame.srcdir_wdg = LabelNLineEdit(self, **MTW["src_dir"])
         layout.addLayout(scan_frame.srcdir_wdg)
-        scan_frame.destdir_wdg = LabelNLineEdit(self, **MTW["dir"])
+        scan_frame.destdir_wdg = LabelNLineEdit(self, **MTW["dest_dir"])
         layout.addLayout(scan_frame.destdir_wdg)
         sub_layout = QHBoxLayout()
-        # scan_frame.is_metaBtn = simpleCheckBox(sub_layout, **MTB["is_meta"])
-        # scan_frame.is_md5_file = simpleCheckBox(sub_layout, **MTB["is_md5_file"])
-        # scan_frame.is_md5_data = simpleCheckBox(sub_layout, **MTB["is_md5_data"])
         scan_frame.is_use_cache = simpleCheckBox(
             sub_layout, **MTB["is_use_cached_datas"]
         )
@@ -472,7 +469,7 @@ class MainTab(QWidget):
 
     def gen_run_function(self, runBtn, stopBtn, progbarLyt):
 
-        def _function(func, callback=lambda:None):
+        def _function(func, after=lambda:None):
             logging.info("Starting processing files...")
 
             self.progress_bar.move_to_layout(progbarLyt)
@@ -488,7 +485,7 @@ class MainTab(QWidget):
                     func, self.progress_bar, LoopCallBack
                 )
             )
-            self.timer.timeout.connect(callback)
+            self.timer.timeout.connect(after)
             self.timer.start(1000)  # waits for 1 second
 
         return _function

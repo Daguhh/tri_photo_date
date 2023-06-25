@@ -20,6 +20,9 @@ if os.name == 'nt':
     O  = ''
     B  = ''
     P  = ''
+    BB = ''
+    BG = ''
+    BW = ''
 else:
     W  = '\033[0m'  # white (normal)
     R  = '\033[31m' # red
@@ -27,13 +30,16 @@ else:
     O  = '\033[33m' # orange
     B  = '\033[34m' # blue
     P  = '\033[35m' # purple
+    BB = '\033[94m' # bright blue
+    BG = '\033[92m' # bright green
+    BW = '\033[97m' # bright white
 
 
 table_color = lambda xs : (c + x + W for c, x in zip([R,G,B], xs))
 
 def pprint(dct):
     for k,v in dct.items():
-        print(k, '=', v)
+        print('.'.join(x+y for x,y in zip((B,BB),k.rsplit('.',1))), W+'=', G+str(v).strip('()').replace("'",'').strip(',')+W)
 
 class TriphotoShell(cmd.Cmd):
     intro = 'Welcome to the Triphoto shell. Type help or ? to list commands.\n'

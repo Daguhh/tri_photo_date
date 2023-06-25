@@ -145,13 +145,13 @@ class MainWindow(MainWindow_ui):
     def act_populate(self):
         self.conf_panel.run_populate(
             func=sort_photos.populate_db,
-            callback=self.update_selection_tabs
+            after=self.update_selection_tabs
         )
 
     def act_preview(self):
         self.conf_panel.run_preview(
             func=sort_photos.compute,
-            callback=self.update_preview
+            after=self.update_preview
         )
 
     def act_execute(self):
