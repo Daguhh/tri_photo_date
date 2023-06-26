@@ -1,9 +1,12 @@
 import cmd
 import sys
 import os
+import signal
+from itertools import islice
 
 from tri_photo_date import sort_photos
 from tri_photo_date.sort_photos import CFG
+from tri_photo_date.cli.progressbar import cli_progbar
 
 from tri_photo_date.config.config_paths import IMAGE_DATABASE_PATH
 from tri_photo_date.utils.constants import FILE_SIMULATE, FILE_MOVE, FILE_COPY
@@ -34,7 +37,23 @@ else:
     BG = '\033[92m' # bright green
     BW = '\033[97m' # bright white
 
-from itertools import islice
+
+class cliLoopCallBack:
+    stopped = False
+
+    def __init__(self):
+        pass
+
+    @classmethod
+    def run(cls):
+        if cls.stopped:
+            return True
+        return False
+
+    @classmethod
+    def signal_handler(cls, sig, frame):
+        print('stopped')
+        cls.stopped = True
 
 def batched(iterable, n):
     "Batch data into tuples of length n. The last batch may be shorter."
@@ -107,8 +126,17 @@ def pprint(dct, section=""):
         print()
 
 class TriphotoShell(cmd.Cmd):
-    intro = 'Welcome to the Triphoto shell. Type help or ? to list commands.\n'
-    prompt = '(triphoto) '
+    intro = f'''
+    Welcome to the {G}TriPhotoDate{W} shell.
+    use {R}set{W} and {R}get{W} to interact with configuration, run in order :
+
+       - {R}scan{W}
+       - {R}process{W}
+       - {R}execute{W}
+
+    see README for more explanations. Type help or ? to list commands.
+    '''
+    prompt = B + 'triphoto > ' + W
     dct = CFG
 
     def do_get(self, arg):
@@ -134,22 +162,34 @@ class TriphotoShell(cmd.Cmd):
     def do_scan(self, arg):
         "Scan source and dest folder for files"
 
-        print(f"Scan of source and destination folder will be performed with those parameters :\nscan.src_dir = {CFG['scan.src_dir']}\nscan.dest_dir = {CFG['scan.dest_dir']=}\n")
+        print(f"Scan of source and destination folder will be performed with those parameters :\nscan.src_dir = {CFG['scan']['src_dir']}\nscan.dest_dir = {CFG['scan']['dest_dir']}\n")
         #is_ok = input('Continue? [Y/n]')
         is_ok = True
+        cliLoopCallBack.stopped = False
+        signal.signal(signal.SIGINT, cliLoopCallBack.signal_handler)
         if not is_ok or is_ok in TRUE:
-            sort_photos.populate_db()
+            sort_photos.populate_db(cli_progbar, cliLoopCallBack)
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+        print()
 
     def do_process(self, arg):
         "Generate new paths for images files"
 
-        sort_photos.compute()
+        cliLoopCallBack.stopped = False
+        signal.signal(signal.SIGINT, cliLoopCallBack.signal_handler)
+        sort_photos.compute(cli_progbar, cliLoopCallBack)
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+        print()
 
     def do_execute(self, arg):
         "Copy/Move files given path generated at process step, run 'triphoto preview' to check paths"
 
-        print(f"\nAction mode = {CFG['action.action_mode']}, start {FILE_MODES[CFG['action.action_mode']]}\n")
-        sort_photos.execute()
+        print(f"\nAction mode = {CFG['action']['action_mode']}, start {FILE_MODES[CFG['action']['action_mode']]}\n")
+        cliLoopCallBack.stopped = False
+        signal.signal(signal.SIGINT, cliLoopCallBack.signal_handler)
+        sort_photos.execute(cli_progbar, cliLoopCallBack)
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+        print()
 
     def do_preview(self, arg):
         "Show generated paths for each files"
@@ -216,6 +256,9 @@ class TriphotoShell(cmd.Cmd):
     def do_exit(self, arg):
         "exit"
         return True
+
+    def emptyline(self):
+        pass
 
 def cli_run():
     #sort_photos.populate_db()

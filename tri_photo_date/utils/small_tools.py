@@ -29,6 +29,17 @@ class fake_LoopCallBack:
     def run(cls):
         return False
 
+class fake_progbar:
+
+    def __init__(self):
+        pass
+
+    def init(self, *args, **kwargs):
+        pass
+
+    def update(self, *args, **kwargs):
+        pass
+
 
 class Timer:
     old_time = None

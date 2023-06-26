@@ -41,7 +41,7 @@ Get [python wheel](https://github.com/Daguhh/tri_photo_date/releases/latest), th
 in a virtual env
 
 ```shell
-python3 -m pip install tri_photo_date-0.1.0-py3-none-any.whl
+python3 -m pip install tri_photo_date-x.y.z-py3-none-any.whl
 ```
 ```shell
 tri_photo_date
@@ -66,6 +66,31 @@ poetry run tri_photo_date
 
 Fill and execute action (push button) from top to down.
 Use tooltip to get hints on [parameters](tri_photo_date/config/default_config.ini) function and format.
+
+### cli / shell
+
+```bash
+poetry run tri_photo_date --cli
+```
+```
+    Welcome to the TriPhotoDate shell.
+    use set and get to interact with configuration, run in order :
+
+       - scan
+       - process
+       - execute
+
+    see README for more explanations. Type help or ? to list commands.
+
+triphoto >
+```
+```bash
+poetry run tri_photo_date --cli set section param value
+poetry run tri_photo_date --cli scan
+poetry run tri_photo_date --cli process
+poetry run tri_photo_date --cli preview
+poetry run tri_photo_date --cli execute
+```
 
 ### Simplified mode
 
@@ -120,7 +145,7 @@ Use tooltip to get hints on [parameters](tri_photo_date/config/default_config.in
                           └──────────────────┘
 ```
 
-### Command line
+### Command line (expired?)
 
 A small command line utility is available. It's not very elaborate at the moment, but it should allow dealing with multiple preconfigurations to run scripts in the daily routine
 

@@ -19,7 +19,6 @@ from pathlib import Path
 from datetime import datetime, timezone
 import logging
 
-from tri_photo_date.cli.progressbar import cli_progbar
 from tri_photo_date.exif import ExifTags
 from tri_photo_date.config.config_loader import CONFIG as CFG
 
@@ -31,6 +30,7 @@ from tri_photo_date.photo_database import ImageMetadataDB
 from tri_photo_date.utils import fingerprint
 from tri_photo_date.utils.small_tools import (
     fake_LoopCallBack,
+    fake_progbar,
     rename_with_incr,
     move_file,
     create_out_str,
@@ -41,7 +41,7 @@ from tri_photo_date.utils.small_tools import (
 
 PLACEHOLDER_REGEX = re.compile(r"[{<]([^}>]+)[}>]")
 
-def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
+def populate_db(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
     fingerprint.set_global_config(CFG)
 
     # in_dir = CFG["source.dir"]
@@ -120,7 +120,7 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
     LoopCallBack.stopped = True
 
-def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
+def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
     gps.set_global_config(CFG)
 
     exclude = {
@@ -251,7 +251,7 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
     LoopCallBack.stopped = True
 
 
-def execute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
+def execute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
     with ImageMetadataDB() as db:
         nb_files, total_size = db.count_preview()
         progbar.init(total_size)  # progbar.init(nb_files)
