@@ -16,6 +16,7 @@ geopy = "^2.3.0"
 pyexiv2 = "^2.8.1"
 certifi = "^2023.5.7"
 pyqtchart = "^5.15.6"
+tomlkit = "^0.11.8"
 
 [tool.poetry.group.speedbar]
 optional = true

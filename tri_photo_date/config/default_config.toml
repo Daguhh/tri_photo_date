@@ -1,0 +1,127 @@
+
+# TriPhotoDate configuration file
+#
+# /!\ boolean use PyQt5 "notation":
+#     - 2 : True
+#     - 0 : False
+#
+
+[files]
+# Partially hashs files given the maximum size in Mo
+is_max_hash_size = false # bool
+# humhum
+max_hash_size = 0 # int
+# enable filtering small files
+is_min_size = false # bool
+# smallest files accpeted in Ko
+min_size = 0 # int
+# enable filtering large files
+is_max_size = false # bool
+# largest files accpeted in Mo
+max_size = 5000 # int
+
+[scan]
+# Scan all files in this directory, all can be then filtered to get files to process, also permit duplicates search
+src_dir = "" # string
+# scan all files in this directory, permit suplicates search
+dest_dir = "" # string
+# scan source and destination recyrsively
+is_recursive = false # bool
+# no implemented yet
+is_md5_file = false # bool
+# no implemented yet
+is_md5_data = false # bool
+# no implemented yet
+is_meta = false # bool
+# Directly load from cache if path already exist : doesn't verify if file is the same
+is_use_cached_datas = false # bool
+
+[source]
+# absolute directory of files to process
+dir = "" # string
+# filter file by extentions, extentions separated by commas
+extentions = ["jpg","png","jpeg"] # list of strings
+# filter by cameras, cameras models deparated by commas (check Exif.ImageModel to find a camera name)
+cameras = [] # list of strings
+# process also <dir> subdirectories
+is_recursive = true # bool
+# filter by excluding or including folder or using regex, relative folder to <dir> or regex, use commas to separate elments in case of multiples values
+excluded_dirs = [] # list of strings
+# activate regex mode
+is_exclude_dir_regex = true # bool
+# toggle exclude (0) / include (1)
+exclude_toggle = 0 # int
+
+[destination]
+# Absolute directory where to move/copy photos
+dir = "" # string
+# relative directory to <dir>. This path can be personalized using metadata ro date placeholders
+rel_dir = "" # string
+# file name, follow same format as <rel_dir>, keep empty to keep original filename
+filename = "" # string
+
+[action]
+# action to perform when processing files : simulate (1) / copy (2) / move (3)
+action_mode = 1 # int
+
+[duplicates]
+# Activate control of duplicates. Only one file in match will be processed
+is_control = true # bool
+# Matching mode : md6 file (1) / md5 data (2) / datetime (3)
+mode = 1 # int
+# Look for match in destination directory too
+is_scan_dest = true # bool
+
+["options.general"]
+# remove metadata of copied/moved files
+is_delete_metadatas = false # bool
+# try to get date from filesystem if no other methods works
+is_date_from_filesystem = true # bool
+# Force to take date from filesystem
+is_force_date_from_filesystem = false # bool
+
+["options.group"]
+# Activate grouping photo by day floating
+is_group = false # bool
+# floating window size in days
+floating_nb = 1 # int
+# A placeholder for {group} can be set in customizable paths, it will use this format (use strftime formats)
+display_fmt = "" # string
+
+["options.name"]
+# Try to get date from file name
+is_guess = false # bool
+# Format of the date to strip
+guess_fmt = "" # string
+
+["options.gps"]
+# Activate location resolution using gps metadatas
+is_gps = false # bool
+# Not working yet
+debug = 0 # int
+# set a fake address
+simulate = 0 # int
+# gps accuracy in km. If distance between 2 photo in less than accuracy, cached data will be used, avoiding unnecessary call to api
+accuracy = 2 # int
+# Time between 2 api calls. Prevent api overload
+wait = 5 # int
+
+[interface]
+# Gui scale factor
+size = "1" # str
+# Adjust shown options number and how user interact with the interface : simplified (1) / advanced (3)
+mode = 1 # int
+# Set interface language en / fr
+lang = "en" # string
+
+[misc]
+# Not working yet
+verbose = 0 # int
+# Not implemented yet
+exif_user_tags = "" # string
+# Obolete
+unidecode = 0 # int
+# Default word if no datas found to fill placeholder
+non_def = "non_def" # string
+# Filter extentions when scanning
+accepted_formats=["jpg","jpeg","png","webp","bmp","ico","tiff","heif","heic","svg","raw","arw","cr2","nrw","k25","apng","avif","gif","svg","webm","mkv","flv","ogg","gif","avi","mov","asf","mp4","m4v","mpg","mp2","mpeg","mpv","3gp","3g2","flv"] # list of strings

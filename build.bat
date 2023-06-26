@@ -20,15 +20,11 @@ python -m poetry env use system
 
 :: get venv path
 for /f "delims=" %%a in ('python -m poetry env info --path') do (SET "venv_path=%%a")
-echo "====================================="
-echo %venv_path%
 
 :: get package version
 :: for /f "delims= " %%a in ('python -m poetry --version') do (set version=%%a)
 for /f "tokens=2 delims= " %%a in ('python -m poetry version') do (SET "pkg_version=%%a")
 
-echo "====================================="
-echo %pkg_version%
 
 
 :: install deps and build deps
@@ -43,7 +39,7 @@ python -m poetry run pyinstaller ^
     --add-data "resources/strftime_help.html;." ^
     --add-data "resources/en/*;./resources/en/" ^
     --add-data "resources/fr/*;./resources/fr/" ^
-    --add-data "tri_photo_date/config/*;./config/" ^
+    --add-data "tri_photo_date/config/config_default.toml;./config/" ^
     --add-data "README.md;." ^
     --add-data "LICENSE;." ^
     --add-data "tri_photo_date/locales/fr/LC_MESSAGES/base.mo;./locales/fr/LC_MESSAGES/" ^

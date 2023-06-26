@@ -34,12 +34,78 @@ else:
     BG = '\033[92m' # bright green
     BW = '\033[97m' # bright white
 
+from itertools import islice
+
+def batched(iterable, n):
+    "Batch data into tuples of length n. The last batch may be shorter."
+    # batched('ABCDEFG', 3) --> ABC DEF G
+    if n < 1:
+        raise ValueError('n must be at least one')
+    it = iter(iterable)
+    while batch := tuple(islice(it, n)):
+        yield batch
+
+DEFAULT_CONFIG_TOML = "/home/david/Prog/tri_photo_date/tri_photo_date/config/default_config.toml"
+from tomlkit import parse
+
+def flatten_dct(d, parent_key='', sep='.'):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key.lower() + sep + k if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_dct(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+import re
+reg_split = re.compile('\s*=.*#\s*')
+
+
+def get_config_comments():
+
+    with open(DEFAULT_CONFIG_TOML, 'r') as f:
+        doc = parse(f.read())
+
+    dct = {}
+    for key, value in doc.items():
+        for com, *kNt in batched(value.as_string().split('\n'), 2):
+            if kNt:
+                k, *t = reg_split.split(kNt[0])
+                dct[key.lower() + '.' + k] = {}
+                dct[key.lower() + '.' + k]['comment'] = com.strip('# ')
+                dct[key.lower() + '.' + k]['type'] = '' if not t else t[0]
+    #for k,v in dct.items():
+    #    print('---', k , '---')
+    #    for k2, v2 in v.items():
+    #        print(k2, ':', v2)
+    return dct
+
+CONFIG_COMMENTS = get_config_comments()
+print(CONFIG_COMMENTS)
+
 
 table_color = lambda xs : (c + x + W for c, x in zip([R,G,B], xs))
+def type_color(t):
+    if t == "int":
+        return B
+    elif t == 'float':
+        return B
+    elif t == 'string' or t == "list of strings":
+        return O
+    elif t == 'bool':
+        return G
+    else:
+        return W
 
-def pprint(dct):
+def pprint(dct, section=""):
     for k,v in dct.items():
-        print('.'.join(x+y for x,y in zip((B,BB),k.rsplit('.',1))), W+'=', G+str(v).strip('()').replace("'",'').strip(',')+W)
+        k = '.'.join((section,k)) if section else k
+        print('.'.join(x+y for x,y in zip((B,BB),k.rsplit('.',1))), ':', W)
+        print('description :', CONFIG_COMMENTS[k]['comment'])
+        print('type :', O+ CONFIG_COMMENTS[k]['type']+W)
+        print('value :', type_color(CONFIG_COMMENTS[k]['type'])+str(v).strip('()').replace("'",'').strip(',')+W)
+        print()
 
 class TriphotoShell(cmd.Cmd):
     intro = 'Welcome to the Triphoto shell. Type help or ? to list commands.\n'
@@ -50,14 +116,14 @@ class TriphotoShell(cmd.Cmd):
         "Get a parameter value"
 
         if arg:
-            section, *params = arg.split()
-            if params:
-                for param in params:
-                    pprint({f"{section.lower()}.{param}" : self.dct[(section, param.lower())]})
+            section, *param = arg.split()
+            if param:
+                param = param[0]
+                pprint({param:self.dct[section][param]}, section)
             else:
-                pprint(self.dct.config[section.upper()])
+                pprint(self.dct[section], section)
         else:
-            pprint(self.dct)
+            pprint(flatten_dct(self.dct))
 
     def do_set(self, arg):
         "Set a paramter to given value"

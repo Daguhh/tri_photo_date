@@ -40,7 +40,7 @@ from tri_photo_date.utils.constants import (
     GUI_NORMAL,
     GUI_SIMPLIFIED,
 )
-from tri_photo_date.gui.human_text import MENU_TOOL_BUTTON, WARNING_SWITCH_SIMPLIFY_MODE
+from tri_photo_date.gui.human_text import WARNING_SWITCH_SIMPLIFY_MODE
 
 def set_global_config(lang='en', size=1, mode=GUI_ADVANCED):
 

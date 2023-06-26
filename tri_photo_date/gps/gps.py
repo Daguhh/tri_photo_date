@@ -32,16 +32,16 @@ from tri_photo_date.gps.gps_constants import LOCATION_TYPES
 
 def set_global_config(CONFIG):
     global IS_DEBUG
-    IS_DEBUG = CONFIG["options.gps.debug"]  # False
+    IS_DEBUG = CONFIG["options.gps"]["debug"]  # False
 
     global GPS_SIMULATE
-    GPS_SIMULATE = CONFIG["options.gps.simulate"]  # False
+    GPS_SIMULATE = CONFIG["options.gps"]["simulate"]  # False
 
     global GPS_ACCURACY
-    GPS_ACCURACY = CONFIG["options.gps.accuracy"]  # 2 km
+    GPS_ACCURACY = CONFIG["options.gps"]["accuracy"]  # 2 km
 
     global GPS_WAIT
-    GPS_WAIT = CONFIG["options.gps.wait"]  # in seconds
+    GPS_WAIT = CONFIG["options.gps"]["wait"]  # in seconds
 
 
 # SQLITE_CACHE_PATH = CONFIG_DIR / "gps_cache.db"

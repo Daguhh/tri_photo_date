@@ -2,8 +2,10 @@ import os
 import sys
 import shutil
 from pathlib import Path
-from configparser import ConfigParser
+#from configparser import ConfigParser
 import logging
+
+import tomlkit
 
 # try:
 #    from .config_paths import CONFIG_DIR, APP_NAME
@@ -35,71 +37,27 @@ CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 LANG_LIST = list(os.listdir(LOCALES_DIR))# ["fr", "en"]
 
-def repr2value(k, v):  # for python
-    a = k
-    k = k.split(".")[-1]
-    if k in STRING:
-        pass
-    elif k in PATH:
-        v = Path(v)
-    elif k in BOOLEAN:
-        v = int(v)
+def pyqt2value(k, v):
+
+    if k in BOOLEAN:
+        v = bool(v) #2 * int(v)
     elif k in LIST:
         v = tuple(c.strip() for c in v.split(","))
-    elif k in INTEGER:
-        v = int(v)
     elif k in FLOAT:
         v = float(v)
-    else:
-        logging.info(f"This config is not defined : {k} : {v}")
 
-    k = a
-    return k, v
+    return v
 
+def value2pyqt(k, v):  # for pyqt
 
-def value2repr(k, v):  # for pyqt
-    a = k
-    k = k.split(".")[-1]
-    if k in STRING:
-        pass
-    elif k in PATH:
-        v = str(v)
-    elif k in BOOLEAN:
-        v = int(v)
+    if k in BOOLEAN:
+        v = 2 * int(v)
     elif k in LIST:
         v = ",".join(v)  # tuple(c.strip() for c in v.split(","))
-    elif k in INTEGER:
-        v = v
     elif k in FLOAT:
         v = str(v)
-    else:
-        logging.info(f"This config is not defined : {k} : {v}")
 
-    k = a
-    return k, v
-
-
-def value2conf(k, v):  # for config
-    a = k
-    k = k.split(".")[-1]
-    if k in STRING:
-        pass
-    elif k in PATH:
-        v = str(v)
-    elif k in BOOLEAN:
-        v = str(v)
-    elif k in LIST:
-        v = ",".join(v)  # tuple(c.strip() for c in v.split(","))
-    elif k in INTEGER:
-        v = str(v)
-    elif k in FLOAT:
-        v = str(v)
-    else:
-        logging.info(f"This config is not defined : {k} : {v}")
-
-    k = a
-    return k, v
-
+    return v
 
 class NoConfigFileError(Exception):
     def __str__(self):
@@ -108,7 +66,6 @@ class NoConfigFileError(Exception):
             "Please run 'tri_photo_date --cli --dump <path>' to start from actual configuration",
         )
         sys.exit(1)
-
 
 class ConfigDict(dict):
     def __init__(self, config_path=None):
@@ -125,80 +82,44 @@ class ConfigDict(dict):
         if not self.configfile.exists():
             self.generate_config()
 
-        self.load_config()
+        self.load_config(self.configfile)
 
     def generate_config(self):
         logging.info(f"Create config at {self.configfile}")
         shutil.copy(DEFAULT_CONFIG_PATH, self.configfile)
 
-    def __getitem__(self, k):
-        if isinstance(k, tuple):
-            k = ".".join(k)
+    def set_from_pyqt(self, k, v):
 
-        if k not in self.keys():
-            logging.info(f"No entry for '{k}' in config")
-            self.generate_config()
-            self.load_config()
+        s,p = k.rsplit('.', 1)
+        v = pyqt2value(p,v)
+        self[s][p] = v
 
-        return super().__getitem__(k)
+    def get_to_pyqt(self, k):
 
-    def __setitem__(self, k, v):
-        if isinstance(k, tuple):
-            k = ".".join(k)
-        k, v = repr2value(k, v)
+        s,p = k.rsplit('.', 1)
+        return value2pyqt(p, self[s][p])
 
-        super().__setitem__(k, v)
+    def load_config(self, config_file):
 
-    def load_config(self):
-
-        self.config = ConfigParser(interpolation=None)
-        self.config.read(self.configfile)
-
-        for section in self.config.sections():
-            items = self.config.items(section)
-            for key, value in items:
-                self[".".join((section.lower(), key))] = value
+        with open(config_file, 'r') as f:
+            self.doc = tomlkit.parse(f.read())
+        self.update(self.doc)
 
     def save_config(self):
-        for key, value in self.items():
-            section, param = key.rsplit(".", 1)
-            _, value = value2conf(param, value)
-            self.config[section.upper()][param] = value
 
-        with open(self.configfile, "w") as f:
-            self.config.write(f)
-
-    def get_repr(self, k):
-        if isinstance(k, tuple):
-            k = ".".join(k)
-        if k not in self:  # config['DEFAULT']:
-            logging.info(f"No entry for '{k}' in config")
-            logging.info("Regenerating config file...")
-            self.generate_config()
-            self.load_config()
-
-        k, v = value2repr(k, self[k])
-        return v  # .config["DEFAULT"][k]
+        self.doc.update(self)
+        with open(self.configfile, 'w') as f:
+            f.write(tomlkit.dumps(self.doc))
 
     def reset(self):
 
-        param2keep = ['interface.size','interface.mode','interface.lang']
-        config_2_keep = {p:self[p] for p in param2keep}
-
-        self.configfile, conf_swap = DEFAULT_CONFIG_PATH, self.configfile
-        self.load_config()
-        self.configfile = conf_swap
-
-        for p in param2keep:
-            self[p] = config_2_keep[p]
+        keep_interface = self['interface']
+        self.load_config(DEFAULT_CONFIG_PATH)
+        self['interface'] = keep_interface
 
     def walk(self):
 
         for k,v in self.items():
             yield k.rsplit('.', 1), v
-
-
-
-
 
 CONFIG = ConfigDict()

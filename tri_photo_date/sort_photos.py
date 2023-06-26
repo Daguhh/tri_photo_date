@@ -46,23 +46,23 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
     # in_dir = CFG["source.dir"]
     # out_dir = CFG["destination.dir"]
-    is_use_cache = CFG["scan.is_use_cached_datas"]
-    min_size = CFG["files.min_size"] * 1000 if CFG["files.is_min_size"] else 0
+    is_use_cache = CFG["scan"]["is_use_cached_datas"]
+    min_size = CFG["files"]["min_size"] * 1000 if CFG["files"]["is_min_size"] else 0
     max_size = (
-        CFG["files.max_size"] * 1000 * 1000 if CFG["files.is_max_size"] else sys.maxsize
+        CFG["files"]["max_size"] * 1000 * 1000 if CFG["files"]["is_max_size"] else sys.maxsize
     )
 
     # update image database
-    media_extentions = CFG["misc.accepted_formats"]
+    media_extentions = CFG["misc"]["accepted_formats"]
     with ImageMetadataDB() as db:
         db.clean_all_table()
 
         #### Scanning source folder ####
-        nb_files = sum([len(f) for *_, f in os.walk(CFG["source.dir"])])
+        nb_files = sum([len(f) for *_, f in os.walk(Path(CFG["source"]["dir"]))])
         progbar.init(nb_files)
 
         i = 0
-        for folder, _, filenames in os.walk(CFG["source.dir"]):
+        for folder, _, filenames in os.walk(Path(CFG["source"]["dir"])):
             for filename in filenames:
                 i += 1
 
@@ -92,11 +92,11 @@ def populate_db(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
         progbar.update(nb_files, PROGBAR_TXT_DONE)
         #### Scanning destination folder ####
-        nb_files = sum([len(f) for *_, f in os.walk(CFG["destination.dir"])]) or 1
+        nb_files = sum([len(f) for *_, f in os.walk(Path(CFG["destination"]["dir"]))]) or 1
         progbar.init(nb_files)
 
         i = 0
-        for folder, _, filenames in os.walk(CFG["destination.dir"]):
+        for folder, _, filenames in os.walk(Path(CFG["destination"]["dir"])):
             for filename in filenames:
                 i += 1
 
@@ -124,23 +124,23 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
     gps.set_global_config(CFG)
 
     exclude = {
-        "dirs": CFG["source.excluded_dirs"],
-        "is_regex": bool(CFG["source.is_exclude_dir_regex"]),
-        "toggle": CFG["source.exclude_toggle"],
+        "dirs": CFG["source"]["excluded_dirs"],
+        "is_regex": bool(CFG["source"]["is_exclude_dir_regex"]),
+        "toggle": CFG["source"]["exclude_toggle"],
     }
 
-    is_control_hash = CFG["duplicates.is_control"]
-    control_dest_duplicates = CFG["duplicates.is_scan_dest"]
-    duplicate_ctrl_mode = CFG["duplicates.mode"]
+    is_control_hash = CFG["duplicates"]["is_control"]
+    control_dest_duplicates = CFG["duplicates"]["is_scan_dest"]
+    duplicate_ctrl_mode = CFG["duplicates"]["mode"]
 
     dup_mode = duplicate_ctrl_mode * bool(is_control_hash)
     control_dest_duplicates = control_dest_duplicates * bool(is_control_hash)
 
     list_files_params = {
-        "dir": CFG["source.dir"],
-        "extentions": CFG["source.extentions"],
-        "cameras": CFG["source.cameras"],
-        "recursive": CFG["source.is_recursive"],
+        "dir": Path(CFG["source"]["dir"]),
+        "extentions": CFG["source"]["extentions"],
+        "cameras": CFG["source"]["cameras"],
+        "recursive": CFG["source"]["is_recursive"],
         "dup_mode": dup_mode,
         "exclude": exclude,
     }
@@ -170,23 +170,23 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
             # Generate a path string from user configuration
             out_str = create_out_str(
-                in_str, CFG["destination.rel_dir"], CFG["destination.filename"]
+                in_str, CFG["destination"]["rel_dir"], CFG["destination"]["filename"]
             )
 
             # Get date and format output path string
             date_str = get_date_from_exifs_or_file(
                 in_str,
                 metadatas,
-                CFG["options.name.is_guess"],
-                CFG["options.name.guess_fmt"],
-                CFG["options.general.is_date_from_filesystem"],
-                CFG["options.general.is_force_date_from_filesystem"],
+                CFG["options.name"]["is_guess"],
+                CFG["options.name"]["guess_fmt"],
+                CFG["options.general"]["is_date_from_filesystem"],
+                CFG["options.general"]["is_force_date_from_filesystem"],
             )
             out_str = ExifTags.format_ym(date_str, out_str)
 
             # Get location from gps, add it to metadatas
             location = None
-            if CFG["options.gps.is_gps"]:
+            if CFG["options.gps"]["is_gps"]:
                 location = gps.get_image_gps_location(metadatas)
                 if location:
                     metadatas.update(location)
@@ -202,7 +202,7 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
             # rename files with duplicates names in same folder
             # Take too much time
-            if not CFG["options.group.is_group"]:
+            if not CFG["options.group"]["is_group"]:
                 out_str = rename_with_incr(db, out_str)
 
             # Update the datas base
@@ -215,11 +215,11 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
             LoopCallBack.stopped = True
             return
 
-        if CFG["options.group.is_group"]:
+        if CFG["options.group"]["is_group"]:
             progbar.update(0, PROGBAR_TXT_COMPUTE_GROUPS_START)
 
             # compute group for all files
-            db.group_by_n_floating_days(CFG["options.group.floating_nb"])
+            db.group_by_n_floating_days(CFG["options.group"]["floating_nb"])
 
             # progbar.init(nb_files)
             for i, in_str in enumerate(db.list_files(**list_files_params)):
@@ -233,7 +233,7 @@ def compute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
                 # Get group and format it following user config
                 group_date = db.get_date_group(in_str)
-                group_str = group_date.strftime(CFG["options.group.display_fmt"])
+                group_str = group_date.strftime(CFG["options.group"]["display_fmt"])
 
                 # Insert it in output path
                 group_regex = re.compile(GROUP_PLACEHOLDER)
@@ -266,30 +266,30 @@ def execute(progbar=cli_progbar, LoopCallBack=fake_LoopCallBack):
 
             # transform relative path into absolute path given user config
             out_rel_str, out_filename = db.get_out_str(in_str)
-            out_str = str(CFG["destination.dir"] / out_rel_str / out_filename)
+            out_str = str(Path(CFG["destination"]["dir"], out_rel_str, out_filename))
 
             # SImulate / Move / Copy
-            has_moved = move_file(in_str, out_str, mode=CFG["action.action_mode"])
+            has_moved = move_file(in_str, out_str, mode=CFG["action"]["action_mode"])
 
             # Add metadata to new files if needed
-            if has_moved and CFG["options.gps.is_gps"]:
+            if has_moved and CFG["options.gps"]["is_gps"]:
                 metadatas = db.get_metadatas(in_str)
                 location = gps.get_image_gps_location(metadatas)
                 if location:
                     ExifTags.add_location_to_iptc(out_str, location)
 
-            if has_moved and CFG["options.general.is_delete_metadatas"]:
+            if has_moved and CFG["options.general"]["is_delete_metadatas"]:
                 ExifTags.clear_all_metadatas(out_str)
 
             # User feedbacks
             progbar.update(bytes_moved, f"{bytes2human(bytes_moved)}/{bytes2human(total_size)}", PROGBAR_TXT_EXECUTE_FCT(
-                CFG["action.action_mode"],
+                CFG["action"]["action_mode"],
                 in_str,
                 out_str
             ))
 
     progbar.update(
-        bytes_moved, f"{i}/{bytes2human(bytes_moved)}", PROGBAR_TXT_EXECUTE_DONE_FCT(i, bytes2human(bytes_moved), CFG["action.action_mode"])
+        bytes_moved, f"{i}/{bytes2human(bytes_moved)}", PROGBAR_TXT_EXECUTE_DONE_FCT(i, bytes2human(bytes_moved), CFG["action"]["action_mode"])
     )
 
     LoopCallBack.stopped = True

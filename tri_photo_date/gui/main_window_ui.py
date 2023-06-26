@@ -8,6 +8,8 @@ import re
 import time
 from collections import deque
 
+from tomlkit import parse
+
 #from PyQt5.QtWidgets import QApplication, QWidget, QProgressBar
 from PyQt5.QtGui import QPainter, QBrush, QColor, QPen
 from PyQt5.QtChart import QChart, QChartView, QPieSeries, QPieSlice, QValueAxis
@@ -103,8 +105,6 @@ from tri_photo_date.gui.human_text import (
     GPS_HELP_TEXT,
     MEDIA_FORMATS,
     REL_PATH_FORMATS,
-    ACTION_BUTTONS,
-    DUP_RADIO_BUTTONS,
 )
 from tri_photo_date.config.config_paths import (
     STRFTIME_HELP_PATH,
@@ -114,8 +114,7 @@ from tri_photo_date.config.config_paths import (
 )
 
 # Texts
-from tri_photo_date.gui.human_text import MAIN_TAB_WIDGETS as MTW
-from tri_photo_date.gui.human_text import MAIN_TAB_BUTTONS as MTB
+from tri_photo_date.gui.human_text import HUMAN_TEXT as HT
 from tri_photo_date.gui.progressbar import MyProgressBar
 
 from tri_photo_date.utils.small_tools import get_lang
@@ -276,13 +275,13 @@ class MainTab(QWidget):
         scan_frame = CollapsibleFrame(_("Scan"), color="darkGreen")
         layout = QVBoxLayout()
 
-        scan_frame.srcdir_wdg = LabelNLineEdit(self, **MTW["src_dir"])
+        scan_frame.srcdir_wdg = LabelNLineEdit(self, **HT['scan']["src_dir"])
         layout.addLayout(scan_frame.srcdir_wdg)
-        scan_frame.destdir_wdg = LabelNLineEdit(self, **MTW["dest_dir"])
+        scan_frame.destdir_wdg = LabelNLineEdit(self, **HT['scan']["dest_dir"])
         layout.addLayout(scan_frame.destdir_wdg)
         sub_layout = QHBoxLayout()
         scan_frame.is_use_cache = simpleCheckBox(
-            sub_layout, **MTB["is_use_cached_datas"]
+            sub_layout, **HT['scan']["is_use_cached_datas"]
         )
         layout.addLayout(sub_layout)
 
@@ -290,7 +289,7 @@ class MainTab(QWidget):
         scan_frame.collapse(True)
         main_layout.addWidget(scan_frame)
 
-        self.populateBtn = simplePushButton(main_layout, **ACTION_BUTTONS["populate"])
+        self.populateBtn = simplePushButton(main_layout, **HT['action']["populate"])
         #self.populateBtn.clicked.connect(self.populate_event)
         self.stopBtn = simpleStopButton(main_layout, self.stop)
 
@@ -319,15 +318,15 @@ class MainTab(QWidget):
         src_frame = CollapsibleFrame(_("Source"))
         layout = QVBoxLayout()
 
-        src_frame.dir_wdg = LabelNLineEdit(self, **MTW["in_dir"])
+        src_frame.dir_wdg = LabelNLineEdit(self, **HT['source']["dir"])
         src_frame.dir_wdg.recursiveBtn = simpleCheckBox(
-            src_frame.dir_wdg, **MTB["is_recursive"]
+            src_frame.dir_wdg, **HT['source']["is_recursive"]
         )
-        src_frame.ext_wdg = LabelNLineEdit(self, **MTW["extentions"])
-        src_frame.cam_wdg = LabelNLineEdit(self, **MTW["cameras"])
-        src_frame.exclude_wdg = LabelNLineEdit(self, **MTW["excluded_dirs"])
+        src_frame.ext_wdg = LabelNLineEdit(self, **HT['source']["extentions"])
+        src_frame.cam_wdg = LabelNLineEdit(self, **HT['source']["cameras"])
+        src_frame.exclude_wdg = LabelNLineEdit(self, **HT['source']["excluded_dirs"])
         src_frame.exclude_wdg.is_regex = simpleCheckBox(
-            src_frame.exclude_wdg, **MTB["is_exclude_dir_regex"]
+            src_frame.exclude_wdg, **HT['source']["is_exclude_dir_regex"]
         )
 
         layout.addLayout(src_frame.dir_wdg)
@@ -344,9 +343,9 @@ class MainTab(QWidget):
         dest_frame = CollapsibleFrame(_("Destination"), color="blue")
         layout = QVBoxLayout()
 
-        dest_frame.dir_wdg = LabelNLineEdit(self, **MTW["out_dir"])
-        dest_frame.rel_dir_wdg = LabelNLineEdit(self, **MTW["out_path_str"])
-        dest_frame.filename_wdg = LabelNLineEdit(self, **MTW["filename"])
+        dest_frame.dir_wdg = LabelNLineEdit(self, **HT['destination']["out_dir"])
+        dest_frame.rel_dir_wdg = LabelNLineEdit(self, **HT['destination']["out_path_str"])
+        dest_frame.filename_wdg = LabelNLineEdit(self, **HT['destination']["filename"])
 
         layout.addLayout(dest_frame.dir_wdg)
         layout.addLayout(dest_frame.rel_dir_wdg)
@@ -374,32 +373,32 @@ class MainTab(QWidget):
         sub_layout = QHBoxLayout()
 
         opt_frame.guess_date_from_name = LabelNLineEdit(
-            self, **MTW["guess_date_from_name"]
+            self, **HT["options"]['name']["guess_date_from_name"]
         )
         opt_frame.group_by_floating_days = LabelNLineEdit(
-            self, **MTW["group_by_floating_days"]
+            self, **HT['options']['group']["group_by_floating_days"]
         )
 
         layout.addLayout(opt_frame.guess_date_from_name)
         layout.addLayout(opt_frame.group_by_floating_days)
 
         sub_layout = QHBoxLayout()
-        opt_frame.gps = simpleCheckBox(sub_layout, **MTB["gps"])
+        opt_frame.gps = simpleCheckBox(sub_layout, **HT['gps']["gps"])
         layout.addLayout(sub_layout)
 
         sub_layout = QHBoxLayout()
 
         opt_frame.is_delete_metadatas = simpleCheckBox(
-            sub_layout, **MTB["is_delete_metadatas"]
+            sub_layout, **HT['options']['general']["is_delete_metadatas"]
         )
         layout.addLayout(sub_layout)
 
         sub_layout = QHBoxLayout()
         opt_frame.is_date_from_filesystem = simpleCheckBox(
-            sub_layout, **MTB["is_date_from_filesystem"]
+            sub_layout, **HT['options']['general']["is_date_from_filesystem"]
         )
         opt_frame.is_force_date_from_filesystem = simpleCheckBox(
-            sub_layout, **MTB["is_force_date_from_filesystem"]
+            sub_layout, **HT['options']['general']["is_force_date_from_filesystem"]
         )
         opt_frame.is_date_from_filesystem.stateChanged.connect(
             lambda e: opt_frame.is_force_date_from_filesystem.setEnabled(bool(e))
@@ -414,7 +413,7 @@ class MainTab(QWidget):
 
         self.opt_frame = opt_frame
 
-        self.previewBtn = simplePushButton(main_layout, **ACTION_BUTTONS["calculate"])
+        self.previewBtn = simplePushButton(main_layout, **HT['action']["calculate"])
         #self.previewBtn.clicked.connect(self.preview_event)
         self.stopBtn1 = simpleStopButton(main_layout, self.stop)
 
@@ -440,7 +439,7 @@ class MainTab(QWidget):
 
         self.exec_frame = exec_frame
 
-        self.executeBtn = simplePushButton(main_layout, **ACTION_BUTTONS["execute"])
+        self.executeBtn = simplePushButton(main_layout, **HT['action']["execute"])
         #self.executeBtn.clicked.connect(self.execute_event)
         self.stopBtn2 = simpleStopButton(main_layout, self.stop)
 
@@ -528,7 +527,7 @@ class LabelNLineEdit(QHBoxLayout):
         if checkbox:
             self.add_checkbox()
 
-        if isinstance(label, tuple):
+        if isinstance(label, list):
             self.add_labelbox(label)
         else:
             label_wdg = QLabel(label)
@@ -687,7 +686,7 @@ class DuplicateWdg(QHBoxLayout):
         super().__init__()
 
         self.duplicateBtn = simpleCheckBox(
-            self, **DUP_RADIO_BUTTONS["duplicate"]
+            self, **HT['duplicates']["is_duplicate"]
         )  # QCheckBox('Dupliqués : ')
 
         self.duplicateBtn.stateChanged.connect(self.set_dup_toggle)
@@ -695,13 +694,13 @@ class DuplicateWdg(QHBoxLayout):
         self.dup_grp = QButtonGroup(parent)
         mode_Btns = {}
         mode_Btns[DUP_MD5_FILE] = MyRadioButton(
-            parent, **DUP_RADIO_BUTTONS["file"]
+            parent, **HT['duplicates']["file"]
         )  # QRadioButton(_('Fichier'), parent)
         mode_Btns[DUP_MD5_DATA] = MyRadioButton(
-            parent, **DUP_RADIO_BUTTONS["data"]
+            parent, **HT['duplicates']["data"]
         )  # QRadioButton(_('Données'), parent)
         mode_Btns[DUP_DATETIME] = MyRadioButton(
-            parent, **DUP_RADIO_BUTTONS["date"]
+            parent, **HT['duplicates']["date"]
         )  # QRadioButton(_('Date'), parent)
 
         self.dup_grp.addButton(mode_Btns[DUP_MD5_FILE], DUP_MD5_FILE)
@@ -711,7 +710,7 @@ class DuplicateWdg(QHBoxLayout):
         self.addWidget(mode_Btns[DUP_MD5_FILE])
         self.addWidget(mode_Btns[DUP_MD5_DATA])
         self.addWidget(mode_Btns[DUP_DATETIME])
-        self.scandestBtn = simpleCheckBox(self, **MTB["is_scan_dest"])
+        self.scandestBtn = simpleCheckBox(self, **HT['duplicates']["is_scan_dest"])
 
         self.duplicateBtn.stateChanged.emit(False)
 

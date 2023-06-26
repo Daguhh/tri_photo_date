@@ -30,9 +30,9 @@ from tri_photo_date.explore_db import (
 # Load and init ui
 from  tri_photo_date.gui import main_window_ui
 main_window_ui.set_global_config(
-    CFG['interface.lang'],
-    CFG['interface.size'],
-    CFG['interface.mode']
+    CFG['interface']['lang'],
+    CFG['interface']['size'],
+    CFG['interface']['mode']
 )
 from tri_photo_date.gui.main_window_ui import MainWindow_ui, LoopCallBack
 
@@ -103,7 +103,7 @@ class MainWindow(MainWindow_ui):
 
     def connect_wdgs_2_config(self):
         for prop, wdg in self.wdgs.items():
-            callback = lambda x, prop=prop: CFG.__setitem__(prop, x)
+            callback = lambda x, prop=prop: CFG.set_from_pyqt(prop, x)
             if isinstance(wdg, QLineEdit):
                 wdg.textChanged.connect(callback)
             elif isinstance(wdg, QCheckBox):
@@ -128,18 +128,18 @@ class MainWindow(MainWindow_ui):
     def load_conf(self, wdgs):
         for prop, wdg in wdgs.items():
             if isinstance(wdg, QLineEdit):
-                wdg.setText(CFG.get_repr(prop))
+                wdg.setText(CFG.get_to_pyqt(prop))
             elif isinstance(wdg, QCheckBox):
-                wdg.setCheckState(CFG.get_repr(prop))
+                wdg.setCheckState(CFG.get_to_pyqt(prop))
             elif isinstance(wdg, QSpinBox):
-                wdg.setValue(CFG.get_repr(prop))
+                wdg.setValue(CFG.get_to_pyqt(prop))
             elif isinstance(wdg, QComboBox):
-                wdg.setCurrentIndex(CFG.get_repr(prop))
+                wdg.setCurrentIndex(CFG.get_to_pyqt(prop))
             elif isinstance(wdg, QButtonGroup):
-                wdg.button(CFG.get_repr(prop)).setChecked(True)
+                wdg.button(CFG.get_to_pyqt(prop)).setChecked(True)
             elif isinstance(wdg, QActionGroup):
                 for act in wdg.actions():
-                    if act.data() == CFG.get_repr(prop):
+                    if act.data() == CFG.get_to_pyqt(prop):
                         act.setChecked(True)
 
     def act_populate(self):
@@ -183,12 +183,12 @@ class MainWindow(MainWindow_ui):
         if res == QDialog.Accepted:
             val = popup.get_values()
 
-            CFG["files.is_max_hash_size"] = val["max_hash"][0]
-            CFG["files.max_hash_size"] = val["max_hash"][1]
-            CFG["files.is_min_size"] = val["min_size"][0]
-            CFG["files.min_size"] = val["min_size"][1]
-            CFG["files.is_max_size"] = val["max_size"][0]
-            CFG["files.max_size"] = val["max_size"][1]
+            CFG.set_from_pyqt("files.is_max_hash_size", val["max_hash"][0])
+            CFG.set_from_pyqt("files.max_hash_size", val["max_hash"][1])
+            CFG.set_from_pyqt("files.is_min_size", val["min_size"][0])
+            CFG.set_from_pyqt("files.min_size", val["min_size"][1])
+            CFG.set_from_pyqt("files.is_max_size", val["max_size"][0])
+            CFG.set_from_pyqt("files.max_size", val["max_size"][1])
 
     def act_run_gps(self):
         logging.info("Starting processing files...")
@@ -212,23 +212,23 @@ class MainWindow(MainWindow_ui):
 
     def set_camera_list(self):
         cameras = list_available_camera_model(
-            CFG["source.dir"],
-            CFG["source.extentions"],
-            recursive=CFG["source.is_recursive"],
+            CFG["source"]["dir"],
+            CFG["source"]["extentions"],
+            recursive=CFG["source"]["is_recursive"],
         )
         self.tool_panel.cam.set_camera_list(cameras)
 
     def set_tag_list(self):
         tags_list = list_available_tags(
-            CFG["source.dir"],
-            CFG["source.extentions"],
-            recursive=CFG["source.is_recursive"],
+            CFG["source"]["dir"],
+            CFG["source"]["extentions"],
+            recursive=CFG["source"]["is_recursive"],
         )
         self.tool_panel.meta.set_tag_list(tags_list)
 
     def set_ext_list(self):
         exts = list_available_exts(
-            CFG["source.dir"], recursive=CFG["source.is_recursive"]
+            CFG["source"]["dir"], recursive=CFG["source"]["is_recursive"]
         )
         self.tool_panel.exts.set_ext_list(exts)
 

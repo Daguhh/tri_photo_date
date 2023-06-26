@@ -59,7 +59,7 @@ if [[ "${BUILD_BIN}" == true ]]; then
         --add-data "resources/strftime_help.html:." \
         --add-data "resources/en/*:./resources/en/" \
         --add-data "resources/fr/*:./resources/fr/" \
-        --add-data "tri_photo_date/config/*:./config/" \
+        --add-data "tri_photo_date/config/default_config.toml:./config/" \
         --add-data "README.md:." \
         --add-data "LICENSE:." \
         --add-data "tri_photo_date/locales/fr/LC_MESSAGES/base.mo:./locales/fr/LC_MESSAGES/" \
