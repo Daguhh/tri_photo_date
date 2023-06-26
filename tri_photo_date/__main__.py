@@ -29,9 +29,10 @@ def run_gui():
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("cli", action="store_true", help="run cli")
+    parser.add_argument("--cli", action="store_true", help="run cli")
     args, unknown = parser.parse_known_args()
 
+    print(args)
     if args.cli:
         run_cli()
 
