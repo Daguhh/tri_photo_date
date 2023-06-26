@@ -9,7 +9,7 @@ from logging.handlers import RotatingFileHandler
 from tri_photo_date.config.config_paths import CONFIG_DIR
 
 ##### Set log file #####
-print("log file : ", str(CONFIG_DIR / "tri_photo_date.log"))
+#print("log file : ", str(CONFIG_DIR / "tri_photo_date.log"))
 handler = RotatingFileHandler(
     str(CONFIG_DIR / "tri_photo_date.log"), maxBytes=100000, backupCount=1
 )
@@ -44,8 +44,8 @@ def run_gui():
 def main():
     parser = argparse.ArgumentParser(add_help=False)
 
-    parser.add_argument("--cli", action="store_true", help="run cli")
-    parser.add_argument("--gui", action="store_true", help="run gui")
+    parser.add_argument("cli", action="store_true", help="run cli")
+    #parser.add_argument("--gui", action="store_true", help="run gui")
 
     args, unknown = parser.parse_known_args()
 

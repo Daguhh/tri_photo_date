@@ -82,7 +82,6 @@ def get_config_comments():
     return dct
 
 CONFIG_COMMENTS = get_config_comments()
-print(CONFIG_COMMENTS)
 
 
 table_color = lambda xs : (c + x + W for c, x in zip([R,G,B], xs))
@@ -190,9 +189,9 @@ class TriphotoShell(cmd.Cmd):
 
         line_elt=line.split()
         if len(line_elt) == 1 or (len(line_elt) == 2 and text):
-            sections = [s.lower() for s in self.dct.config.sections()]
+            sections = [s for s in self.dct.keys()]
         else: #len(line_elt) == 2 and not text:
-            sections = [k for k,_ in self.dct.config.items(line_elt[1].upper())]
+            sections = [k for k in self.dct[line_elt[1]].keys()]
         if not text:
             return sections
         else:
@@ -202,9 +201,9 @@ class TriphotoShell(cmd.Cmd):
 
         line_elt=line.split()
         if len(line_elt) == 1 or (len(line_elt) == 2 and text):
-            sections = [s.lower() for s in self.dct.config.sections()]
+            sections = [s for s in self.dct.keys()]
         else: #len(line_elt) == 2 and not text:
-            sections = [k for k,_ in self.dct.config.items(line_elt[1].upper())]
+            sections = [k for k in self.dct[line_elt[1]].keys()]
         if not text:
             return sections
         else:
@@ -219,7 +218,6 @@ class TriphotoShell(cmd.Cmd):
         return True
 
 def cli_run():
-    print("run cli")
     #sort_photos.populate_db()
     #sort_photos.compute()
     #sort_photos.execute()
