@@ -82,7 +82,7 @@ else:
         def update(self, v, text="", text2=""):
             self.setValue(int(100 * v / self._progbar_nb_val))
             QApplication.processEvents()  # keep the GUI responsive
-            self.text_label.setText(limited_string(text, limit=40), '-', text2)
+            self.text_label.setText(' '.join((limited_string(text, limit=40), '-', text2)))
 
         def move_to_layout(self, new_layout):
 

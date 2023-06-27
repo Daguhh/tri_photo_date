@@ -196,7 +196,7 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
             for tag_key in PLACEHOLDER_REGEX.findall(out_str):
                 if tag_key == "group":
                     continue  # skip group, done separatly in another loop
-                tag_value = metadatas.get(tag_key, "")
+                tag_value = metadatas.get(tag_key, "").strip() # remove trailling spaces
 
                 out_str = ExifTags.format_tag(out_str, tag_key, tag_value)
 

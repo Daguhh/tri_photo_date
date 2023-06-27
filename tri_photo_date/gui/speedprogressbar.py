@@ -77,7 +77,7 @@ class SpeedProgressBar(pg.PlotWidget):
         self.timer.start(100)  # 50ms
 
         # Start to mesure time
-        self.tic = 1/3600 # init in s #time.time()
+        self.tic = time.time_ns() - 6*1000*1000*1000 # remove 1 sec # init in s #time.time()
 
         # Store bargraph values
         self.new_ys = self.bargraph.opts['height']
@@ -108,8 +108,8 @@ class SpeedProgressBar(pg.PlotWidget):
             return
 
         # get last elapsed time
-        toc = time.time() - self.tic
-        self.tic = time.time()
+        toc = time.time_ns() - self.tic + 1000 # add 1 micro second (if loop time is under computer precision)
+        self.tic = time.time_ns()
 
         # (let's say we loop over 1 Go (max_value) of files, and all are 1Ko
         # except 1 that is 500Mo (progress_value),
