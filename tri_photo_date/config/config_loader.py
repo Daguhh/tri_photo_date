@@ -128,10 +128,10 @@ class ConfigDict(dict):
         s,p = k.rsplit('.', 1)
         return value2pyqt(p, self[s][p])
 
-    def set_from_shell(self, k):
+    def set_from_shell(self, k, v):
 
         s,p = k.rsplit('.', 1)
-        return shell2value(p, self[s][p])
+        self[s][p] = shell2value(p, v)
 
     def get_to_shell(self, k):
 

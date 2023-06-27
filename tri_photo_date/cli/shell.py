@@ -2,11 +2,12 @@ import cmd
 import sys
 import os
 import signal
-from itertools import islice, chain
+from itertools import islice, chain, cycle
 
 from tri_photo_date import sort_photos
 from tri_photo_date.sort_photos import CFG
 from tri_photo_date.cli.progressbar import cli_progbar
+from tri_photo_date.config.config_loader import value2shell
 
 from tri_photo_date.config.config_paths import IMAGE_DATABASE_PATH
 from tri_photo_date.utils.constants import FILE_SIMULATE, FILE_MOVE, FILE_COPY
@@ -104,6 +105,7 @@ CONFIG_COMMENTS = get_config_comments()
 
 
 table_color = lambda xs : (c + x + W for c, x in zip([R,G,B], xs))
+
 def type_color(t):
     if t == "int":
         return B
@@ -116,14 +118,19 @@ def type_color(t):
     else:
         return W
 
-def pprint(dct, section=""):
+def pprint(dct, sections=[]):
     for k,v in dct.items():
-        k = '.'.join((section,k)) if section else k
-        print('.'.join(x+y for x,y in zip((B,BB),k.rsplit('.',1))), ':', W)
-        print('description :', CONFIG_COMMENTS[k]['comment'])
-        print('type :', O+ CONFIG_COMMENTS[k]['type']+W)
-        print('value :', type_color(CONFIG_COMMENTS[k]['type'])+str(v)+W)
-        print()
+        k = sections + [k]
+        if isinstance(v, dict):
+            pprint(v, k)
+        else:
+            v = value2shell(k[-1], v)
+            print('.'.join(x+y for x,y in zip((B,BB),k)), ':', W)
+            k2 = '.'.join(k)
+            print('description :', CONFIG_COMMENTS[k2]['comment'])
+            print('type :', O+ CONFIG_COMMENTS[k2]['type']+W)
+            print('value :', type_color(CONFIG_COMMENTS[k2]['type'])+str(v)+W)
+            print()
 
 class TriphotoShell(cmd.Cmd):
     intro = f'''
@@ -134,6 +141,7 @@ class TriphotoShell(cmd.Cmd):
        - {R}process{W}
        - {R}execute{W}
 
+    Or simply run {R}interactve{W} mode.
     see README for more explanations. Type help or ? to list commands.
     '''
     prompt = B + 'triphoto > ' + W
@@ -142,63 +150,62 @@ class TriphotoShell(cmd.Cmd):
     def do_interactive(self, arg):
         "Run all program interactively"
 
-        is_validate = False
-        while not (is_validate in TRUE):
-            sections = ['files', 'scan']
-            for section in sections:
-                print(f'\n{G}==== {section} ===={W}')
-                for param in self.dct[section].keys():
-                    print('----------------')
-                    self.do_get(f"{section} {param}")
-                    value = input("Set new value :")
+        sectionss = [
+            (
+                "scan",
+                ['files', 'scan'],
+                (self.do_scan,)
+            ),
+            (
+                "process",
+                ['source', 'destination', 'duplicates', 'options.general', 'options.gps', 'options.group', 'options.name'],
+                (self.do_process, self.do_preview)
+            ),
+            (
+                "execute",
+                ['action'],
+                (self.do_execute,)
+            )
+        ]
 
-            print('----------------\nSummary:')
-            for section in sections:
-                for param, value in self.dct['scan'].items():
-                    print(f"{section}.{param} = {value}")
-            is_validate = input("Validate config [Y/n]").lower()
-            is_validate = is_validate if is_validate else 'y'
+        for step_name, sections, cmds in sectionss:
 
-        # self.do_scan('')
+            print(f'Start {B}TriPhotoDate{W} interactive mode.\nJust follow steps to sort your photos')
 
-        is_validate = False
-        while not (is_validate in TRUE):
-            sections = ['source', 'destination', 'duplicates', 'options.general', 'options.gps', 'options.group', 'options.name']
-            for section in sections:
-                print(f'\n{G}==== {section} ===={W}')
-                for param in self.dct[section].keys():
-                    print('----------------')
-                    self.do_get(f"{section} {param}")
-                    value = input("Set new value :")
+            print(f"\n{BB}================  {step_name}  ========================={W}")
+            is_validate = False
 
-            print('----------------\nSummary:')
-            for section in sections:
-                for param, value in self.dct[section].items():
-                    print(f"{section}.{param} = {value}")
-            is_validate = input("Validate config [Y/n]").lower()
-            is_validate = is_validate if is_validate else 'y'
+            BBB_color = cycle((BB,B))
+            while True:
 
-        # self.do_process('')
-        # self.do_preview('')
+                print('\nSummary:\n-------')
+                for section in sections:
+                    sec_color = next(BBB_color)
+                    for param, value in self.dct[section].items():
+                        value = value2shell(param, value)
+                        color = type_color(CONFIG_COMMENTS[f"{section}.{param}"]['type'])
+                        print(f"{section}.{sec_color}{param}{W} = {color}{value}{W}")
+                print()
+                is_validate = input("Validate config [y/n]").lower()
+                #is_validate = is_validate if is_validate else 'y'
+                if is_validate in TRUE:
+                    break
+                elif is_validate in FALSE:
+                    pass
+                else:
+                    continue
 
-        is_validate = False
-        while not (is_validate in TRUE):
-            sections = ['action']
-            for section in sections:
-                print(f'\n{G}==== {section} ===={W}')
-                for param in self.dct[section].keys():
-                    print('----------------')
-                    self.do_get(f"{section} {param}")
-                    value = input("Set new value :")
+                for section in sections:
+                    print(f'\n{G}==== {section} ===={W}')
+                    for param in self.dct[section].keys():
+                        print('----------------')
+                        self.do_get(f"{section} {param}")
+                        value = input("Set new value :")
+                        if value:
+                            self.dct.set_from_shell(f"{section}.{param}", value)
 
-            print('----------------\nSummary:')
-            for section in sections:
-                for param, value in self.dct[section].items():
-                    print(f"{section}.{param} = {value}")
-            is_validate = input("Validate config [Y/n]").lower()
-            is_validate = is_validate if is_validate else 'y'
-
-        # self.do_execute('')
+            for cmd in cmds:
+                cmd('')
 
     def do_get(self, arg):
         "Get a parameter value"
@@ -207,11 +214,11 @@ class TriphotoShell(cmd.Cmd):
             section, *param = arg.split()
             if param:
                 param = param[0]
-                pprint({param:self.dct.get_to_shell(f"{section}.{param}")}, section)
+                pprint({param:self.dct[section][param]}, [section])
             else:
-                pprint(self.dct[section], section)
+                pprint(self.dct[section], [section])
         else:
-            pprint(flatten_dct(self.dct))
+            pprint(self.dct)
 
     def do_set(self, arg):
         "Set a paramter to given value"
@@ -311,11 +318,13 @@ class TriphotoShell(cmd.Cmd):
             return [s + ' ' for s in sections if s.startswith(text)]
 
     def do_q(self, arg):
-        "exit"
+        "save & exit"
+        self.dct.save_config()
         return True
 
     def do_exit(self, arg):
-        "exit"
+        "save & exit"
+        self.dct.save_config()
         return True
 
     def emptyline(self):
@@ -324,9 +333,10 @@ class TriphotoShell(cmd.Cmd):
 def shell_run(args):
     shell = TriphotoShell()
 
-    print('=========================================')
-    print('========= Not working yet ===============')
-    print('=========================================')
+    print(f'\n{R}========================================')
+    print('========= Should be functional  ========')
+    print('====== but still work in progress ======')
+    print(f'========================================\n{W}')
 
     if args:
         shell.onecmd(' '.join(args))
