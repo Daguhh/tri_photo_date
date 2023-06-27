@@ -59,6 +59,35 @@ def value2pyqt(k, v):  # for pyqt
 
     return v
 
+TRUE = ['1', 'y','yes', 'true', True]
+FALSE = ['0', 'n', 'no', 'false', False]
+# STRING, LIST, PATH, BOOLEAN, INTEGER, FLOAT
+def shell2value(k, v):  # for pyqt
+
+    if k in BOOLEAN:
+        v = 2 * int(v.lower() in TRUE)
+    elif k in LIST:
+        v = tuple(c.strip() for c in v.split(","))
+    elif k in FLOAT:
+        v = float(v)
+    elif k in INTEGER:
+        v = int(v)
+
+    return v
+
+def value2shell(k, v):  # for pyqt
+
+    if k in BOOLEAN:
+        v = "true" if v else 'false'
+    elif k in LIST:
+        v = ", ".join(v)  # tuple(c.strip() for c in v.split(","))
+    elif k in FLOAT:
+        v = str(v)
+    elif k in INTEGER:
+        v = str(v)
+
+    return v
+
 class NoConfigFileError(Exception):
     def __str__(self):
         print(
@@ -98,6 +127,16 @@ class ConfigDict(dict):
 
         s,p = k.rsplit('.', 1)
         return value2pyqt(p, self[s][p])
+
+    def set_from_shell(self, k):
+
+        s,p = k.rsplit('.', 1)
+        return shell2value(p, self[s][p])
+
+    def get_to_shell(self, k):
+
+        s,p = k.rsplit('.', 1)
+        return value2shell(p, self[s][p])
 
     def load_config(self, config_file):
 

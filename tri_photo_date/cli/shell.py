@@ -2,7 +2,7 @@ import cmd
 import sys
 import os
 import signal
-from itertools import islice
+from itertools import islice, chain
 
 from tri_photo_date import sort_photos
 from tri_photo_date.sort_photos import CFG
@@ -122,7 +122,7 @@ def pprint(dct, section=""):
         print('.'.join(x+y for x,y in zip((B,BB),k.rsplit('.',1))), ':', W)
         print('description :', CONFIG_COMMENTS[k]['comment'])
         print('type :', O+ CONFIG_COMMENTS[k]['type']+W)
-        print('value :', type_color(CONFIG_COMMENTS[k]['type'])+str(v).strip('()').replace("'",'').strip(',')+W)
+        print('value :', type_color(CONFIG_COMMENTS[k]['type'])+str(v)+W)
         print()
 
 class TriphotoShell(cmd.Cmd):
@@ -139,6 +139,67 @@ class TriphotoShell(cmd.Cmd):
     prompt = B + 'triphoto > ' + W
     dct = CFG
 
+    def do_interactive(self, arg):
+        "Run all program interactively"
+
+        is_validate = False
+        while not (is_validate in TRUE):
+            sections = ['files', 'scan']
+            for section in sections:
+                print(f'\n{G}==== {section} ===={W}')
+                for param in self.dct[section].keys():
+                    print('----------------')
+                    self.do_get(f"{section} {param}")
+                    value = input("Set new value :")
+
+            print('----------------\nSummary:')
+            for section in sections:
+                for param, value in self.dct['scan'].items():
+                    print(f"{section}.{param} = {value}")
+            is_validate = input("Validate config [Y/n]").lower()
+            is_validate = is_validate if is_validate else 'y'
+
+        # self.do_scan('')
+
+        is_validate = False
+        while not (is_validate in TRUE):
+            sections = ['source', 'destination', 'duplicates', 'options.general', 'options.gps', 'options.group', 'options.name']
+            for section in sections:
+                print(f'\n{G}==== {section} ===={W}')
+                for param in self.dct[section].keys():
+                    print('----------------')
+                    self.do_get(f"{section} {param}")
+                    value = input("Set new value :")
+
+            print('----------------\nSummary:')
+            for section in sections:
+                for param, value in self.dct[section].items():
+                    print(f"{section}.{param} = {value}")
+            is_validate = input("Validate config [Y/n]").lower()
+            is_validate = is_validate if is_validate else 'y'
+
+        # self.do_process('')
+        # self.do_preview('')
+
+        is_validate = False
+        while not (is_validate in TRUE):
+            sections = ['action']
+            for section in sections:
+                print(f'\n{G}==== {section} ===={W}')
+                for param in self.dct[section].keys():
+                    print('----------------')
+                    self.do_get(f"{section} {param}")
+                    value = input("Set new value :")
+
+            print('----------------\nSummary:')
+            for section in sections:
+                for param, value in self.dct[section].items():
+                    print(f"{section}.{param} = {value}")
+            is_validate = input("Validate config [Y/n]").lower()
+            is_validate = is_validate if is_validate else 'y'
+
+        # self.do_execute('')
+
     def do_get(self, arg):
         "Get a parameter value"
 
@@ -146,7 +207,7 @@ class TriphotoShell(cmd.Cmd):
             section, *param = arg.split()
             if param:
                 param = param[0]
-                pprint({param:self.dct[section][param]}, section)
+                pprint({param:self.dct.get_to_shell(f"{section}.{param}")}, section)
             else:
                 pprint(self.dct[section], section)
         else:
@@ -263,6 +324,10 @@ class TriphotoShell(cmd.Cmd):
 def shell_run(args):
     shell = TriphotoShell()
 
+    print('=========================================')
+    print('========= Not working yet ===============')
+    print('=========================================')
+
     if args:
         shell.onecmd(' '.join(args))
     else:
@@ -283,39 +348,3 @@ def ask_config():
 
     print(CFG)
 
-    #CFG = {}
-    #CFG["scan.src_dir"]
-    #CFG["scan.dest_dir"]
-    #CFG["scan.is_use_cached_datas"]
-
-    #CFG["source.dir"]
-    #CFG["source.extentions"]
-    #CFG["source.cameras"]
-    #CFG["source.is_recursive"]
-    #CFG["source.excluded_dirs"]
-    #CFG["source.exclude_toggle"]
-    #CFG["source.is_exclude_dir_regex"]
-
-    #CFG["destination.dir"]
-    #CFG["destination.rel_dir"]
-    #CFG["destination.filename"]
-
-    #CFG["duplicates.is_control"]
-    #CFG["duplicates.mode"]
-    #CFG["duplicates.is_scan_dest"]
-
-    #CFG["options.name.guess_fmt"]
-    #CFG["options.name.is_guess"]
-    #CFG["options.group.is_group"]
-    #CFG["options.group.display_fmt"]
-    #CFG["options.group.floating_nb"]
-    #CFG["options.gps.is_gps"]
-    #CFG["options.general.is_delete_metadatas"]
-    #CFG["options.general.is_date_from_filesystem"]
-    #CFG["options.general.is_force_date_from_filesystem"]
-
-    #CFG["action.action_mode"]
-
-    #CFG["interface.mode"]
-    #CFG["interface.lang"]
-    #CFG["interface.size"]
