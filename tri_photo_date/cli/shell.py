@@ -260,15 +260,11 @@ class TriphotoShell(cmd.Cmd):
     def emptyline(self):
         pass
 
-def cli_run():
-    #sort_photos.populate_db()
-    #sort_photos.compute()
-    #sort_photos.execute()
-   # ask_config()
+def shell_run(args):
     shell = TriphotoShell()
 
-    if len(sys.argv) > 2:
-        shell.onecmd(' '.join(sys.argv[2:]))
+    if args:
+        shell.onecmd(' '.join(args))
     else:
         shell.cmdloop()
 

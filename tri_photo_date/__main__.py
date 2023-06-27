@@ -7,6 +7,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 from tri_photo_date.config.config_paths import CONFIG_DIR
+from tri_photo_date.cli.cli_argparser import parse_arguments
 
 ##### Set log file #####
 #handler = RotatingFileHandler(str(CONFIG_DIR / "tri_photo_date.log"), maxBytes=100000, backupCount=1)
@@ -14,10 +15,10 @@ handler = RotatingFileHandler("/home/david/Prog/tri_photo_date/tri_photo_date.lo
 handler.setLevel(logging.INFO)
 logging.basicConfig(level=logging.INFO, handlers=[handler])
 
-def run_cli():
+def run_shell(args):
     logging.info("Running cli")
-    from tri_photo_date.cli.cli import cli_run
-    cli_run()
+    from tri_photo_date.cli.shell import shell_run
+    shell_run(args)
 
 def run_gui():
     logging.info("Running gui")
@@ -31,15 +32,12 @@ def run_gui():
 
 def main():
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--cli", action="store_true", help="run cli")
-    args, unknown = parser.parse_known_args()
+    args, unknown = parse_arguments()
 
-    if args.cli:
-        run_cli()
-
-    else:
+    if args.mode == 'gui' :
         run_gui()
+    elif args.mode == 'shell':
+        run_shell(unknown)
 
 if __name__ == "__main__":
     main()

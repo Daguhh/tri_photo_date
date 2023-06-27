@@ -17,25 +17,21 @@ class StorePath(argparse.Action):
             setattr(namespace, self.dest, values)
 
 
-def cli_arguments():
+def parse_arguments():
     """Parse command line arguments"""
 
     parser = argparse.ArgumentParser(
         prog="tri_photo_date", description="""Sort image using metadata placeholder """
     )
 
-    parser.add_argument(
-        "--cli",
-        help="run in cli",
-        action="store_true",
-    )
+    parser.add_argument('mode', nargs='?', default='gui',help='shell/gui, chose interface to run, gui will be run by default')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "-d",
         "--dump",
         help="save actual config to path and exit",
-        const="./tri_photo_date.ini",
+        const="./tri_photo_date.toml",
         nargs="?",
         action=StorePath,
         dest="dump",
@@ -47,7 +43,7 @@ def cli_arguments():
         nargs="?",
         action=StorePath,
         dest="dump_default",
-        const="./tri_photo_date.ini",
+        const="./tri_photo_date.toml",
     )
     group.add_argument(
         "-l",
@@ -56,10 +52,14 @@ def cli_arguments():
         nargs="?",
         action=StorePath,
         dest="load",
-        const="./tri_photo_date.ini",
+        const="./tri_photo_date.toml",
     )
 
-    args, unknown = parser.parse_known_args()
+    return parser.parse_known_args()
+
+def cli_arguments():
+
+    args, *_ = parse_arguments()
 
     if args.dump is not None:
         return CLI_DUMP, Path(args.dump).resolve()
