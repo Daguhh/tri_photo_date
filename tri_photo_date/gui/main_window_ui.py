@@ -595,6 +595,7 @@ class LabelNLineEdit(QHBoxLayout):
 
     def add_combobox(self, tooltip, placeholder, options):
         combo = QComboBox()
+        combo.setToolTip(tooltip)
         self.addWidget(combo)
         self.combo = combo
 
