@@ -70,26 +70,33 @@ Use tooltip to get hints on [parameters](tri_photo_date/config/default_config.in
 ### cli / shell
 
 ```bash
-poetry run tri_photo_date --cli
+poetry run tri_photo_date --help
 ```
 ```
-    Welcome to the TriPhotoDate shell.
-    use set and get to interact with configuration, run in order :
+usage: tri_photo_date [-h] [-d [DUMP] | -D [DUMP_DEFAULT] | -l [LOAD]] [mode]
 
-       - scan
-       - process
-       - execute
+Sort image using metadata placeholder
 
-    see README for more explanations. Type help or ? to list commands.
+positional arguments:
+  mode                  shell/gui, chose interface to run, gui will be run by default
 
-triphoto >
+options:
+  -h, --help            show this help message and exit
+  -d [DUMP], --dump [DUMP]
+                        save actual config to path and exit
+  -D [DUMP_DEFAULT], --dump-default [DUMP_DEFAULT]
+                        save default config to path and exit
+  -l [LOAD], --load [LOAD]
+                        run the program with given config
 ```
+
+Also, you can directly run shell commands from command line:
 ```bash
-poetry run tri_photo_date --cli set section param value
-poetry run tri_photo_date --cli scan
-poetry run tri_photo_date --cli process
-poetry run tri_photo_date --cli preview
-poetry run tri_photo_date --cli execute
+poetry run tri_photo_date shell set <section> <param> <value>
+poetry run tri_photo_date shell scan
+poetry run tri_photo_date shell process
+poetry run tri_photo_date shell preview
+poetry run tri_photo_date shell execute
 ```
 
 ### Simplified mode
