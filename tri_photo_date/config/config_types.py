@@ -38,6 +38,7 @@ BOOLEAN = (
     "is_group",
     "is_guess",
     "is_gps",
+    "is_speedbar",
     "debug",
     "simulate",
     "verbose",

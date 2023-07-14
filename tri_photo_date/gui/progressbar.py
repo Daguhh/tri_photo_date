@@ -4,6 +4,8 @@ import time
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QApplication, QProgressBar
 
 from tri_photo_date.utils.small_tools import limited_string
+from tri_photo_date.config.config_loader import CONFIG
+IS_SPEEDBAR = CONFIG['interface']['is_speedbar']
 
 PROG_SPEED_BAR = 0
 PROG_NORMAL = 1
@@ -15,7 +17,7 @@ try:
 except ModuleNotFoundError:
     progress_bar_mode = PROG_NORMAL
 
-if progress_bar_mode == PROG_SPEED_BAR:
+if progress_bar_mode == PROG_SPEED_BAR and IS_SPEEDBAR:
 
     class MyProgressBar(SpeedProgressBar):
 
