@@ -116,7 +116,7 @@ mode = 1 # int
 # Set interface language en / fr
 lang = "en" # string
 # enable a progress bar that show process speed on y-axis
-is_speedbar = false
+is_speedbar = false # boolean
 
 [misc]
 # Not working yet
