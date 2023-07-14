@@ -43,6 +43,8 @@ dir = "" # string
 extentions = ["jpg","png","jpeg"] # list of strings
 # filter by cameras, cameras models deparated by commas (check Exif.ImageModel to find a camera name)
 cameras = [] # list of strings
+# toggle camera exclude (0) / include (1)
+exclude_camera_toggle = 1 # int
 # process also <dir> subdirectories
 is_recursive = true # bool
 # filter by excluding or including folder or using regex, relative folder to <dir> or regex, use commas to separate elments in case of multiples values

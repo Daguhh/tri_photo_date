@@ -63,6 +63,7 @@ class MainWindow(MainWindow_ui):
         wdgs["source.dir"] = self.conf_panel.src_frame.dir_wdg.textBox
         wdgs["source.extentions"] = self.conf_panel.src_frame.ext_wdg.textBox
         wdgs["source.cameras"] = self.conf_panel.src_frame.cam_wdg.textBox
+        wdgs["source.exclude_camera_toggle"] = self.conf_panel.src_frame.cam_wdg.labelbox
         wdgs["source.is_recursive"] = self.conf_panel.src_frame.dir_wdg.recursiveBtn
         wdgs["source.excluded_dirs"] = self.conf_panel.src_frame.exclude_wdg.textBox
         wdgs["source.exclude_toggle"] = self.conf_panel.src_frame.exclude_wdg.labelbox

@@ -7,7 +7,7 @@ from itertools import islice, chain, cycle
 from tri_photo_date import sort_photos
 from tri_photo_date.sort_photos import CFG
 from tri_photo_date.cli.progressbar import cli_progbar
-from tri_photo_date.config.config_loader import value2shell
+from tri_photo_date.config.config_loader import value2shell, shell2value
 
 from tri_photo_date.config.config_paths import IMAGE_DATABASE_PATH
 from tri_photo_date.utils.constants import FILE_SIMULATE, FILE_MOVE, FILE_COPY
@@ -224,8 +224,8 @@ class TriphotoShell(cmd.Cmd):
         "Set a paramter to given value"
 
         section, param, *value = arg.split()
-        value = ' '.join(value)
-        self.dct[(section.lower(),param)] = value
+        #value = ' '.join(value)
+        self.dct.set_from_shell(f"{section.lower()}.{param}", value)
 
     def do_scan(self, arg):
         "Scan source and dest folder for files"

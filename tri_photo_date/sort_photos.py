@@ -128,6 +128,10 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
         "is_regex": bool(CFG["source"]["is_exclude_dir_regex"]),
         "toggle": CFG["source"]["exclude_toggle"],
     }
+    exclude_cameras = {
+        "cams" : CFG['source']["cameras"],
+        "toggle" : CFG['source']['exclude_camera_toggle']
+    }
 
     is_control_hash = CFG["duplicates"]["is_control"]
     control_dest_duplicates = CFG["duplicates"]["is_scan_dest"]
@@ -139,7 +143,7 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
     list_files_params = {
         "dir": Path(CFG["source"]["dir"]),
         "extentions": CFG["source"]["extentions"],
-        "cameras": CFG["source"]["cameras"],
+        "exclude_cameras": exclude_cameras,#CFG["source"]["cameras"],
         "recursive": CFG["source"]["is_recursive"],
         "dup_mode": dup_mode,
         "exclude": exclude,

@@ -64,14 +64,15 @@ FALSE = ['0', 'n', 'no', 'false', False]
 # STRING, LIST, PATH, BOOLEAN, INTEGER, FLOAT
 def shell2value(k, v):  # for pyqt
 
+    v = ' '.join(v)
     if k in BOOLEAN:
-        v = 2 * int(v.lower() in TRUE)
+        v = 2 * int(v.strip().lower() in TRUE)
     elif k in LIST:
         v = tuple(c.strip() for c in v.split(","))
     elif k in FLOAT:
-        v = float(v)
+        v = float(v.strip())
     elif k in INTEGER:
-        v = int(v)
+        v = int(v.strip())
 
     return v
 

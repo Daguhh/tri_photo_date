@@ -128,7 +128,10 @@ HUMAN_TEXT = {
             ]
         },
         "cameras": {
-            "label": _("Appareils photo"),
+            "label": [
+                _("Exclure les appareils"),
+                _("Inclure les appareils")
+            ],
             "tooltip": _("Liste des appareils photos s\u00e9par\u00e9s par des virgules\nNe copie que les photos prises par ces appareils\n\nSi le champs est laiss\u00e9 vide, le param\u00e8tre est ignor\u00e9\n\n  1. Definissez les dossiers \u00e0 analyser\n  2. Scannez : bouton '1. Scanner'\n  3. Selectionnez les appareils via 'Outils >  Appareils'\n"),
             "placeholder": "DSLR100"
         },

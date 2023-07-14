@@ -388,11 +388,11 @@ class ImageMetadataDB:
         self,
         dir="",
         extentions=[],
-        cameras=[],
+        exclude_cameras={},
         recursive=True,
         filter_txt="",
         dup_mode=False,
-        exclude=[],
+        exclude={},
     ):
         """List files in dir applying user filters"""
 
@@ -418,8 +418,12 @@ class ImageMetadataDB:
             cmd += " " + f"AND extentions IN ({','.join('?' for _ in extentions)})"
             tup += (*extentions,)
 
-        if cameras and cameras[0]:
-            cmd += " " + f"AND camera IN ({','.join('?' for _ in cameras)})"
+        if exclude_cameras['cams'] and exclude_cameras['cams'][0]:
+            cameras = exclude_cameras['cams']
+            if exclude_cameras['toggle'] == DIR_EXCLUDE:
+                cmd += " " + f"AND NOT ( camera IN ({','.join('?' for _ in cameras)}) ) "
+            elif exclude_cameras['toggle'] == DIR_INCLUDE:
+                cmd += " " + f"AND camera IN ({','.join('?' for _ in cameras)}) "
             tup += (*cameras,)
 
         if exclude["dirs"] and exclude["dirs"][0]:

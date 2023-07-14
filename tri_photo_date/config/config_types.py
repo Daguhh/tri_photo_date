@@ -12,6 +12,7 @@ STRING = (
 PATH = ("src_dir", "dir", "dir", "scan_dir")
 INTEGER = (
     "exclude_toggle",
+    "exclude_camera_toggle",
     "action_mode",
     "mode",
     "floating_nb",
