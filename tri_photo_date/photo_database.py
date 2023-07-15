@@ -16,7 +16,7 @@ from tri_photo_date.exif import (
     NoExifError,
     USEFULL_TAG_DESCRIPTION,
 )
-from tri_photo_date.config.config_paths import IMAGE_DATABASE_PATH
+from tri_photo_date.config import IMAGE_DATABASE_PATH
 from tri_photo_date.utils.constants import (
     DUP_MD5_FILE,
     DUP_MD5_DATA,
@@ -432,25 +432,25 @@ class ImageMetadataDB:
                 excluded_dirs = [os.path.join(dir, f) for f in exclude["dirs"]]
                 # for excl in excluded_dirs:
                 if exclude["toggle"] == DIR_EXCLUDE:
-                    # cmd += " " + f"AND folder NOT LIKE ? || '%'"
+                    # cmd += " " + f"AND path NOT LIKE ? || '%'"
                     cmd += (
-                        " AND NOT ( folder LIKE ? || '%' "
-                        + "OR folder LIKE ? || '%' " * (len(excluded_dirs) - 1)
+                        " AND NOT ( path LIKE ? || '%' "
+                        + "OR path LIKE ? || '%' " * (len(excluded_dirs) - 1)
                     )
                 elif exclude["toggle"] == DIR_INCLUDE:
-                    # cmd += " " + f"AND folder LIKE ? || '%'"
+                    # cmd += " " + f"AND path LIKE ? || '%'"
                     cmd += (
-                        " AND ( folder LIKE ? || '%' "
-                        + "OR folder LIKE ? || '%' " * (len(excluded_dirs) - 1)
+                        " AND ( path LIKE ? || '%' "
+                        + "OR path LIKE ? || '%' " * (len(excluded_dirs) - 1)
                     )
                 for excl in excluded_dirs:
                     tup += ("/" + excl.strip("/"),)
                 cmd += ") "
             else:
                 if exclude["toggle"] == DIR_EXCLUDE:
-                    cmd += " " + "AND NOT MATCH(?,folder)"
+                    cmd += " " + "AND NOT MATCH(?,path)"
                 elif exclude["toggle"] == DIR_INCLUDE:
-                    cmd += " " + "AND MATCH(?,folder)"
+                    cmd += " " + "AND MATCH(?,path)"
                 tup += ("|".join(exclude["dirs"]),)
 
         if not dup_mode:
