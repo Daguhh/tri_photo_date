@@ -229,8 +229,8 @@ HUMAN_TEXT = {
         },
         "procedure" : {
             "label" : (
-                _("Déplacer"),
-                _("Garder une")
+                _("Déplacer tout dans un dossier"),
+                _("Déplacer un seul fichier et ignorer les autres")
             ),
             "tooltip" : _("Déplace tout les fichiers dupliqués dans un dossier séparé\nSinon, ne conserve qu'un seul de fichiers et le traite normalement"),
         },

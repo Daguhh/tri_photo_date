@@ -365,6 +365,8 @@ class MainTab(QWidget):
         dup_frame.dupBtns = DuplicateWdg(self)
         layout.addLayout(dup_frame.dupBtns)
         dup_frame.procedureBox = simpleLabelBox(layout, **HT['duplicates']['procedure'])
+        dup_frame.dupBtns.duplicateBtn.stateChanged.connect(lambda val : dup_frame.procedureBox.setEnabled(val))
+        dup_frame.dupBtns.duplicateBtn.stateChanged.emit(False)
         dup_frame.setLayout(layout)
         main_layout.addWidget(dup_frame)
 

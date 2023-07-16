@@ -22,9 +22,7 @@ Code bugs and major lacks:
 - program doesn't compare dates of destination folder
 
 Duplicates:
-- more control over duplicates : just rename / move in specific folder
 - check only name option
-- permit to preserve structure and only filter duplicate?? Is it really a good idea?
 
 Misc:
 - add changelog

@@ -84,7 +84,7 @@ class WindowMenu(QMenuBar):
         self.config_action = QAction(_("Ouvrir le fichier de configuration"), self)
         edit_menu.addAction(self.config_action)
 
-        self.set_settings_action = QAction(_("Ouvrir la configuration globale"), self)
+        self.set_settings_action = QAction(_("Configurer les filtres des fichiers"), self)
         edit_menu.addAction(self.set_settings_action)
 
         # option_2_action = QAction('Option 2', self)
