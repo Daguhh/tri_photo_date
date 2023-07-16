@@ -109,7 +109,7 @@ def gen_regex_index(filename):
     return get_ind
 
 
-def rename_with_incr(db, out_str):
+def rename_with_incr(exist_func, out_str):
     # Could be heavy load when lot of files with same name in same folder
     # Move and rename with increment if needed
     out_path = Path(out_str)
@@ -123,7 +123,7 @@ def rename_with_incr(db, out_str):
 
     #get_ind = gen_regex_index(filename)
     #indexes = [get_ind(s) for s in collidable_files]
-    indexes = list(db.exist_in_preview(out_path))
+    indexes = list(exist_func(out_path))
 
     if indexes:  # duplicates found
         m = max(indexes) + 1

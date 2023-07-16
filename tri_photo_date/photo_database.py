@@ -23,6 +23,8 @@ from tri_photo_date.utils.constants import (
     DUP_DATETIME,
     DIR_EXCLUDE,
     DIR_INCLUDE,
+    DUP_PROCEDURE_KEEP_FIRST,
+    DUP_PROCEDURE_MOVE_APART,
 )
 
 from tri_photo_date.utils.fingerprint import get_data_fingerprint, get_file_fingerprint
@@ -132,6 +134,37 @@ class ImageMetadataDB:
             ON images_to_process.path = images_cache.path;"""
         )
 
+        # Store path of duplicates in "move to separated folder mode"
+        c.execute(
+            """
+            CREATE TABLE IF NOT EXISTS duplicates
+              (
+                  path text,
+                  new_filename text,
+                  PRIMARY KEY (path)
+              )
+        """
+        )
+        c.execute(
+            """
+            CREATE VIEW IF NOT EXISTS
+                duplicates_view AS
+            SELECT
+                duplicates.path,
+                images_cache.folder,
+                images_cache.filename,
+                duplicates.new_filename,
+                images_cache.md5_file,
+                images_cache.md5_data,
+                images_cache.date,
+                images_cache.camera
+            FROM
+                duplicates
+            JOIN
+                images_cache
+            ON duplicates.path = images_cache.path;"""
+        )
+
         # Store processed data : new image path, location, group
         c.execute(
             """
@@ -199,6 +232,7 @@ class ImageMetadataDB:
     def clean_preview_table(self):
         c = self.conn.cursor()
         c.execute("DELETE FROM process_preview")
+        c.execute("DELETE FROM duplicates")
         self.conn.commit()
 
     def get_image_fingerprint(self, im_str):
@@ -391,39 +425,52 @@ class ImageMetadataDB:
         exclude_cameras={},
         recursive=True,
         filter_txt="",
+        dup_procedure=DUP_PROCEDURE_KEEP_FIRST,
         dup_mode=False,
         exclude={},
+        is_list_duplicates=False
     ):
         """List files in dir applying user filters"""
 
         dir = str(dir)
 
-        if not dup_mode:
-            cmd = "SELECT path, md5_file FROM images_to_process_view"
-        elif dup_mode == DUP_MD5_FILE:
-            cmd = "SELECT path, md5_file, MAX(path) FROM images_to_process_view"
-        elif dup_mode == DUP_MD5_DATA:
-            # Prevent missing md5_data
-            cmd = "SELECT path, COALESCE(md5_data, md5_file), MAX(path) FROM images_to_process_view"
-        elif dup_mode == DUP_DATETIME:
-            cmd = "SELECT path, date, MAX(path) FROM images_to_process_view"
+        if dup_procedure == DUP_PROCEDURE_KEEP_FIRST: # Keep only one
+            if not dup_mode:
+                selection = "md5-file"
+            elif dup_mode == DUP_MD5_FILE:
+                selection = "md5_file, MAX(path)"
+            elif dup_mode == DUP_MD5_DATA:
+                selection = "COALESCE(md5_data, md5_file), MAX(path)"
+            elif dup_mode == DUP_DATETIME:
+                selection = "date, MAX(path)"
+        elif dup_procedure == DUP_PROCEDURE_MOVE_APART:
+            if not dup_mode:
+                selection= "md5_file"
+            elif dup_mode == DUP_MD5_FILE:
+                selection = "md5_file"
+            elif dup_mode == DUP_MD5_DATA:
+                selection = "md5_data"
+            elif dup_mode == DUP_DATETIME:
+                selection = "date"
+        cmd_prefix = f"{selection} FROM images_to_process_view WHERE "
 
+        cmd_filters = " "
         if not recursive:
-            cmd += " " + "WHERE folder = ? AND path LIKE '%' || ? || '%'"
+            cmd_filters += "folder = ? AND path LIKE '%' || ? || '%'"
         else:
-            cmd += " " + "WHERE folder LIKE ? || '%' AND path LIKE '%' || ? || '%'"
+            cmd_filters += "folder LIKE ? || '%' AND path LIKE '%' || ? || '%'"
         tup = (dir, filter_txt)
 
         if extentions and extentions[0]:
-            cmd += " " + f"AND extentions IN ({','.join('?' for _ in extentions)})"
+            cmd_filters += " " + f"AND extentions IN ({','.join('?' for _ in extentions)})"
             tup += (*extentions,)
 
         if exclude_cameras['cams'] and exclude_cameras['cams'][0]:
             cameras = exclude_cameras['cams']
             if exclude_cameras['toggle'] == DIR_EXCLUDE:
-                cmd += " " + f"AND NOT ( camera IN ({','.join('?' for _ in cameras)}) ) "
+                cmd_filters += " " + f"AND NOT ( camera IN ({','.join('?' for _ in cameras)}) ) "
             elif exclude_cameras['toggle'] == DIR_INCLUDE:
-                cmd += " " + f"AND camera IN ({','.join('?' for _ in cameras)}) "
+                cmd_filters += " " + f"AND camera IN ({','.join('?' for _ in cameras)}) "
             tup += (*cameras,)
 
         if exclude["dirs"] and exclude["dirs"][0]:
@@ -433,40 +480,71 @@ class ImageMetadataDB:
                 # for excl in excluded_dirs:
                 if exclude["toggle"] == DIR_EXCLUDE:
                     # cmd += " " + f"AND path NOT LIKE ? || '%'"
-                    cmd += (
+                    cmd_filters += (
                         " AND NOT ( path LIKE ? || '%' "
                         + "OR path LIKE ? || '%' " * (len(excluded_dirs) - 1)
                     )
                 elif exclude["toggle"] == DIR_INCLUDE:
                     # cmd += " " + f"AND path LIKE ? || '%'"
-                    cmd += (
+                    cmd_filters += (
                         " AND ( path LIKE ? || '%' "
                         + "OR path LIKE ? || '%' " * (len(excluded_dirs) - 1)
                     )
                 for excl in excluded_dirs:
                     tup += ("/" + excl.strip("/"),)
-                cmd += ") "
+                cmd_filters += ") "
             else:
                 if exclude["toggle"] == DIR_EXCLUDE:
-                    cmd += " " + "AND NOT MATCH(?,path)"
+                    cmd_filters += " " + "AND NOT MATCH(?,path)"
                 elif exclude["toggle"] == DIR_INCLUDE:
-                    cmd += " " + "AND MATCH(?,path)"
+                    cmd_filters += " " + "AND MATCH(?,path)"
                 tup += ("|".join(exclude["dirs"]),)
 
-        if not dup_mode:
-            pass
-        elif dup_mode == DUP_MD5_FILE:
-            cmd += " " + "GROUP BY md5_file"
-        elif dup_mode == DUP_MD5_DATA:
-            cmd += " " + "GROUP BY COALESCE(md5_data, md5_file)"
-        elif dup_mode == DUP_DATETIME:
-            cmd += " " + "GROUP BY date"
+        cmd_suffix = " "
+        if dup_procedure == DUP_PROCEDURE_KEEP_FIRST and not is_list_duplicates:
+            if not dup_mode:
+                pass
+            elif dup_mode == DUP_MD5_FILE:
+                cmd_suffix += " " + "GROUP BY md5_file"
+            elif dup_mode == DUP_MD5_DATA:
+                cmd_suffix += " " + "GROUP BY COALESCE(md5_data, md5_file)"
+            elif dup_mode == DUP_DATETIME:
+                cmd_suffix += " " + "GROUP BY date"
+            cmd = "SELECT path, " + cmd_prefix + cmd_filters + cmd_suffix
+        elif dup_procedure == DUP_PROCEDURE_MOVE_APART:
+            if not is_list_duplicates:
+                if not dup_mode:
+                    pass
+                elif dup_mode == DUP_MD5_FILE:
+                    cmd_suffix += " " + "GROUP BY md5_file HAVING COUNT(*)=1"
+                elif dup_mode == DUP_MD5_DATA:
+                    cmd_suffix += " " + "GROUP BY COALESCE(md5_data, md5_file) HAVING COUNT(*)=1"
+                elif dup_mode == DUP_DATETIME:
+                    cmd_suffix += " " + "GROUP BY date HAVING COUNT(*)=1"
+                cmd = "SELECT path, " + cmd_prefix + cmd_filters + cmd_suffix
+            else:
+                if not dup_mode:
+                    pass
+                elif dup_mode == DUP_MD5_FILE:
+                    cmd_suffix += " " + "GROUP BY md5_file HAVING COUNT(*)>1"
+                elif dup_mode == DUP_MD5_DATA:
+                    cmd_suffix += " " + "GROUP BY COALESCE(md5_data, md5_file) HAVING COUNT(*)>1"
+                elif dup_mode == DUP_DATETIME:
+                    cmd_suffix += " " + "GROUP BY date HAVING COUNT(*)>1"
+                cmd = "SELECT path, " + cmd_prefix + selection + " IN " + '(' + "SELECT " +  cmd_prefix + cmd_filters + cmd_suffix + ') AND ' + cmd_filters
+                tup = 2 * tup
+
 
         c = self.conn.cursor()
+        print(cmd)
         c.execute(cmd, tup)
 
         while row := c.fetchone():
             yield row[0]
+
+    def list_duplicates(self, *args, **kwargs):
+
+        return self.list_files(*args, **kwargs, is_list_duplicates=True)
 
     def exist_in_dest(self, in_str, dup_mode):
         c = self.conn.cursor()
@@ -495,6 +573,20 @@ class ImageMetadataDB:
         c.execute(query, res)
 
         return bool(c.fetchone())
+
+    def add_image_to_duplicates(self, in_str, new_filename):
+        c = self.conn.cursor()
+
+        c.execute(
+            """
+            INSERT INTO
+                duplicates
+            VALUES
+                (?,?)""",
+            (in_str, new_filename)
+        )
+
+        self.conn.commit()
 
     def add_image_to_preview(self, in_str, out_str, location, date_str):
         c = self.conn.cursor()
@@ -596,20 +688,6 @@ class ImageMetadataDB:
         c = self.conn.cursor()
 
         query = "SELECT new_filename FROM process_preview WHERE new_folder = ?" # AND COLLIDE(?,new_filename)"
-        #query = "SELECT new_filename FROM process_preview WHERE new_folder = ? AND COLLIDE(?,new_filename)"
-        #query = """
-        #SELECT
-        #    new_filename,
-        #    CASE WHEN new_folder = ?
-        #        THEN
-        #            COLLIDE(?, new_filename)
-        #        ELSE
-        #            Null
-        #    END
-        #FROM process_preview
-        #"""
-        # query = 'SELECT new_filename FROM process_preview WHERE new_folder = ? AND new_filename REGEXP ? '
-
         c.execute(
             query,
             (
@@ -618,19 +696,29 @@ class ImageMetadataDB:
         )
 
         filenames = c.fetchall()
-        #reg = re.compile(im_path.stem + r"(?:\s\([0-9]+\))?" + im_path.suffix.lower())
-        #reg = re.compile(im_path.stem + r"(?:\s\(([0-9]+)*\))?" + im_path.suffix.lower())
         reg = re.compile(im_path.stem + r"(?:\s\(([0-9]+)\){0,1})?" + im_path.suffix.lower())
 
-        #return (filename for filename,*_ in filenames if reg.search(filename) is not None)
         for filename,*_ in filenames:
             match = reg.fullmatch(filename)
             if match is not None:
                 yield int(match.group(1) or 0)
 
-        # return [row[0] for row in c.fetchall()]
-        #while row := c.fetchone():
-        #    yield row[0]
+    def exist_in_duplicates(self, new_filename):
+        # too much call to collide
+        new_filename = Path(new_filename)
+
+        c = self.conn.cursor()
+
+        query = "SELECT new_filename FROM duplicates"
+        c.execute(query)
+
+        filenames = c.fetchall()
+        reg = re.compile(new_filename.stem + r"(?:\s\(([0-9]+)\){0,1})?" + new_filename.suffix.lower())
+
+        for filename,*_ in filenames:
+            match = reg.fullmatch(filename)
+            if match is not None:
+                yield int(match.group(1) or 0)
 
     def add_out_path(self, in_str, out_str):
         out_path = Path(out_str)
@@ -795,12 +883,34 @@ class ImageMetadataDB:
         while row := c.fetchone():
             yield row[0]
 
+    def get_duplicates_files(self, filter_txt=""):  # , paths):
+        # paths = list(paths)
+        c = self.conn.cursor()
+        # placeholders = ','.join('?' for _ in paths)
+        # query = f"SELECT * FROM process_preview WHERE path IN ({placeholders})"
+        query = f"SELECT path, new_filename FROM duplicates;"
+        c.execute(query)
+
+        while row := c.fetchone():
+            yield row
+
     def get_images_to_process(self, filter_txt=""):  # , paths):
         # paths = list(paths)
         c = self.conn.cursor()
         # placeholders = ','.join('?' for _ in paths)
         # query = f"SELECT * FROM process_preview WHERE path IN ({placeholders})"
         query = f"SELECT folder, filename, camera FROM images_to_process_view WHERE path LIKE '%' || ? || '%';"
+        c.execute(query, (filter_txt,))
+
+        while row := c.fetchone():
+            yield row
+
+    def get_duplicates(self, filter_txt=""):  # , paths):
+        # paths = list(paths)
+        c = self.conn.cursor()
+        # placeholders = ','.join('?' for _ in paths)
+        # query = f"SELECT * FROM process_preview WHERE path IN ({placeholders})"
+        query = f"SELECT folder, filename, md5_file, md5_data, date, camera FROM duplicates_view WHERE path LIKE '%' || ? || '%';"
         c.execute(query, (filter_txt,))
 
         while row := c.fetchone():

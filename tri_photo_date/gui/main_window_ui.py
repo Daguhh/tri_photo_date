@@ -73,6 +73,7 @@ from tri_photo_date.gui.collapsible_frame import (
 from tri_photo_date.gui import small_widgets
 from tri_photo_date.gui.small_widgets import (
     simpleCheckBox,
+    simpleLabelBox,
     simplePushButton,
     simpleStopButton,
     MyRadioButton,
@@ -363,6 +364,7 @@ class MainTab(QWidget):
         layout = QVBoxLayout()
         dup_frame.dupBtns = DuplicateWdg(self)
         layout.addLayout(dup_frame.dupBtns)
+        dup_frame.procedureBox = simpleLabelBox(layout, **HT['duplicates']['procedure'])
         dup_frame.setLayout(layout)
         main_layout.addWidget(dup_frame)
 

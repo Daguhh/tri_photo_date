@@ -24,7 +24,7 @@ from tri_photo_date.config import CONFIG as CFG
 
 # from tri_photo_date.utils.config_paths import CONFIG_PATH
 from tri_photo_date.utils.human_texts import *
-from tri_photo_date.utils.constants import GROUP_PLACEHOLDER, DEFAULT_DATE_STR
+from tri_photo_date.utils.constants import GROUP_PLACEHOLDER, DEFAULT_DATE_STR, DUP_PROCEDURE_KEEP_FIRST, DUP_PROCEDURE_MOVE_APART
 from tri_photo_date import gps
 from tri_photo_date.photo_database import ImageMetadataDB
 from tri_photo_date.utils import fingerprint
@@ -147,6 +147,7 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
         "extentions": CFG["source"]["extentions"],
         "exclude_cameras": exclude_cameras,#CFG["source"]["cameras"],
         "recursive": CFG["source"]["is_recursive"],
+        "dup_procedure":CFG["duplicates"]['procedure'],
         "dup_mode": dup_mode,
         "exclude": exclude,
     }
@@ -156,6 +157,11 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
 
         nb_files, total_size = db.count(**list_files_params)
         progbar.init(nb_files if nb_files else 1)
+
+        if CFG['duplicates']['procedure'] == DUP_PROCEDURE_MOVE_APART:
+            for i, in_str in enumerate(db.list_duplicates(**list_files_params)):
+                new_filename = rename_with_incr(db.exist_in_duplicates, Path(in_str).name)
+                db.add_image_to_duplicates(in_str, new_filename)
 
         for i, in_str in enumerate(db.list_files(**list_files_params)):
 
@@ -172,6 +178,8 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
             # skip duplicates
             if control_dest_duplicates:
                 if db.exist_in_dest(in_str, dup_mode):
+                    if CFG['duplicates']['procedure'] == DUP_PROCEDURE_MOVE_APART:
+                        db.add_image_to_duplicates(in_str)
                     continue
 
             # Generate a path string from user configuration
@@ -209,7 +217,7 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
             # rename files with duplicates names in same folder
             # Take too much time
             if not CFG["options.group"]["is_group"]:
-                out_str = rename_with_incr(db, out_str)
+                new_filename = rename_with_incr(db.exist_in_preview, Path(in_str).name)
 
             # Update the datas base
             db.add_image_to_preview(in_str, out_str, location, date_str)
@@ -247,7 +255,7 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
                 out_str = group_regex.sub(group_str, out_str)
 
                 # rename if needed duplicates names
-                out_str = rename_with_incr(db, out_str)
+                out_str = rename_with_incr(db.exist_in_preview, out_str)
 
                 # Save to db
                 db.add_out_path(in_str, out_str)
@@ -258,9 +266,24 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
 
 
 def execute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
+
+    dest_dir =  Path(CFG["destination"]["dir"])
+    duplicates_dir = dest_dir / "duplicates"
+    duplicates_dir.mkdir(parents=False, exist_ok=True)
+
     with ImageMetadataDB() as db:
         nb_files, total_size = db.count_preview()
         progbar.init(total_size)  # progbar.init(nb_files)
+
+        bytes_moved = 0; i=0
+        for i, (in_str, new_filename) in enumerate(db.get_duplicates_files()):
+            bytes_moved += Path(in_str).stat().st_size
+
+            # PyQt5 loop control
+            if LoopCallBack.run():
+                break
+
+            move_file(in_str, duplicates_dir / new_filename, mode=CFG["action"]["action_mode"])
 
         bytes_moved = 0; i=0
         for i, in_str in enumerate(db.get_preview_files()):
@@ -279,7 +302,7 @@ def execute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
 
             # Add metadata to new files if needed
             if has_moved and CFG["options.gps"]["is_gps"]:
-                metadatas = db.get_metadatas(in_str)
+                metadatas = db.get_exifs(in_str)
                 location = gps.get_image_gps_location(metadatas)
                 if location:
                     ExifTags.add_location_to_iptc(out_str, location)

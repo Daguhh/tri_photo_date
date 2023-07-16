@@ -226,7 +226,14 @@ HUMAN_TEXT = {
         "is_scan_dest": {
             "label": _("Destination"),
             "tooltip": _("Scanne aussi le dossier destination \u00e0 la recherche de fichiers dupliqu\u00e9s")
-        }
+        },
+        "procedure" : {
+            "label" : (
+                _("Déplacer"),
+                _("Garder une")
+            ),
+            "tooltip" : _("Déplace tout les fichiers dupliqués dans un dossier séparé\nSinon, ne conserve qu'un seul de fichiers et le traite normalement"),
+        },
     },
     "options": {
         "general": {

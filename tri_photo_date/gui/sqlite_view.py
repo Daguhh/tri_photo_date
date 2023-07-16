@@ -50,12 +50,15 @@ class DatabaseViewer(QTabWidget):
 
         self.scan_view = ScanTableViewer(db_file)
         self.preview_view = PreviewTableViewer(db_file)
+        self.duplcate_view = DuplicateTableViewer(db_file)
 
         self.addTab(self.scan_view, _("Scan"))
-        self.addTab(self.preview_view, _("Preview"))
+        self.addTab(self.preview_view, _("Aperçu"))
+        self.addTab(self.duplcate_view, _("Dupliqués"))
 
         self.setTabToolTip(0, _("Liste des fichiers scannés"))
         self.setTabToolTip(1, _("Aperçu des modifications à effectuer"))
+        self.setTabToolTip(2, _("Fichiers dupliqués"))
 
 class TableViewer(QWidget):
     def __init__(self, db_file):
@@ -183,6 +186,49 @@ class ScanTableViewer(TableViewer):
             # files_to_process = db.list__preview_files()
 
             rows = list(db.get_images_to_process(filter_text))  # files_to_process)
+
+        self.table.setRowCount(len(rows))
+        for i, row in enumerate(rows):
+            for j, col in enumerate(row):
+                self.table.setItem(i, j, QTableWidgetItem(str(col)))
+        # conn.close()
+
+    def open_file(self, row, column):
+        if column == 1:
+            file_path = Path(self.table.item(row, 0).text(), self.table.item(row, 1).text())
+            open_file(file_path)  # Opens the file using the default associated program
+
+        if column == 0:
+            file_path = Path(self.table.item(row, 0).text())
+            open_file(file_path)  # Opens the file using the default associated program
+
+class DuplicateTableViewer(TableViewer):
+    def __init__(self, db_file):
+        super().__init__(db_file)
+
+        self.table.setColumnCount(6)
+        self.table.setHorizontalHeaderLabels(
+            [
+                _("Dossier"),
+                _("Nom"),
+                _("md5_file"),
+                _("md5_data"),
+                _("date"),
+                _("camera"),
+            ]
+        )
+
+    def update_table(
+        self, filter_text=""
+    ):  # , dir='', extentions=[], cameras=[], recursive=True, filter_text='', mode=False, from_compute='update_table'):
+        # filter_text = self.filter_edit.text()
+        # conn = sqlite3.connect(self.db_file)
+        # cursor = conn.cursor()
+
+        with ImageMetadataDB() as db:
+            # files_to_process = db.list__preview_files()
+
+            rows = list(db.get_duplicates(filter_text))  # files_to_process)
 
         self.table.setRowCount(len(rows))
         for i, row in enumerate(rows):

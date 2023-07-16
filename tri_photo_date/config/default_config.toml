@@ -75,6 +75,8 @@ is_control = true # bool
 mode = 1 # int
 # Look for match in destination directory too
 is_scan_dest = true # bool
+# keep one photo (1) or move all in a separated folder (2)
+procedure = 1 # int
 
 ["options.general"]
 # remove metadata of copied/moved files

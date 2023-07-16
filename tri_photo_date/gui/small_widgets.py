@@ -59,6 +59,15 @@ class simplePushButton(QPushButton):
         self.setToolTip(tooltip)
         layout.addWidget(self)
 
+class simpleLabelBox(QComboBox):
+    def __init__(
+        self, layout, callback="to remove", label="", tooltip="", color="darkGreen"
+    ):
+        super().__init__()
+
+        self.addItems(label)
+        self.setToolTip(tooltip)
+        layout.addWidget(self)
 
 class simpleStopButton(QPushButton):
     def __init__(self, layout, callback):

@@ -77,6 +77,7 @@ class MainWindow(MainWindow_ui):
         wdgs["duplicates.is_control"] = self.conf_panel.dup_frame.dupBtns.duplicateBtn
         wdgs["duplicates.mode"] = self.conf_panel.dup_frame.dupBtns.dup_grp
         wdgs["duplicates.is_scan_dest"] = self.conf_panel.dup_frame.dupBtns.scandestBtn
+        wdgs["duplicates.procedure"] = self.conf_panel.dup_frame.procedureBox
 
         wdgs["options.name.guess_fmt"] = self.conf_panel.opt_frame.guess_date_from_name.textBox
         wdgs["options.name.is_guess"] = self.conf_panel.opt_frame.guess_date_from_name.checkBox
@@ -156,9 +157,14 @@ class MainWindow(MainWindow_ui):
         )
 
     def act_preview(self):
+
+        def after_callback():
+            self.update_preview()
+            self.update_duplicates_view()
+
         self.conf_panel.run_preview(
             func=sort_photos.compute,
-            after=self.update_preview
+            after=after_callback
         )
 
     def act_execute(self):
@@ -211,6 +217,13 @@ class MainWindow(MainWindow_ui):
         if not timer.isActive(): # if job is finished
             filter_text = self.preview_wdg.scan_view.filter_edit.text()
             self.preview_wdg.scan_view.update_table(filter_text)
+
+    def update_duplicates_view(self):
+        timer = QTimer()
+
+        if not timer.isActive(): # if job is finished
+            filter_text = self.preview_wdg.duplcate_view.filter_edit.text()
+            self.preview_wdg.duplcate_view.update_table(filter_text)
 
     def update_preview(self):
         timer = QTimer()
