@@ -1,5 +1,6 @@
 from pathlib import Path
-import os
+import subprocess
+import platform
 
 import sqlite3
 from PyQt5.QtCore import QSettings
@@ -30,6 +31,13 @@ def set_global_config(lang='en', size=1, mode=None):
 
     global _
     _ = trad.gettext  # Greek
+
+def open_file(im_path):
+
+    if platform.system() == "Windows":
+        subprocess.run(("explorer", str(im_path)))
+    elif platform.system() == "Linux":
+        subprocess.run(("xdg-open", str(im_path)))
 
 class DatabaseViewer(QTabWidget):
 
@@ -144,11 +152,11 @@ class PreviewTableViewer(TableViewer):
     def open_file(self, row, column):
         if column == 1:
             file_path = Path(self.table.item(row, 0).text(), self.table.item(row, 1).text())
-            os.startfile(str(file_path))  # Opens the file using the default associated program
+            open_file(file_path)  # Opens the file using the default associated program
 
         if column == 0:
             file_path = Path(self.table.item(row, 0).text())
-            os.startfile(str(file_path))  # Opens the file using the default associated program
+            open_file(file_path)  # Opens the file using the default associated program
 
 
 class ScanTableViewer(TableViewer):
@@ -185,11 +193,11 @@ class ScanTableViewer(TableViewer):
     def open_file(self, row, column):
         if column == 1:
             file_path = Path(self.table.item(row, 0).text(), self.table.item(row, 1).text())
-            os.startfile(str(file_path))  # Opens the file using the default associated program
+            open_file(file_path)  # Opens the file using the default associated program
 
         if column == 0:
             file_path = Path(self.table.item(row, 0).text())
-            os.startfile(str(file_path))  # Opens the file using the default associated program
+            open_file(file_path)  # Opens the file using the default associated program
 
 if __name__ == "__main__":
     app = QApplication([])
