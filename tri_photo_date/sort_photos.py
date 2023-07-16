@@ -53,7 +53,7 @@ def populate_db(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
     )
 
     # update image database
-    media_extentions = CFG["misc"]["accepted_formats"]
+    media_extentions = tuple(CFG["scan"]["extentions"])
     with ImageMetadataDB() as db:
         db.clean_all_table()
 
@@ -74,8 +74,10 @@ def populate_db(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
                     break
 
                 in_path = Path(folder, filename)
-                # if not filename.lower().endswith(media_extentions):
-                #    continue
+
+                if not filename.lower().endswith(media_extentions):
+                    continue
+
                 if not in_path.is_file():
                     continue
 

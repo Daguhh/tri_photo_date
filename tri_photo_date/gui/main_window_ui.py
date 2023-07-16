@@ -279,6 +279,8 @@ class MainTab(QWidget):
         layout.addLayout(scan_frame.srcdir_wdg)
         scan_frame.destdir_wdg = LabelNLineEdit(self, **HT['scan']["dest_dir"])
         layout.addLayout(scan_frame.destdir_wdg)
+        scan_frame.exts_wdg = LabelNLineEdit(self, **HT['scan']["extentions"])
+        layout.addLayout(scan_frame.exts_wdg)
         sub_layout = QHBoxLayout()
         scan_frame.is_use_cache = simpleCheckBox(
             sub_layout, **HT['scan']["is_use_cached_datas"]

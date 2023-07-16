@@ -34,6 +34,9 @@ MEDIA_FORMATS = {
     _(
         r"{media_videos}"
     ):"webm,mkv,flv,ogg,gif,avi,mov,asf,mp4,m4v,mpg,mp2,mpeg,mpv,3gp,3g2,flv",
+    _(
+        r"{media_videos_n_photos}"
+    ):"jpg,jpeg,png,webp,bmp,ico,tiff,heif,heic,svg,raw,arw,cr2,nrw,k25,apng,avif,gif,svg,webm,mkv,flv,ogg,gif,avi,mov,asf,mp4,m4v,mpg,mp2,mpeg,mpv,3gp,3g2,flv"
 }
 
 REL_PATH_FORMATS = {
@@ -75,16 +78,17 @@ HUMAN_TEXT = {
             "tooltip": _("Chemin du dossier \u00e0 analyser, Ajuster le chemin dans la section 'Destination'"),
             "placeholder": _("D:\\User\\Images")
         },
-        "exts": {
+        "extentions": {
             "label": _("Extensions"),
-            "tooltip": _("Liste des extentions s\u00e9par\u00e9es par des virgules\n\n  1. Definissez les dossiers \u00e0 analyser\n  2. Scannez : bouton '1. Scanner'\n  3. Selectionnez les extentions via 'Outils >  Extentions'\n "),
+            "tooltip": _("Liste des extentions de fichiers à scanner.\nListe des extention séparées par des virgules\n"),
             "placeholder": "jpg, jpeg, png",
             "combobox_options": [
                 "jpg",
                 "jpg, jpeg, png",
                 "jpg, raw, arw",
                 _(r"{media_photos}"),
-                _(r"{media_videos}")
+                _(r"{media_videos}"),
+                _(r"{media_videos_n_photos}")
             ]
         },
         "is_recursive": {

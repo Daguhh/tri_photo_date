@@ -54,6 +54,7 @@ class MainWindow(MainWindow_ui):
         wdgs = {}
         wdgs["scan.src_dir"] = self.conf_panel.scan_frame.srcdir_wdg.textBox
         wdgs["scan.dest_dir"] = self.conf_panel.scan_frame.destdir_wdg.textBox
+        wdgs["scan.extentions"] = self.conf_panel.scan_frame.exts_wdg.textBox
         # wdgs['("scan.'] = self.conf_panel.scan_wdg.is_metaBtn.stateChanged
         # wdgs['("scan.'] = self.conf_panel.scan_frame.is_md5_data.stateChanged
         # wdgs['("scan.'] = self.conf_panel.scan_frame.is_md5_file.stateChanged

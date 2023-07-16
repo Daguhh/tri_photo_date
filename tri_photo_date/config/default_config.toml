@@ -35,6 +35,8 @@ is_md5_data = false # bool
 is_meta = false # bool
 # Directly load from cache if path already exist : doesn't verify if file is the same
 is_use_cached_datas = false # bool
+# Filter extentions when scanning
+extentions = ["jpg","jpeg","png","webp","bmp","ico","tiff","heif","heic","svg","raw","arw","cr2","nrw","k25","apng","avif","gif","svg","webm","mkv","flv","ogg","gif","avi","mov","asf","mp4","m4v","mpg","mp2","mpeg","mpv","3gp","3g2","flv"] # list of strings
 
 [source]
 # absolute directory of files to process
@@ -127,5 +129,3 @@ exif_user_tags = "" # string
 unidecode = 0 # int
 # Default word if no datas found to fill placeholder
 non_def = "non_def" # string
-# Filter extentions when scanning
-accepted_formats=["jpg","jpeg","png","webp","bmp","ico","tiff","heif","heic","svg","raw","arw","cr2","nrw","k25","apng","avif","gif","svg","webm","mkv","flv","ogg","gif","avi","mov","asf","mp4","m4v","mpg","mp2","mpeg","mpv","3gp","3g2","flv"] # list of strings
