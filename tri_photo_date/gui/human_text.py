@@ -84,8 +84,8 @@ HUMAN_TEXT = {
             "placeholder": "jpg, jpeg, png",
             "combobox_options": [
                 "jpg",
-                "jpg, jpeg, png",
-                "jpg, raw, arw",
+                "jpg,jpeg,png",
+                "jpg,raw,arw",
                 _(r"{media_photos}"),
                 _(r"{media_videos}"),
                 _(r"{media_videos_n_photos}")
@@ -125,8 +125,8 @@ HUMAN_TEXT = {
             "placeholder": "jpg, jpeg, png",
             "combobox_options": [
                 "jpg",
-                "jpg, jpeg, png",
-                "jpg, raw, arw",
+                "jpg,jpeg,png",
+                "jpg,raw,arw",
                 _(r"{media_photos}"),
                 _(r"{media_videos}")
             ]

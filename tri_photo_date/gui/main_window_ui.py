@@ -665,7 +665,7 @@ class CustomQLineEdit(QLineEdit):
 
                 #import ipdb; ipdb.set_trace()
                 dcts = MEDIA_FORMATS | REL_PATH_FORMATS
-                combo_txt = re.sub(combo_txt, dcts.get(combo_txt,''), combo_txt)
+                combo_txt = re.sub(combo_txt, dcts.get(combo_txt, combo_txt), combo_txt)
 
                 if lineedit_txt == combo_txt:
                     self.combo.setCurrentIndex(i)
