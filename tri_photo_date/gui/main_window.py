@@ -144,9 +144,14 @@ class MainWindow(MainWindow_ui):
                         act.setChecked(True)
 
     def act_populate(self):
+
+        def after_callback():
+            self.update_selection_tabs()
+            self.update_scan_view()
+
         self.conf_panel.run_populate(
             func=sort_photos.populate_db,
-            after=self.update_selection_tabs
+            after=after_callback
         )
 
     def act_preview(self):
@@ -199,12 +204,19 @@ class MainWindow(MainWindow_ui):
         )
         self.progress_bar.setValue(100)
 
+    def update_scan_view(self):
+        timer = QTimer()
+
+        if not timer.isActive(): # if job is finished
+            filter_text = self.preview_wdg.scan_view.filter_edit.text()
+            self.preview_wdg.scan_view.update_table(filter_text)
+
     def update_preview(self):
         timer = QTimer()
 
         if not timer.isActive(): # if job is finished
-            filter_text = self.preview_wdg.filter_edit.text()
-            self.preview_wdg.update_table(filter_text)
+            filter_text = self.preview_wdg.preview_view.filter_edit.text()
+            self.preview_wdg.preview_view.update_table(filter_text)
 
     def update_selection_tabs(self):
         self.set_ext_list()

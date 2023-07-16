@@ -93,7 +93,7 @@ class PreviewCollapsibleFrame(QFrame):
             f"#myFrame_{color}" + " { padding: 15px; border: 2px solid " + color + "}"
         )
         self.setContentsMargins(6, 14, 6, 1)
-        self.setToolTip(_("Afficher l'aperçu"))
+        #self.setToolTip(_("Afficher l'aperçu"))
 
         self.layout = QHBoxLayout()
         self.widget = QWidget()
@@ -122,14 +122,14 @@ class PreviewCollapsibleFrame(QFrame):
         if not is_collasped:
             self.widget.setVisible(True)
             self.label.setText("▶  " + self.label_txt)
-            self.setToolTip(_("Cacher l'aperçu"))
+            #self.setToolTip(_("Cacher l'aperçu"))
             self.setMinimumSize(400, 200)
             self.setMaximumSize(2000, 2000)
             self.parent().parent().parent().resize(1000, 790)
         else:
             self.widget.setVisible(False)
             self.label.setText("◀")
-            self.setToolTip(_("Afficher l'aperçu"))
+            #self.setToolTip(_("Afficher l'aperçu"))
             self.setMinimumSize(30, 200)
             self.setMaximumSize(30, 2000)
             self.parent().parent().parent().resize(400, 790)

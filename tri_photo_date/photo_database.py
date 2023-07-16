@@ -795,6 +795,17 @@ class ImageMetadataDB:
         while row := c.fetchone():
             yield row[0]
 
+    def get_images_to_process(self, filter_txt=""):  # , paths):
+        # paths = list(paths)
+        c = self.conn.cursor()
+        # placeholders = ','.join('?' for _ in paths)
+        # query = f"SELECT * FROM process_preview WHERE path IN ({placeholders})"
+        query = f"SELECT folder, filename, camera FROM images_to_process_view WHERE path LIKE '%' || ? || '%';"
+        c.execute(query, (filter_txt,))
+
+        while row := c.fetchone():
+            yield row
+
     def get_preview(self, filter_txt=""):  # , paths):
         # paths = list(paths)
         c = self.conn.cursor()
