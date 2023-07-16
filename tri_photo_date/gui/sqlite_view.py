@@ -1,3 +1,6 @@
+from pathlib import Path
+import os
+
 import sqlite3
 from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import (
@@ -73,6 +76,9 @@ class TableViewer(QWidget):
 
         self.update_table("")
 
+        # Connect the cellDoubleClicked signal to the open_file slot
+        self.table.cellDoubleClicked.connect(self.open_file)
+
     def update_table_act(self, e):
         self.update_table(self.filter_edit.text())
 
@@ -95,6 +101,9 @@ class TableViewer(QWidget):
     #    self.hidden_callback()
     # super().hideEvent(event)
     # self.hidden.emit()
+
+    def open_file(self, row, column):
+        pass
 
 class PreviewTableViewer(TableViewer):
     def __init__(self, db_file):
@@ -131,6 +140,16 @@ class PreviewTableViewer(TableViewer):
                 self.table.setItem(i, j, QTableWidgetItem(str(col)))
         # conn.close()
 
+        # Define a slot that will open the file when the cell is double clicked
+    def open_file(self, row, column):
+        if column == 1:
+            file_path = Path(self.table.item(row, 0).text(), self.table.item(row, 1).text())
+            os.startfile(str(file_path))  # Opens the file using the default associated program
+
+        if column == 0:
+            file_path = Path(self.table.item(row, 0).text())
+            os.startfile(str(file_path))  # Opens the file using the default associated program
+
 
 class ScanTableViewer(TableViewer):
     def __init__(self, db_file):
@@ -163,6 +182,14 @@ class ScanTableViewer(TableViewer):
                 self.table.setItem(i, j, QTableWidgetItem(str(col)))
         # conn.close()
 
+    def open_file(self, row, column):
+        if column == 1:
+            file_path = Path(self.table.item(row, 0).text(), self.table.item(row, 1).text())
+            os.startfile(str(file_path))  # Opens the file using the default associated program
+
+        if column == 0:
+            file_path = Path(self.table.item(row, 0).text())
+            os.startfile(str(file_path))  # Opens the file using the default associated program
 
 if __name__ == "__main__":
     app = QApplication([])
