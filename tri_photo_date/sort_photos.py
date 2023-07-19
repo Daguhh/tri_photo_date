@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 import logging
 
 from tri_photo_date.exif import ExifTags
-from tri_photo_date.config import CONFIG as CFG
+from tri_photo_date.config.config_loader import CONFIG as CFG
 
 # from tri_photo_date.utils.config_paths import CONFIG_PATH
 from tri_photo_date.utils.human_texts import *

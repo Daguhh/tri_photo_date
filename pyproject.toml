@@ -2,7 +2,7 @@
 name = "tri-photo-date"
 description = "Sort image using metadata placeholder"
 authors = ["Daguhh"]
-version = "0.1.2"
+version = "0.2.0"
 license = "LICENSE"
 readme = "README.md"
 packages = [{include = "tri_photo_date"}]

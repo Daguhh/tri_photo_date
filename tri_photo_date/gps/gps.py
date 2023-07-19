@@ -24,12 +24,6 @@ from tri_photo_date.exif import ExifTags, EXIF_LOCATION_FIELD, EXIF_GPS_FIELD
 from tri_photo_date.config.config_paths import GPS_DATABASE_PATH
 from tri_photo_date.gps.gps_constants import LOCATION_TYPES
 
-# except ImportError:
-#     from tri_photo_date.exif import ExifTags, EXIF_LOCATION_FIELD, EXIF_GPS_FIELD
-#     from tri_photo_date.utils.config_loader import CONFIG_DIR, CONFIG
-#     from tri_photo_date.gps.gps_constants import LOCATION_TYPES
-
-
 def set_global_config(CONFIG):
     global IS_DEBUG
     IS_DEBUG = CONFIG["options.gps"]["debug"]  # False
@@ -42,14 +36,6 @@ def set_global_config(CONFIG):
 
     global GPS_WAIT
     GPS_WAIT = CONFIG["options.gps"]["wait"]  # in seconds
-
-
-# SQLITE_CACHE_PATH = CONFIG_DIR / "gps_cache.db"
-
-# try:
-#    from .gps_returns_examples import SaintEtienne, SaintRemi, London
-# except ModuleNotFoundError:
-#    from gps_returns_examples import SaintEtienne, SaintRemi, London
 
 
 def DEBUG(func):
