@@ -11,7 +11,6 @@ from tri_photo_date.cli.cli_argparser import parse_arguments
 
 ##### Set log file #####
 handler = RotatingFileHandler(str(CONFIG_DIR / "tri_photo_date.log"), maxBytes=100000, backupCount=1)
-#handler = RotatingFileHandler("/home/david/Prog/tri_photo_date/tri_photo_date.log", maxBytes=100000, backupCount=1)
 handler.setLevel(logging.INFO)
 logging.basicConfig(level=logging.INFO, handlers=[handler])
 

@@ -9,7 +9,7 @@ from tri_photo_date.sort_photos import CFG
 from tri_photo_date.cli.progressbar import cli_progbar
 from tri_photo_date.config.config_loader import value2shell, shell2value
 
-from tri_photo_date.config.config_paths import IMAGE_DATABASE_PATH
+from tri_photo_date.config.config_paths import IMAGE_DATABASE_PATH, DEFAULT_CONFIG_PATH
 from tri_photo_date.utils.constants import FILE_SIMULATE, FILE_MOVE, FILE_COPY
 
 FILE_MODES = dict(zip((FILE_SIMULATE, FILE_COPY, FILE_MOVE), ('simulation, no files will be affected', 'copying files', 'moving files')))
@@ -65,7 +65,6 @@ def batched(iterable, n):
     while batch := tuple(islice(it, n)):
         yield batch
 
-DEFAULT_CONFIG_TOML = "/home/david/Prog/tri_photo_date/tri_photo_date/config/default_config.toml"
 from tomlkit import parse
 
 def flatten_dct(d, parent_key='', sep='.'):
@@ -84,7 +83,7 @@ reg_split = re.compile('\s*=.*#\s*')
 
 def get_config_comments():
 
-    with open(DEFAULT_CONFIG_TOML, 'r') as f:
+    with open(DEFAULT_CONFIG_PATH, 'r') as f:
         doc = parse(f.read())
 
     dct = {}
