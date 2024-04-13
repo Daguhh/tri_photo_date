@@ -436,7 +436,7 @@ class ImageMetadataDB:
 
         if dup_procedure == DUP_PROCEDURE_KEEP_FIRST: # Keep only one
             if not dup_mode:
-                selection = "md5-file"
+                selection = "md5_file"
             elif dup_mode == DUP_MD5_FILE:
                 selection = "md5_file, MAX(path)"
             elif dup_mode == DUP_MD5_DATA:
