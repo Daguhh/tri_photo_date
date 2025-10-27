@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import (
     QCheckBox,
 )
 import logging
-import pkg_resources
+#import pkg_resources
 
 from pathlib import Path
 import os

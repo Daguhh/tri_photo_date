@@ -27,27 +27,17 @@ def get_file_fingerprint(im_path):
 
 
 def get_data_fingerprint(im_path):
-    # if im_path.lower().endswith('jpg'):
-    try:
+    if im_path.lower().endswith('jpg'):
         md5_data = jpeg_data_fingerprint(im_path)
         return md5_data
-    except AssertionError:
-        pass
-    # elif im_path.lower().endswith('png'):
-    try:
+    elif im_path.lower().endswith('png'):
         md5_data = png_data_fingerprint(im_path)
         return md5_data
-    except AssertionError:
-        pass
-    # elif im_path.lower().endswith(('mov', 'mp4'):
-    try:
+    elif im_path.lower().endswith(('mov', 'mp4')):
         md5_data = mp4_data_fingerprint(im_path)
         return md5_data
-    except AssertionError:
-        pass
-    # else:
-
-    return None
+    else:
+        return None
 
 
 # https://stackoverflow.com/a/10075170
@@ -55,6 +45,7 @@ def png_data_fingerprint(im_str):
     mlength = max_length
     hash = hashlib.md5()
     fh = open(im_str, "rb")
+
     assert fh.read(8)[1:4] == b"PNG"
     while True:
         try:
@@ -120,3 +111,18 @@ def mp4_data_fingerprint(im_str):
         else:
             fh.seek(l)
     return hash.hexdigest()
+
+
+if __name__ == "__main__":
+
+    global max_length
+    max_length = 4-1024-1024
+
+    import sys
+
+    f_in = sys.argv[1]
+    print("file fingerprint : ", get_file_fingerprint(f_in))
+    print("data fingerprint : ", get_data_fingerprint(f_in))
+
+
+

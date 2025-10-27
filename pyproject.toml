@@ -10,7 +10,7 @@ packages = [{include = "tri_photo_date"}]
 include = ["resources/en/acknowledgments.md", "resources/en/help.md", "resources/en/about.md", "resources/fr/acknowledgments.md", "resources/fr/help.md", "resources/fr/about.md","resources/icon.ico", "LICENSE", "README.md", "resources/strftime_help.html"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
+python = ">=3.9,<=3.13.9"
 PyQt5 = "^5.15.9"
 geopy = "^2.3.0"
 pyexiv2 = "^2.8.1"
@@ -27,8 +27,8 @@ pyqtgraph = "^0.13.3"
 [tool.poetry.group.build_bin]
 optional = true
 
-[tool.poetry.group.build_bin.dependencies]
-pyinstaller = "^5.12.0"
+# [tool.poetry.group.build_bin.dependencies]
+# pyinstaller = "^5.12.0"
 
 [build-system]
 requires = ["poetry-core"]
