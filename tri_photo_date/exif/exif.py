@@ -120,7 +120,7 @@ class ExifTags(dict):
         # import ipdb; ipdb.set_trace()
         # out_fmt = out_fmt.replace(tag_key, tag_value)
         if not value:
-            value = "non_def"
+            value = "unknowed"
 
         placeholder = f"[<{{]{placeholder}[}}>]"
         out_fmt = re.sub(placeholder, value, out_fmt)

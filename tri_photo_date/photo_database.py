@@ -61,7 +61,7 @@ def get_image_metadatas(im_str):
     date = date.strip() if date else None
 
     camera = metadata.get("Exif.Image.Model", False)
-    camera = camera.strip() if camera else None
+    camera = camera.strip() if camera else "Unknowed"
 
     return metadata, date, camera
 
@@ -468,7 +468,7 @@ class ImageMetadataDB:
         if exclude_cameras['cams'] and exclude_cameras['cams'][0]:
             cameras = exclude_cameras['cams']
             if exclude_cameras['toggle'] == DIR_EXCLUDE:
-                cmd_filters += " " + f"AND camera IS NOT NULL AND camera IS NOT '' AND NOT ( camera IN ({','.join('?' for _ in cameras)}) ) "
+                cmd_filters += " " + f"AND NOT ( camera IN ({','.join('?' for _ in cameras)}) ) "
             elif exclude_cameras['toggle'] == DIR_INCLUDE:
                 cmd_filters += " " + f"AND camera IN ({','.join('?' for _ in cameras)}) "
             tup += (*cameras,)

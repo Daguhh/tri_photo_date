@@ -134,4 +134,4 @@ exif_user_tags = "" # string
 # Obolete
 unidecode = 0 # int
 # Default word if no datas found to fill placeholder
-non_def = "non_def" # string
+non_def = "unknowed" # string
