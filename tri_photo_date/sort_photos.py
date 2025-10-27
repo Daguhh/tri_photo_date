@@ -143,7 +143,7 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
     control_dest_duplicates = control_dest_duplicates * bool(is_control_hash)
 
     list_files_params = {
-        "dir": Path(CFG["source"]["dir"]),
+        "directory": Path(CFG["source"]["dir"]),
         "extentions": CFG["source"]["extentions"],
         "exclude_cameras": exclude_cameras,#CFG["source"]["cameras"],
         "recursive": CFG["source"]["is_recursive"],

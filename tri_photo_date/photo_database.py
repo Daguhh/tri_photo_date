@@ -420,7 +420,7 @@ class ImageMetadataDB:
 
     def list_files(
         self,
-        dir="",
+        directory="",
         extentions=[],
         exclude_cameras={},
         recursive=True,
@@ -432,7 +432,7 @@ class ImageMetadataDB:
     ):
         """List files in dir applying user filters"""
 
-        dir = str(dir)
+        directory = str(directory)
 
         if dup_procedure == DUP_PROCEDURE_KEEP_FIRST: # Keep only one
             if not dup_mode:
@@ -459,7 +459,7 @@ class ImageMetadataDB:
             cmd_filters += "folder = ? AND path LIKE '%' || ? || '%'"
         else:
             cmd_filters += "folder LIKE ? || '%' AND path LIKE '%' || ? || '%'"
-        tup = (dir, filter_txt)
+        tup = (directory, filter_txt)
 
         if extentions and extentions[0]:
             cmd_filters += " " + f"AND extentions IN ({','.join('?' for _ in extentions)})"
@@ -468,7 +468,7 @@ class ImageMetadataDB:
         if exclude_cameras['cams'] and exclude_cameras['cams'][0]:
             cameras = exclude_cameras['cams']
             if exclude_cameras['toggle'] == DIR_EXCLUDE:
-                cmd_filters += " " + f"AND NOT ( camera IN ({','.join('?' for _ in cameras)}) ) "
+                cmd_filters += " " + f"AND camera IS NOT NULL AND camera IS NOT '' AND NOT ( camera IN ({','.join('?' for _ in cameras)}) ) "
             elif exclude_cameras['toggle'] == DIR_INCLUDE:
                 cmd_filters += " " + f"AND camera IN ({','.join('?' for _ in cameras)}) "
             tup += (*cameras,)
@@ -476,7 +476,7 @@ class ImageMetadataDB:
         if exclude["dirs"] and exclude["dirs"][0]:
             # if excluded_dirs and excluded_dirs[0]:
             if not exclude["is_regex"]:
-                excluded_dirs = [os.path.join(dir, f) for f in exclude["dirs"]]
+                excluded_dirs = [os.path.join(directory, f) for f in exclude["dirs"]]
                 # for excl in excluded_dirs:
                 if exclude["toggle"] == DIR_EXCLUDE:
                     # cmd += " " + f"AND path NOT LIKE ? || '%'"
@@ -536,7 +536,7 @@ class ImageMetadataDB:
 
 
         c = self.conn.cursor()
-        #print(cmd)
+        print(cmd)
         c.execute(cmd, tup)
 
         while row := c.fetchone():
