@@ -219,7 +219,8 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
             # rename files with duplicates names in same folder
             # Take too much time
             if not CFG["options.group"]["is_group"]:
-                new_filename = rename_with_incr(db.exist_in_preview, Path(in_str).name)
+                print("rename with incr")
+                out_str = rename_with_incr(db.exist_in_preview, out_str)
 
             # Update the datas base
             db.add_image_to_preview(in_str, out_str, location, date_str)

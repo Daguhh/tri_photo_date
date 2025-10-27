@@ -452,6 +452,11 @@ class MainTab(QWidget):
         )
         layout.addLayout(sub_layout)
 
+        if GUI_MODE == GUI_SIMPLIFIED:
+            exec_frame.is_delete_metadatas.setHidden(True)
+            exec_frame.is_add_date_metadatas.setHidden(True)
+            exec_frame.is_add_location_metadatas.setHidden(True)
+
         layout.addLayout(exec_frame.file_action_wdg)
         exec_frame.setLayout(layout)
         main_layout.addWidget(exec_frame)
