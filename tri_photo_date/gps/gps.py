@@ -39,6 +39,7 @@ def set_global_config(CONFIG):
 
 
 def DEBUG(func):
+    global IS_DEBUG
     def wrapper(*args, **kwargs):
         if IS_DEBUG:
             print(f"Calling function {func.__name__}")

@@ -536,7 +536,7 @@ class ImageMetadataDB:
 
 
         c = self.conn.cursor()
-        print(cmd)
+        #print(cmd)
         c.execute(cmd, tup)
 
         while row := c.fetchone():
@@ -809,6 +809,23 @@ class ImageMetadataDB:
     # def get_metadatas(self, im_path):
     #    return self.get_exifs(im_path)
 
+    def get_date(self, im_str):
+        c = self.conn.cursor()
+
+        c.execute(
+            """
+            SELECT
+                date
+            FROM
+                process_preview
+            WHERE
+                path = ?""",
+            (im_str,),
+        )
+        res = c.fetchone()
+        if res:
+            return res[0]
+
     def get_location(self, im_str):
         c = self.conn.cursor()
 
@@ -823,8 +840,8 @@ class ImageMetadataDB:
             (im_str,),
         )
         res = c.fetchone()
-        if res is not None and res[0] is not None:
-            return json.loads(res[0])
+        if res :
+            return res
 
     def set_group_preview(self, path, date):
         c = self.conn.cursor()

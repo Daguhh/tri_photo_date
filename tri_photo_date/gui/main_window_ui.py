@@ -390,14 +390,9 @@ class MainTab(QWidget):
 
         sub_layout = QHBoxLayout()
         opt_frame.gps = simpleCheckBox(sub_layout, **HT['gps']["gps"])
+
         layout.addLayout(sub_layout)
 
-        sub_layout = QHBoxLayout()
-
-        opt_frame.is_delete_metadatas = simpleCheckBox(
-            sub_layout, **HT['options']['general']["is_delete_metadatas"]
-        )
-        layout.addLayout(sub_layout)
 
         sub_layout = QHBoxLayout()
         opt_frame.is_date_from_filesystem = simpleCheckBox(
@@ -439,6 +434,24 @@ class MainTab(QWidget):
         exec_frame = CollapsibleFrame("Executer", color="red")
         layout = QVBoxLayout()
         exec_frame.file_action_wdg = fileActionWdg(self)
+
+
+        sub_layout = QHBoxLayout()
+        exec_frame.is_delete_metadatas = simpleCheckBox(
+            sub_layout, **HT['options']['general']["is_delete_metadatas"]
+        )
+        layout.addLayout(sub_layout)
+
+        sub_layout = QHBoxLayout()
+        exec_frame.is_add_location_metadatas = simpleCheckBox(
+            sub_layout, **HT['gps']["is_add_location_metadatas"]
+        )
+        exec_frame.is_add_location_metadatas.setEnabled(False)
+        exec_frame.is_add_date_metadatas = simpleCheckBox(
+            sub_layout, **HT['options']['general']["is_add_date_metadatas"]
+        )
+        layout.addLayout(sub_layout)
+
         layout.addLayout(exec_frame.file_action_wdg)
         exec_frame.setLayout(layout)
         main_layout.addWidget(exec_frame)

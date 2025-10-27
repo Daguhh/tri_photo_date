@@ -179,8 +179,9 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
             if control_dest_duplicates:
                 if db.exist_in_dest(in_str, dup_mode):
                     if CFG['duplicates']['procedure'] == DUP_PROCEDURE_MOVE_APART:
-                        db.add_image_to_duplicates(in_str)
-                    continue
+                        new_filename = rename_with_incr(db.exist_in_duplicates, Path(in_str).name)
+                        db.add_image_to_duplicates(in_str, new_filename)
+                    continue # don't add it to files to process (preview)
 
             # Generate a path string from user configuration
             out_str = create_out_str(
@@ -205,6 +206,7 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
                 if location:
                     metadatas.update(location)
                     db.add_location(in_str, location)
+
 
             # Format output string with image metadatas
             for tag_key in PLACEHOLDER_REGEX.findall(out_str):
@@ -235,8 +237,10 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
             # compute group for all files
             db.group_by_n_floating_days(CFG["options.group"]["floating_nb"])
 
+
             # progbar.init(nb_files)
-            for i, in_str in enumerate(db.list_files(**list_files_params)):
+            #for i, in_str in enumerate(db.list_files(**list_files_params)):
+            for i, in_str in enumerate(db.get_preview_files()): # get only non-duplicated
 
                 # Some user feedbacks
                 progbar.update(i, f"{i}/{nb_files}",  PROGBAR_TXT_COMPUTE_GROUPS.format(Path(in_str).name))
@@ -244,6 +248,8 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
                 # PyQt5 callback to stop loop
                 if LoopCallBack.run():
                     break
+
+                #if db.is_in_duplicate(in_str)
 
                 # Get group and format it following user config
                 group_date = db.get_date_group(in_str)
@@ -301,14 +307,16 @@ def execute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
             has_moved = move_file(in_str, out_str, mode=CFG["action"]["action_mode"])
 
             # Add metadata to new files if needed
-            if has_moved and CFG["options.gps"]["is_gps"]:
-                metadatas = db.get_exifs(in_str)
-                location = gps.get_image_gps_location(metadatas)
+            if has_moved and CFG["options.gps"]["is_gps"] and CFG["options.gps"]["is_add_location_metadatas"]:
+                location = db.get_location(in_str)
                 if location:
                     ExifTags.add_location_to_iptc(out_str, location)
 
             if has_moved and CFG["options.general"]["is_delete_metadatas"]:
                 ExifTags.clear_all_metadatas(out_str)
+
+            if has_moved and CFG["options.general"]["is_add_date_metadatas"]:
+                ExifTags.add_date_to_metadata(out_str, db.get_date(in_str))
 
             # User feedbacks
             progbar.update(bytes_moved, f"{bytes2human(bytes_moved)}/{bytes2human(total_size)}", PROGBAR_TXT_EXECUTE_FCT(

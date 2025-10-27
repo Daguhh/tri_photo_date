@@ -248,6 +248,10 @@ HUMAN_TEXT = {
             "is_force_date_from_filesystem": {
                 "label": _("Forcer"),
                 "tooltip": _("Prendre la date de cr\u00e9ation du fichier plut\u00f4t\n que de chercher dans les m\u00e9tadonn\u00e9es")
+            },
+            "is_add_date_metadatas" : {
+                "label": _("Inscrire date"),
+                "tooltip": _("Inscrit les métadonnées de date dans fichier. Attention ecrase la valeur existante.")
             }
         },
         "name": {
@@ -282,6 +286,10 @@ HUMAN_TEXT = {
         "gps": {
             "label": "GPS",
             "tooltip": _("Essaie de determiner le lieu de prise de vue \u00e0 partir des metadonn\u00e9es gps\nB\u00e9cessite une connection internet\n/!\\ Peut grandement ralentir l'execution du prgramme")
+        },
+        "is_add_location_metadatas" : {
+            "label" : "Inscrire location",
+            "tooltip" : "Inscrit les métadonnés de location dans le fichier"
         }
     }
 }

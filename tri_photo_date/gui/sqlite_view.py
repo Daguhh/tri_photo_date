@@ -51,6 +51,7 @@ class DatabaseViewer(QTabWidget):
         self.scan_view = ScanTableViewer(db_file)
         self.preview_view = PreviewTableViewer(db_file)
         self.duplcate_view = DuplicateTableViewer(db_file)
+        #self.duplcate_view.setEnabled(False)
 
         self.addTab(self.scan_view, _("Scan"))
         self.addTab(self.preview_view, _("Aperçu"))

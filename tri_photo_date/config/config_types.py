@@ -33,6 +33,8 @@ BOOLEAN = (
     "is_control",
     "is_scan_dest",
     "is_delete_metadatas",
+    "is_add_date_metadatas",
+    "is_add_location_metadatas",
     "is_date_from_filesystem",
     "is_force_date_from_filesystem",
     "is_group",

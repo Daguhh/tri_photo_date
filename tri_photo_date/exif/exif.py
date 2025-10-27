@@ -93,14 +93,25 @@ class ExifTags(dict):
         with ExifTags(out_str) as im_exif:
             im_exif._clear_all_metadatas()
 
+
+    @staticmethod
+    def add_date_to_metadata(in_str, date_time):
+        with ExifTags(in_str) as im_exif:
+            im_exif.im.modify_exif({
+                "Exif.Image.DateTime": date_time,
+                "Exif.Photo.DateTimeOriginal": date_time,
+                "Exif.Photo.DateTimeDigitized": date_time
+            })
+
     def _add_location_to_iptc(self, address_dct):
+        print(address_dct)
         self.im.modify_iptc(address_dct)
 
     @staticmethod
     def add_location_to_iptc(im_str, address_dct):
-        with ExifTags(out_str) as im_exif:
+        with ExifTags(im_str) as im_exif:
             try:
-                im_exif._add_location_to_iptc(location)
+                im_exif._add_location_to_iptc(address_dct)
             except NoExifError as e:
                 print("Issue while loading gps, skipping", e)
 

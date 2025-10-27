@@ -81,6 +81,8 @@ procedure = 1 # int
 ["options.general"]
 # remove metadata of copied/moved files
 is_delete_metadatas = false # bool
+# add date metadata of copied/moved files
+is_add_date_metadatas = false # bool
 # try to get date from filesystem if no other methods works
 is_date_from_filesystem = true # bool
 # Force to take date from filesystem
@@ -111,6 +113,8 @@ simulate = 0 # int
 accuracy = 2 # int
 # Time between 2 api calls. Prevent api overload
 wait = 5 # int
+# add location metadata of copied/moved files
+is_add_location_metadatas = true # bool
 
 [interface]
 # Gui scale factor

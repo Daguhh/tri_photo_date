@@ -85,10 +85,12 @@ class MainWindow(MainWindow_ui):
         wdgs["options.group.display_fmt"] = self.conf_panel.opt_frame.group_by_floating_days.textBox
         wdgs["options.group.floating_nb"] = self.conf_panel.opt_frame.group_by_floating_days.spinBox
         wdgs["options.gps.is_gps"] = self.conf_panel.opt_frame.gps
-        wdgs["options.general.is_delete_metadatas"] = self.conf_panel.opt_frame.is_delete_metadatas
         wdgs["options.general.is_date_from_filesystem"] = self.conf_panel.opt_frame.is_date_from_filesystem
         wdgs["options.general.is_force_date_from_filesystem"] = self.conf_panel.opt_frame.is_force_date_from_filesystem
 
+        wdgs["options.general.is_delete_metadatas"] = self.conf_panel.exec_frame.is_delete_metadatas
+        wdgs["options.gps.is_add_location_metadatas"] = self.conf_panel.exec_frame.is_add_location_metadatas
+        wdgs["options.general.is_add_date_metadatas"] = self.conf_panel.exec_frame.is_add_date_metadatas
         wdgs["action.action_mode"] = self.conf_panel.exec_frame.file_action_wdg.btn_group
 
         wdgs["interface.mode"] = self.menubar.mode_group
