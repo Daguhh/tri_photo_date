@@ -826,22 +826,22 @@ class ImageMetadataDB:
         if res:
             return res[0]
 
-    def get_location(self, im_str):
-        c = self.conn.cursor()
-
-        c.execute(
-            """
-            SELECT
-                location
-            FROM
-                process_preview
-            WHERE
-                path = ?""",
-            (im_str,),
-        )
-        res = c.fetchone()
-        if res :
-            return res
+#    def get_location(self, im_str):
+#        c = self.conn.cursor()
+#
+#        c.execute(
+#            """
+#            SELECT
+#                location
+#            FROM
+#                process_preview
+#            WHERE
+#                path = ?""",
+#            (im_str,),
+#        )
+#        res = c.fetchone()
+#        if res :
+#            return res
 
     def set_group_preview(self, path, date):
         c = self.conn.cursor()

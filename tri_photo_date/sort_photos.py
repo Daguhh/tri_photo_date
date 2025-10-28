@@ -219,7 +219,6 @@ def compute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
             # rename files with duplicates names in same folder
             # Take too much time
             if not CFG["options.group"]["is_group"]:
-                print("rename with incr")
                 out_str = rename_with_incr(db.exist_in_preview, out_str)
 
             # Update the datas base
@@ -308,10 +307,10 @@ def execute(progbar=fake_progbar, LoopCallBack=fake_LoopCallBack):
             has_moved = move_file(in_str, out_str, mode=CFG["action"]["action_mode"])
 
             # Add metadata to new files if needed
-            if has_moved and CFG["options.gps"]["is_gps"] and CFG["options.gps"]["is_add_location_metadatas"]:
-                location = db.get_location(in_str)
-                if location:
-                    ExifTags.add_location_to_iptc(out_str, location)
+            # if has_moved and CFG["options.gps"]["is_gps"] and CFG["options.gps"]["is_add_location_metadatas"]:
+            #     location = db.get_location(in_str)
+            #     if location:
+            #         ExifTags.add_location_to_iptc(out_str, location)
 
             if has_moved and CFG["options.general"]["is_delete_metadatas"]:
                 ExifTags.clear_all_metadatas(out_str)

@@ -124,8 +124,6 @@ def rename_with_incr(exist_func, out_str):
     #get_ind = gen_regex_index(filename)
     #indexes = [get_ind(s) for s in collidable_files]
     indexes = list(exist_func(out_path))
-    print(f"{out_str=}")
-    print(f"{indexes=}")
 
     if indexes:  # duplicates found
         m = max(indexes) + 1
