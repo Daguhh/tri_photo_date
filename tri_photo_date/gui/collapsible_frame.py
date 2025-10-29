@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QFrame, QHBoxLayout, QLabel, QWidget, QSizePolicy
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QWidget, QSizePolicy
 
 from tri_photo_date.config.config_paths import LOCALES_DIR
 from tri_photo_date.utils.constants import GUI_ADVANCED, GUI_NORMAL, GUI_SIMPLIFIED
@@ -20,7 +20,7 @@ class CollapsibleFrame(QFrame):
     def __init__(self, label, *args, color="blue", parent=None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setFrameShape(QFrame.StyledPanel)
+        self.setFrameShape(QFrame.Shape.StyledPanel)
         self.setObjectName(f"myFrame_{color}")
         self.setStyleSheet(
             f"#myFrame_{color}"
@@ -38,7 +38,7 @@ class CollapsibleFrame(QFrame):
         CollapsibleFrame.widget_list += [self]
         label_frame = QLabel(self)
         label_frame.setObjectName(f"myLabel_{color}")
-        label_frame.setStyleSheet(f"padding: 40px 10px; color:{color}")
+        label_frame.setStyleSheet(f"padding: 10px; color:{color}")
         label_frame.setMinimumWidth(500)
         # label_frame.adjustSize()
         label_frame.mousePressEvent = self.label_clicked
@@ -87,7 +87,7 @@ class PreviewCollapsibleFrame(QFrame):
     def __init__(self, label, color, *args, parent=None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setFrameShape(QFrame.StyledPanel)
+        self.setFrameShape(QFrame.Shape.StyledPanel)
         self.setObjectName(f"myFrame_{color}")
         self.setStyleSheet(
             f"#myFrame_{color}" + " { padding: 15px; border: 2px solid " + color + "}"
@@ -98,7 +98,7 @@ class PreviewCollapsibleFrame(QFrame):
         self.layout = QHBoxLayout()
         self.widget = QWidget()
         self.layout.addWidget(self.widget)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.MinimumExpanding)
 
         if label:
             CollapsibleFrame.widget_list += [self]

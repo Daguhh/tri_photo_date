@@ -1,13 +1,10 @@
 import sys
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QIntValidator
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QIntValidator
+from PyQt6.QtWidgets import (
     QMainWindow,
     QApplication,
-    QAction,
     QMenu,
-    QRadioButton,
-    QActionGroup,
     QMessageBox,
     QMenuBar,
     QDialog,
@@ -19,6 +16,8 @@ from PyQt5.QtWidgets import (
     QSpinBox,
     QCheckBox,
 )
+
+from PyQt6.QtGui import QAction, QActionGroup
 import logging
 #import pkg_resources
 
@@ -42,7 +41,7 @@ from tri_photo_date.utils.constants import (
 )
 from tri_photo_date.gui.human_text import WARNING_SWITCH_SIMPLIFY_MODE
 
-def set_global_config(lang='en', size=1, mode=GUI_ADVANCED):
+def set_global_config(lang='en', size="1", mode=GUI_ADVANCED):
 
     global LANG
     LANG = lang
@@ -198,11 +197,12 @@ class WindowMenu(QMenuBar):
             QTimer.singleShot(0, lambda msg=msg: self.show_message_box(msg))
 
     def set_interface_size(self, size):
+        print('change size triggered')
         QTimer.singleShot(0, self.show_message_box)
 
     def show_message_box(self, msg=""):
         msgBox = QMessageBox()
-        msgBox.setIcon(QMessageBox.Warning)
+        msgBox.setIcon(QMessageBox.Icon.Warning)
         msgBox.setWindowTitle(_("Configuration de l'interface"))
         msg = (
             msg
@@ -212,10 +212,10 @@ class WindowMenu(QMenuBar):
             )
         )
         msgBox.setText(msg)
-        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        msgBox.setDefaultButton(QMessageBox.Cancel)
-        button_clicked = msgBox.exec_()
-        if button_clicked == QMessageBox.Ok:
+        msgBox.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
+        msgBox.setDefaultButton(QMessageBox.StandardButton.Cancel)
+        button_clicked = msgBox.exec()
+        if button_clicked == QMessageBox.StandardButton.Ok:
             self.parent.quit()
         # elif button_clicked == QMessageBox.Cancel:
 
@@ -229,23 +229,20 @@ class WindowMenu(QMenuBar):
         )
         msg_box = QMessageBox()
         msg_box.setText(msg)
-        msg_box.addButton("Apply and continue", QMessageBox.RejectRole)
-        msg_box.addButton("Quit and keep config", QMessageBox.AcceptRole)
-        reset_button = msg_box.addButton("Quit and reset config", QMessageBox.DestructiveRole)
+        apply_n_continue_button = msg_box.addButton("Apply and continue", QMessageBox.ButtonRole.RejectRole)
+        quit_n_keep_button = msg_box.addButton("Quit and keep config", QMessageBox.ButtonRole.AcceptRole)
+        quit_n_reset_button = msg_box.addButton("Quit and reset config", QMessageBox.ButtonRole.DestructiveRole)
         #apply_button = msg_box.addButton("Apply and Continue", QMessageBox.ActionRole)
 
-        msg_box.exec_()
+        msg_box.exec()
 
-        if msg_box.clickedButton() == reset_button:
+        if msg_box.clickedButton() == quit_n_reset_button:
             # Perform the reset action
             self.parent.quit_n_reset()
-            pass  # Replace 'pass' with your reset code
-        elif msg_box.result() == QMessageBox.Accepted:
+        elif msg_box.clickedButton() == quit_n_keep_button:
             # Perform the quit action
             self.parent.quit()
-            pass  # Replace 'pass' with your quit code
-        #elif msg_box.clickedButton() == apply_button:
-        else:
+        elif msg_box.clickedButton() == apply_n_continue_button:
             # Continue running the application
             pass  # Replace 'pass' with any other code to run when the user clicks "Don't Quit"
 
@@ -257,25 +254,25 @@ class WindowMenu(QMenuBar):
         text = open(str(ABOUT_PATH).format(LANG)).read()
         msgBox = QMessageBox()
         msgBox.setWindowTitle(_("A propos"))
-        msgBox.setTextFormat(Qt.MarkdownText)
+        msgBox.setTextFormat(Qt.TextFormat.MarkdownText)
         msgBox.setText(text)
-        msgBox.exec_()
+        msgBox.exec()
 
     def load_acknowledgments(self):
         text = open(str(AKNOLEG_PATH).format(LANG)).read()
         msgBox = QMessageBox()
         msgBox.setWindowTitle(_("README"))
-        msgBox.setTextFormat(Qt.MarkdownText)
+        msgBox.setTextFormat(Qt.TextFormat.MarkdownText)
         msgBox.setText(text)
-        msgBox.exec_()
+        msgBox.exec()
 
     def show_help(self):
         readme_text = open(str(HELP_PATH).format(LANG)).read()
         msgBox = QMessageBox()
         msgBox.setWindowTitle(_("README"))
-        msgBox.setTextFormat(Qt.MarkdownText)
+        msgBox.setTextFormat(Qt.TextFormat.MarkdownText)
         msgBox.setText(readme_text)
-        msgBox.exec_()
+        msgBox.exec()
 
     def open_file_browser(self):
         import subprocess

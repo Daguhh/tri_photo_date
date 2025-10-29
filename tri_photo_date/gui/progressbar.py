@@ -1,7 +1,7 @@
 
 import time
 
-from PyQt5.QtWidgets import QVBoxLayout, QLabel, QApplication, QProgressBar
+from PyQt6.QtWidgets import QVBoxLayout, QLabel, QApplication, QProgressBar
 
 from tri_photo_date.utils.small_tools import limited_string
 from tri_photo_date.config.config_loader import CONFIG

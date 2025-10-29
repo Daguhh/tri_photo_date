@@ -1,5 +1,5 @@
-from PyQt5.QtGui import QStandardItem
-from PyQt5.QtWidgets import QPushButton, QCheckBox, QRadioButton, QCheckBox, QHBoxLayout, QLabel, QListWidgetItem, QComboBox
+from PyQt6.QtGui import QStandardItem
+from PyQt6.QtWidgets import QPushButton, QCheckBox, QRadioButton, QCheckBox, QHBoxLayout, QLabel, QListWidgetItem, QComboBox
 
 from tri_photo_date.config.config_paths import LOCALES_DIR
 

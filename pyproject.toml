@@ -11,7 +11,7 @@ include = ["resources/en/acknowledgments.md", "resources/en/help.md", "resources
 
 [tool.poetry.dependencies]
 python = ">=3.9,<=3.13.9"
-PyQt5 = "^5.15.9"
+PyQt6 = "^6.10.0"
 geopy = "^2.3.0"
 pyexiv2 = "^2.8.1"
 certifi = "^2025.10.5"

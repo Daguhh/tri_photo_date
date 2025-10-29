@@ -19,6 +19,9 @@ from tri_photo_date.cli.cli_argparser import (
 from tri_photo_date.config.config_paths import CONFIG_PATH, APP_NAME, DEFAULT_CONFIG_PATH, LOCALES_DIR
 from tri_photo_date.config.config_types import STRING, LIST, PATH, BOOLEAN, INTEGER, FLOAT
 
+from PyQt6.QtCore import Qt
+from PyQt6 import QtWidgets
+
 cli_mode, config_path = cli_arguments()
 
 if cli_mode == CLI_DUMP:
@@ -51,7 +54,13 @@ def pyqt2value(k, v):
 def value2pyqt(k, v):  # for pyqt
 
     if k in BOOLEAN:
-        v = 2 * int(v)
+        #v = 2 * int(v) # pyqt5
+        if v == 0: # pyqt6
+            v = Qt.CheckState.Unchecked
+        # elif v == 1:
+        #     v = Qt.CheckState.PartiallyChecked
+        elif v == 1:
+            v= Qt.CheckState.Checked
     elif k in LIST:
         v = ",".join(v)  # tuple(c.strip() for c in v.split(","))
     elif k in FLOAT:
@@ -120,6 +129,8 @@ class ConfigDict(dict):
 
     def set_from_pyqt(self, k, v):
 
+        print('--------------------')
+        print(k,' - ', v)
         s,p = k.rsplit('.', 1)
         v = pyqt2value(p,v)
         self[s][p] = v
@@ -142,8 +153,9 @@ class ConfigDict(dict):
     def load_config(self, config_file):
 
         with open(config_file, 'r') as f:
-            self.doc = tomlkit.parse(f.read())
-        self.update(self.doc)
+            #self.doc = tomlkit.parse(f.read())
+            self.doc = tomlkit.load(f)
+        self.update(self.doc.unwrap())
 
     def save_config(self):
 

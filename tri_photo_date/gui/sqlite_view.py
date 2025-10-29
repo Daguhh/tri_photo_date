@@ -3,8 +3,8 @@ import subprocess
 import platform
 
 import sqlite3
-from PyQt5.QtCore import QSettings
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import QSettings
+from PyQt6.QtWidgets import (
     QWidget,
     QTableWidget,
     QHeaderView,
@@ -75,10 +75,10 @@ class TableViewer(QWidget):
         self.table = QTableWidget()
         self.table.setColumnCount(7)
         # self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         self.table.horizontalHeader().sectionResized.connect(self.save_column_sizes)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
-        self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.MinimumExpanding)
+        self.table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.MinimumExpanding)
         self.table.setSortingEnabled(True)
 
         layout = QVBoxLayout()

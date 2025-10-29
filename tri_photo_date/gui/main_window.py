@@ -2,19 +2,17 @@
 
 import logging
 
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtWidgets import (
     QApplication,
     QLineEdit,
     QCheckBox,
-    QAction,
-    QActionGroup,
     QDialog,
-    QAction,
     QComboBox,
     QButtonGroup,
     QSpinBox,
 )
+from PyQt6.QtGui import QAction, QActionGroup
 
 # Modules
 from tri_photo_date import sort_photos
@@ -29,6 +27,9 @@ from tri_photo_date.explore_db import (
 
 # Load and init ui
 from  tri_photo_date.gui import main_window_ui
+#import ipdb; ipdb.set_trace()
+sui=CFG['interface']['size']
+print(f"{sui=}", type(sui))
 main_window_ui.set_global_config(
     CFG['interface']['lang'],
     CFG['interface']['size'],
@@ -118,9 +119,11 @@ class MainWindow(MainWindow_ui):
             elif isinstance(wdg, QComboBox):
                 wdg.currentIndexChanged.connect(callback)
             elif isinstance(wdg, QButtonGroup):
-                wdg.buttonClicked[int].connect(callback)
+                print(prop, wdg)
+                #wdg.buttonClicked[int].connect(callback) # PyQt5
+                wdg.buttonClicked.connect(lambda button, wdg=wdg, prop=prop : callback(wdg.id(button), prop))  # Pyqt6
             elif isinstance(wdg, QActionGroup):
-                wdg.triggered.connect(lambda s, prop=prop: callback(s.data(), prop))
+                wdg.triggered.connect(lambda button_2, prop=prop: callback(button_2.data(), prop))
             elif isinstance(wdg, QAction):
                 pass  # link manually to specific action
 
@@ -194,7 +197,7 @@ class MainWindow(MainWindow_ui):
         self.wdgs_settings = wdgs
         self.load_conf(self.wdgs_settings)
 
-        res = popup.exec_()
+        res = popup.exec()
         if res == QDialog.Accepted:
             val = popup.get_values()
 

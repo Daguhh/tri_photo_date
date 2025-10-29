@@ -21,13 +21,13 @@ def run_shell(args):
 
 def run_gui():
     logging.info("Running gui")
-    from PyQt5.QtWidgets import QApplication
+    from PyQt6.QtWidgets import QApplication
     from tri_photo_date.gui import MainWindow
 
     app = QApplication(sys.argv)
     ex = MainWindow()
     ex.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 def main():
 

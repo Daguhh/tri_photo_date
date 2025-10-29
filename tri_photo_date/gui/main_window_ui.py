@@ -11,12 +11,12 @@ from collections import deque
 from tomlkit import parse
 
 #from PyQt5.QtWidgets import QApplication, QWidget, QProgressBar
-from PyQt5.QtGui import QPainter, QBrush, QColor, QPen
-from PyQt5.QtChart import QChart, QChartView, QPieSeries, QPieSlice, QValueAxis
+from PyQt6.QtGui import QPainter, QBrush, QColor, QPen
+#from PyQt6.QtChart import QChart, QChartView, QPieSeries, QPieSlice, QValueAxis
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QThread, QTimer, QEventLoop, QSize, pyqtSignal, QPoint, QRect
-from PyQt5.QtGui import (
+from PyQt6 import QtCore
+from PyQt6.QtCore import Qt, QThread, QTimer, QEventLoop, QSize, pyqtSignal, QPoint, QRect
+from PyQt6.QtGui import (
     QKeySequence,
     QIcon,
     QPixmap,
@@ -29,8 +29,10 @@ from PyQt5.QtGui import (
     QColor,
     QPen,
 )
-from PyQt5.QtChart import QChart, QChartView, QPieSeries, QPieSlice, QValueAxis
-from PyQt5.QtWidgets import (
+from PyQt6.QtGui import QAction, QActionGroup
+
+#from PyQt6.QtChart import QChart, QChartView, QPieSeries, QPieSlice, QValueAxis
+from PyQt6.QtWidgets import (
     QApplication,
     QWidget,
     QVBoxLayout,
@@ -46,14 +48,11 @@ from PyQt5.QtWidgets import (
     QFileDialog,
     QStyle,
     QTabWidget,
-    QAction,
     QListView,
     QSizePolicy,
     QMainWindow,
-    QActionGroup,
     QDialog,
     QMenu,
-    QAction,
     QComboBox,
     QTextEdit,
     QButtonGroup,
@@ -121,7 +120,7 @@ from tri_photo_date.gui.progressbar import MyProgressBar
 from tri_photo_date.utils.small_tools import get_lang
 
 
-def set_global_config(lang='en', size=1, mode=GUI_ADVANCED):
+def set_global_config(lang='en', size="1", mode=GUI_ADVANCED):
 
     lang = get_lang(lang)
     windowmenu.set_global_config(lang, size, mode)
@@ -153,7 +152,7 @@ class LoopCallBack:
     def run(cls):
         loop = QEventLoop()
         QTimer.singleShot(0, loop.quit)
-        loop.exec_()
+        loop.exec()
         if cls.stopped:
             return True
         return False
@@ -194,7 +193,7 @@ class MainWindow_ui(QMainWindow):
         self.tool_panel.setLayout(toolboxLyt)
 
         toolscroll_area = QScrollArea()
-        toolscroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        toolscroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         toolscroll_area.setWidgetResizable(True)
         conf_panel_content = QWidget()
         conf_panel_content.setLayout(QVBoxLayout())
@@ -207,12 +206,12 @@ class MainWindow_ui(QMainWindow):
 
         tabs = QTabWidget()
         tabs.setMinimumWidth(450)
-        tabs.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        tabs.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         tabs.setMaximumWidth(700)
-        tabs.setTabPosition(QTabWidget.West)
+        tabs.setTabPosition(QTabWidget.TabPosition.West)
 
         scroll_area = QScrollArea()
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll_area.setWidgetResizable(True)
         conf_panel_content = QWidget()
         conf_panel_content.setLayout(QVBoxLayout())
@@ -625,14 +624,14 @@ class LabelNLineEdit(QHBoxLayout):
 
         if GUI_MODE == GUI_SIMPLIFIED:
             combo.addItems(options)
-            combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             #self.textBox = QLineEdit()
             self.textBox = CustomQLineEdit(combo=combo)
             self.textBox.setHidden(True)
 
         else:
             combo.setEditable(True)
-            combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             combo.setToolTip(tooltip)
             combo.lineEdit().setPlaceholderText(placeholder)
             model = combo.model()
@@ -660,8 +659,8 @@ class LabelNLineEdit(QHBoxLayout):
         return self.textBox
 
     def select_directory(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks
+        # options = QFileDialog.Options()
+        options = QFileDialog.Option.ShowDirsOnly | QFileDialog.Option.DontResolveSymlinks
         directory = QFileDialog.getExistingDirectory(
             self.parent.parent, _("Selectionner le dossier"), options=options
         )
@@ -819,7 +818,7 @@ class GPSTab(CollapsibleFrame):
 class CopyableListWidget(QListWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
     def show_context_menu(self, pos):
@@ -848,12 +847,12 @@ class ListExtsTab(CollapsibleFrame):
         list_layout = QVBoxLayout()
         list_widget = QListWidget()
         self.listext_wdg = list_widget
-        self.listext_wdg.setViewMode(QListView.IconMode)
+        self.listext_wdg.setViewMode(QListView.ViewMode.IconMode)
         self.listext_wdg.setSpacing(10)
-        self.listext_wdg.setResizeMode(QListWidget.Adjust)
+        self.listext_wdg.setResizeMode(QListWidget.ResizeMode.Adjust)
         self.listext_wdg.itemChanged.connect(self.validate_ext)
 
-        size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        size_policy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.listext_wdg.setSizePolicy(size_policy)
 
         list_layout.addWidget(list_widget)
@@ -865,7 +864,9 @@ class ListExtsTab(CollapsibleFrame):
         self.user_choice_extentions = []
         for i in range(self.listext_wdg.count()):
             item = self.listext_wdg.item(i)
-            if item.checkState():
+            print(item)
+            print(type(item.checkState()))
+            if item.checkState() == Qt.CheckState.Checked:
                 self.user_choice_extentions.append(item.text().strip("."))
 
         self.user_choice_extentions = ",".join(self.user_choice_extentions)
@@ -877,9 +878,9 @@ class ListExtsTab(CollapsibleFrame):
         for ext in exts:
             # item = QListWidgetItem(ext)
             item = ItemWidget(ext)
-            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-            item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
-            item.setCheckState(Qt.Unchecked)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignLeft)
+            item.setCheckState(Qt.CheckState.Unchecked)
             self.listext_wdg.addItem(item)
         self.listext_wdg.repaint()
 
@@ -889,12 +890,12 @@ class ListCameraTab(CollapsibleFrame):
         list_layout = QVBoxLayout()
         list_widget = QListWidget()
         self.listapp_wdg = list_widget
-        self.listapp_wdg.setViewMode(QListView.IconMode)
+        self.listapp_wdg.setViewMode(QListView.ViewMode.IconMode)
         self.listapp_wdg.setSpacing(10)
-        self.listapp_wdg.setResizeMode(QListWidget.Adjust)
+        self.listapp_wdg.setResizeMode(QListWidget.ResizeMode.Adjust)
         self.listapp_wdg.itemChanged.connect(self.validate_cam)
 
-        size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        size_policy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.listapp_wdg.setSizePolicy(size_policy)
 
         list_layout.addWidget(list_widget)
@@ -905,7 +906,7 @@ class ListCameraTab(CollapsibleFrame):
         user_choice_cameras = []
         for i in range(self.listapp_wdg.count()):
             item = self.listapp_wdg.item(i)
-            if item.checkState():
+            if item.checkState() == Qt.CheckState.Checked:
                 text = item.text().strip()
                 user_choice_cameras.append(text)
 
@@ -917,9 +918,9 @@ class ListCameraTab(CollapsibleFrame):
         for camera in cameras:
             # item = QListWidgetItem(ext)
             item = ItemWidget(camera)
-            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-            item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
-            item.setCheckState(Qt.Unchecked)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignLeft)
+            item.setCheckState(Qt.CheckState.Unchecked)
             self.listapp_wdg.addItem(item)
         self.listapp_wdg.repaint()
 
