@@ -78,7 +78,7 @@ def flatten_dct(d, parent_key='', sep='.'):
     return dict(items)
 
 import re
-reg_split = re.compile('\s*=.*#\s*')
+reg_split = re.compile(r'\s*=.*#\s*')
 
 
 def get_config_comments():
