@@ -265,9 +265,9 @@ class MainWindow(MainWindow_ui):
         self.tool_panel.exts.set_ext_list(exts)
 
     def keyPressEvent(self, e):
-        if e.key() == Qt.Key_Escape:
+        if e.key() == Qt.Key.Key_Escape:
             self.quit()
-        elif e.key() == Qt.Key_Q:
+        elif e.key() == Qt.Key.Key_Q:
             self.quit()
 
     def quit(self):

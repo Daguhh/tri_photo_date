@@ -71,11 +71,17 @@ class WindowMenu(QMenuBar):
 
         self.load_action = QAction(_("Charger"), self)
         file_menu.addAction(self.load_action)
+        self.load_action.setDisabled(True)
 
         self.save_action = QAction(_("Sauvegarder"), self)
         file_menu.addAction(self.save_action)
+        self.save_action.setDisabled(True)
 
-        file_menu.setDisabled(True)
+        self.quit_action = QAction(_("Quitter"))
+        file_menu.addAction(self.quit_action)
+        self.quit_action.triggered.connect(lambda _ : self.parent.quit())
+
+        #file_menu.setDisabled(True)
 
         # Edit menu
         edit_menu = self.addMenu(_("Edition"))
