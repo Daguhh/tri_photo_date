@@ -1,7 +1,7 @@
 # TriPhoteDate build scripts
 
 help () {
-echo "usage build.sh [-h|--help] [-b|--build-bin] [-d|--delete-venv]
+echo "usage build.sh [-h|--help] [-b|--build-bin] [-d|--delete-venv] [-c|--clean]
 
 Build tri_photo_date binaries
 
@@ -10,6 +10,7 @@ options:
   -b, --build-package   build python package
   -B, --build-bin       build linux binary
   -d, --delete-venv     delete build environnement
+  -c, --clean           remove build files
 "
 }
 
@@ -18,6 +19,7 @@ if [[ " $@ " =~ " -h " ]] || [[ " $@ " =~ " --help " ]] ; then help; exit 0; fi
 if [[ " $@ " =~ " -b " ]] || [[ " $@ " =~ " --build-package " ]] ; then BUILD_PACKAGE=true; fi
 if [[ " $@ " =~ " -B " ]] || [[ " $@ " =~ " --build-bin " ]] ; then BUILD_BIN=true; fi
 if [[ " $@ " =~ " -d " ]] || [[ " $@ " =~ " --delete-venv " ]] ; then DELETE_VENV=true; fi
+if [[ " $@ " =~ " -c " ]] || [[ " $@ " =~ " --clean " ]] ; then DELETE_BUILD_FILES=true; fi
 if [[ " $@ " =~ " --with-speedbar " ]] ; then SPEED_BAR="--with speedbar"; fi
 
 # test python installation
@@ -36,7 +38,11 @@ fi
 poetry env use system
 
 if [[ "${BUILD_PACKAGE}" == true ]]; then
+    cp README.md tri_photo_date/resources/README.md
+    cp LICENSE tri_photo_date/resources/LICENSE
     poetry build
+    rm tri_photo_date/resources/README.md
+    rm tri_photo_date/resources/LICENSE
 fi
 
 if [[ "${BUILD_BIN}" == true ]]; then
@@ -54,14 +60,14 @@ if [[ "${BUILD_BIN}" == true ]]; then
     poetry run pyinstaller \
         --onefile \
         --paths $venv_path\Lib\site-packages \
-        --icon="resources/icon.ico" \
-        --add-data "resources/icon.ico:." \
-        --add-data "resources/strftime_help.html:." \
-        --add-data "resources/en/*:./resources/en/" \
-        --add-data "resources/fr/*:./resources/fr/" \
-        --add-data "tri_photo_date/config/default_config.toml:./config/default_config.toml" \
-        --add-data "README.md:." \
-        --add-data "LICENSE:." \
+        --icon="tri_photo_date/resources/icon.ico" \
+        --add-data "tri_photo_date/resources/icon.ico:." \
+        --add-data "tri_photo_date/messages/strftime_help.html:./messages/" \
+        --add-data "tri_photo_date/messages/en/*:./messages/en/" \
+        --add-data "tri_photo_date/messages/fr/*:./messages/fr/" \
+        --add-data "tri_photo_date/config/default_config.toml:./config/" \
+        --add-data "README.md:./resources/" \
+        --add-data "LICENSE:./resources/" \
         --add-data "tri_photo_date/locales/fr/LC_MESSAGES/base.mo:./locales/fr/LC_MESSAGES/" \
         --add-data "tri_photo_date/locales/en/LC_MESSAGES/base.mo:./locales/en/LC_MESSAGES/" \
         --noconfirm \
@@ -77,3 +83,6 @@ if [[ "${DELETE_VENV}" == true ]]; then
     poetry env remove $venv_name
 fi
 
+if [[ "${DELETE_BUILD_FILES}" == true ]]; then
+    rm -r build
+fi

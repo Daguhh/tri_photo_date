@@ -198,7 +198,7 @@ class MainWindow(MainWindow_ui):
         self.load_conf(self.wdgs_settings)
 
         res = popup.exec()
-        if res == QDialog.Accepted:
+        if res == QDialog.DialogCode.Accepted:
             val = popup.get_values()
 
             CFG.set_from_pyqt("files.is_max_hash_size", val["max_hash"][0])

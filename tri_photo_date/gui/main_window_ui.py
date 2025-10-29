@@ -972,6 +972,7 @@ class DateTab(CollapsibleFrame):
         self.collapse(True)
 
         layout = QHBoxLayout()
+        print(f"{STRFTIME_HELP_PATH=}")
         strftime_help = open(STRFTIME_HELP_PATH).read()
         text_widget = QTextEdit()
         text_widget.setHtml(strftime_help)

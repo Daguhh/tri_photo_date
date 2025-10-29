@@ -7,7 +7,18 @@ license = "LICENSE"
 readme = "README.md"
 packages = [{include = "tri_photo_date"}]
 # Include license and readme files in the distribution package
-include = ["resources/en/acknowledgments.md", "resources/en/help.md", "resources/en/about.md", "resources/fr/acknowledgments.md", "resources/fr/help.md", "resources/fr/about.md","resources/icon.ico", "LICENSE", "README.md", "resources/strftime_help.html"]
+include = [
+    "resources/en/acknowledgments.md",
+    "resources/en/help.md",
+    "resources/en/about.md",
+    "resources/fr/acknowledgments.md",
+    "resources/fr/help.md",
+    "resources/fr/about.md",
+    "resources/icon.ico",
+    "LICENSE",
+    "README.md",
+    "resources/strftime_help.html"
+]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<=3.13.9"
