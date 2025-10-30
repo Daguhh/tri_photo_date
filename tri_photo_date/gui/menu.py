@@ -79,7 +79,7 @@ class WindowMenu(QMenuBar):
 
         self.quit_action = QAction(_("Quitter"))
         file_menu.addAction(self.quit_action)
-        self.quit_action.triggered.connect(lambda _ : self.parent.quit())
+        self.quit_action.triggered.connect(self.parent.quit)
 
         #file_menu.setDisabled(True)
 
