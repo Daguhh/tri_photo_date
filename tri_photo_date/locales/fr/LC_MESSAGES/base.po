@@ -6,378 +6,763 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-05-25 00:57+0200\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-29 22:58+0100\n"
 "PO-Revision-Date: 2023-05-25 00:58+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: fr\n"
 "Language-Team: fr <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "Generated-By: Babel 2.10.3\n"
 
-#: tri_photo_date/gui/human_text.py:2 tri_photo_date/gui/human_text.py:28
-msgid "{media_photos}"
+#: tri_photo_date/gui/sqlite_view.py:56
+#: tri_photo_date/gui/main_window_ui.py:275
+msgid "Scan"
 msgstr ""
 
-#: tri_photo_date/gui/human_text.py:3 tri_photo_date/gui/human_text.py:28
-msgid "{media_videos}"
+#: tri_photo_date/gui/sqlite_view.py:57
+msgid "Aperçu"
 msgstr ""
 
-#: tri_photo_date/gui/human_text.py:7 tri_photo_date/gui/human_text.py:45
-msgid "{Année/Année-Mois}"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:8 tri_photo_date/gui/human_text.py:45
-msgid "{Année/Mois}"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:9 tri_photo_date/gui/human_text.py:45
-msgid "{Appareil/Année-Mois}"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:10 tri_photo_date/gui/human_text.py:45
-msgid "{Année-Mois - Pays}"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:11 tri_photo_date/gui/human_text.py:45
-msgid "{Année-Mois - Ville}"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:12
-msgid "{Année-Mois-Jour - Ville}"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:13 tri_photo_date/gui/human_text.py:51
-msgid "{Année-Mois-Jour - Pays - Ville}"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:14 tri_photo_date/gui/human_text.py:51
-msgid "{Garder le nom de fichier}"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:19 tri_photo_date/gui/human_text.py:36
-msgid "Dossier"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:20
-msgid "Chemin du dossier contenant les photos"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:21
-msgid "D:\\CleUsb\\Images"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:25 tri_photo_date/gui/main_window.py:686
-msgid "Extensions"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:26
-msgid ""
-"Liste des extentions séparées par des virgules\n"
-"Voir onglet Extentions"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:31
-msgid "Appareils photo"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:32
-msgid ""
-"Liste des appareils photos séparés par des virgules\n"
-"Ne copie que les photos prises par ces appareils\n"
-"\n"
-"Si le champs est laissé vide, le paramètre est ignoré"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:37
-msgid "Chemin du dossier où copier les photos"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:38
-msgid "C:\\Users\\_Mon_Nom_\\Images"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:42
-msgid "Chemin relatif"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:43
-msgid "Format du chemin relatif au dossier précédent!"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:43
-msgid "Utilisez des Tags de métadonnées (onglet Metadata)"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:43
-msgid "ou des codes de formatage des dates (onglet Date)"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:43
-msgid ""
-"Pour utiliser un tag de métadonnée, il suffit d'ajouter dans le chemin un"
-" tag entre crochets :"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:43
-msgid "ou"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:48
-msgid "Nom du fichier"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:49
-msgid "Nom à donner aux fichiers, supporte les mêmes formats que 'Chemin relatif'"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:55
-msgid "Date depuis nom"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:56
-msgid ""
-"Essaie d'abord d'obtenir la date de prise de vue depuis le nom de "
-"fichier.\n"
-"Tente d'identifier dans le nom de fichier une date suivant le format "
-"précisé.\n"
-"Utilisez les formats definis dans l'onglet 'Date'"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:64 tri_photo_date/gui/menu.py:96
-msgid "Affiche les étapes du programme dans le terminal"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:70
-msgid ""
-"Essaie de determiner le lieu de prise de vue à partir des metadonnées gps"
-"\n"
-"Bécessite une connection internet\n"
-"/!\\ Peut grandement ralentir l'execution du prgramme"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:74
-msgid "Recherche récursive"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:75
-msgid "Cherche dans les sous dossier du dossier 'Source'"
-msgstr ""
-
-#: tri_photo_date/gui/human_text.py:78
+#: tri_photo_date/gui/sqlite_view.py:58 tri_photo_date/gui/human_text.py:211
+#: tri_photo_date/gui/main_window_ui.py:362
 msgid "Dupliqués"
 msgstr ""
 
-#: tri_photo_date/gui/human_text.py:78
-msgid "Ne copie pas les fichiers dupliqués"
+#: tri_photo_date/gui/sqlite_view.py:60
+msgid "Liste des fichiers scannés"
 msgstr ""
 
-#: tri_photo_date/gui/human_text.py:82
-msgid ""
-"Empeche la copie de fichiers lorsqu'ils sont déjà présent dans le dossier"
-" de destinaion"
+#: tri_photo_date/gui/sqlite_view.py:61
+msgid "Aperçu des modifications à effectuer"
 msgstr ""
 
-#: tri_photo_date/gui/human_text.py:87
-msgid "Oublie les fichiers déjà déplacés entre deux exécutions du programme"
+#: tri_photo_date/gui/sqlite_view.py:62
+msgid "Fichiers dupliqués"
 msgstr ""
 
-#: tri_photo_date/gui/human_text.py:92
-msgid "Résolution des noms de rue, ville, region, pays :"
+#: tri_photo_date/gui/sqlite_view.py:71
+msgid "Entrez une chaine de caractères pour filtrer"
 msgstr ""
 
-#: tri_photo_date/gui/human_text.py:94
-msgid "Ajoute la localisation à partir des données GPS à toutes les photos"
+#: tri_photo_date/gui/sqlite_view.py:127 tri_photo_date/gui/sqlite_view.py:173
+#: tri_photo_date/gui/sqlite_view.py:213 tri_photo_date/gui/human_text.py:117
+#: tri_photo_date/gui/human_text.py:162
+msgid "Dossier"
 msgstr ""
 
-#: tri_photo_date/gui/human_text.py:95
-msgid "définies par les paramètres de l'onglet 'Main', section 'Source'. "
+#: tri_photo_date/gui/sqlite_view.py:128 tri_photo_date/gui/sqlite_view.py:174
+#: tri_photo_date/gui/sqlite_view.py:214
+msgid "Nom"
 msgstr ""
 
-#: tri_photo_date/gui/human_text.py:97
-msgid "/!\\ envoie les coordonnées GPS au site openstreetmap"
+#: tri_photo_date/gui/sqlite_view.py:129
+msgid "Nouveau dossier"
 msgstr ""
 
-#: tri_photo_date/gui/human_text.py:98
-msgid "La résolution des noms peut prendre du temps : 3-4 sec par photos"
+#: tri_photo_date/gui/sqlite_view.py:130
+msgid "Nouveau nom"
 msgstr ""
 
-#: tri_photo_date/gui/main_window.py:236
-msgid "Selectionner le dossier"
+#: tri_photo_date/gui/sqlite_view.py:131
+msgid "Lieu"
 msgstr ""
 
-#: tri_photo_date/gui/main_window.py:252
-msgid "Source"
+#: tri_photo_date/gui/sqlite_view.py:132
+msgid "Groupe"
 msgstr ""
 
-#: tri_photo_date/gui/main_window.py:273
-msgid "Destination"
+#: tri_photo_date/gui/sqlite_view.py:133 tri_photo_date/gui/human_text.py:223
+msgid "Date"
 msgstr ""
 
-#: tri_photo_date/gui/main_window.py:292
-msgid "Options"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:337
-msgid "Simuler"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:338
-msgid "Copier"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:339
-msgid "Déplacer"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:354
-msgid "Sauvegarder la configuration"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:357
-msgid "Sauvegarder && Executer"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:360
-msgid "Interrompre"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:453
-msgid "tags GPS"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:480
-msgid "Executer"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:516
-msgid "Codes de formatage des dates"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:552
-msgid "Métadonnées"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:563 tri_photo_date/gui/main_window.py:698
-#: tri_photo_date/gui/main_window.py:721
-msgid "Charger depuis les Fichiers"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:585 tri_photo_date/gui/main_window.py:594
-#: tri_photo_date/gui/main_window.py:639
-msgid "utiles"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:590 tri_photo_date/gui/main_window.py:639
-msgid "toutes"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:592 tri_photo_date/gui/main_window.py:639
-msgid "en commun"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:612
-msgid "Copier la propriété"
-msgstr ""
-
-#: tri_photo_date/gui/main_window.py:709
+#: tri_photo_date/gui/sqlite_view.py:175
+#: tri_photo_date/gui/main_window_ui.py:889
 msgid "Appareil"
 msgstr ""
 
-#: tri_photo_date/gui/main_window.py:806
-msgid "Nombre de fichiers :"
+#: tri_photo_date/gui/sqlite_view.py:215
+msgid "md5_file"
 msgstr ""
 
-#: tri_photo_date/gui/main_window.py:812
-msgid "Dupliqués :"
+#: tri_photo_date/gui/sqlite_view.py:216
+msgid "md5_data"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:22
+#: tri_photo_date/gui/sqlite_view.py:217
+msgid "date"
+msgstr ""
+
+#: tri_photo_date/gui/sqlite_view.py:218
+msgid "camera"
+msgstr ""
+
+#: tri_photo_date/gui/menu.py:70 tri_photo_date/gui/human_text.py:215
 msgid "Fichier"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:24
+#: tri_photo_date/gui/menu.py:72
 msgid "Charger"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:28
+#: tri_photo_date/gui/menu.py:76
 msgid "Sauvegarder"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:35
+#: tri_photo_date/gui/menu.py:80
+msgid "Quitter"
+msgstr ""
+
+#: tri_photo_date/gui/menu.py:87
 msgid "Edition"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:37
+#: tri_photo_date/gui/menu.py:89
 msgid "Ouvrir le fichier de configuration"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:45
+#: tri_photo_date/gui/menu.py:92
+msgid "Configurer les filtres des fichiers"
+msgstr ""
+
+#: tri_photo_date/gui/menu.py:99
 msgid "Interface"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:48
+#: tri_photo_date/gui/menu.py:102
 msgid "Apparence"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:50
+#: tri_photo_date/gui/menu.py:103
 msgid "Avancée"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:52
+#: tri_photo_date/gui/menu.py:104
 msgid "Simplifiée"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:71
+#: tri_photo_date/gui/menu.py:122
 msgid "Taille"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:90
+#: tri_photo_date/gui/menu.py:138
+msgid "Langue"
+msgstr ""
+
+#: tri_photo_date/gui/menu.py:144
+msgid "locale"
+msgstr ""
+
+#: tri_photo_date/gui/menu.py:158 tri_photo_date/gui/main_window_ui.py:228
 msgid "Outils"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:105 tri_photo_date/gui/menu.py:170
+#: tri_photo_date/gui/menu.py:163
+msgid "Affiche les étapes du programme dans le terminal"
+msgstr ""
+
+#: tri_photo_date/gui/menu.py:171 tri_photo_date/gui/menu.py:172
+#: tri_photo_date/gui/menu.py:262
 msgid "A propos"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:106
-msgid "About"
-msgstr ""
-
-#: tri_photo_date/gui/menu.py:110 tri_photo_date/gui/menu.py:165
+#: tri_photo_date/gui/menu.py:176 tri_photo_date/gui/menu.py:257
 msgid "License"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:114
+#: tri_photo_date/gui/menu.py:180
 msgid "Credits"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:118
+#: tri_photo_date/gui/menu.py:184
 msgid "Aide"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:131
+#: tri_photo_date/gui/menu.py:212
 msgid "Configuration de l'interface"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:132
+#: tri_photo_date/gui/menu.py:217 tri_photo_date/gui/menu.py:233
 msgid ""
 "Les changements prendrons effet au prochain lancement.\n"
 "Quitter l'interface ?"
 msgstr ""
 
-#: tri_photo_date/gui/menu.py:150
-msgid "Attention, les paramètres de la section 'options' seront conservés"
-msgstr ""
-
-#: tri_photo_date/gui/menu.py:151
-msgid "mais ne seront plus modifiables en mode 'simplifié'"
-msgstr ""
-
-#: tri_photo_date/gui/menu.py:178 tri_photo_date/gui/menu.py:186
+#: tri_photo_date/gui/menu.py:270 tri_photo_date/gui/menu.py:278
 msgid "README"
 msgstr ""
 
+#: tri_photo_date/gui/menu.py:305
+msgid "Empreinte partielles maximum"
+msgstr ""
+
+#: tri_photo_date/gui/menu.py:317
+msgid "Ignorer fichiers plus petit que"
+msgstr ""
+
+#: tri_photo_date/gui/menu.py:329
+msgid "Ignorer les fichiers plus grand que"
+msgstr ""
+
+#: tri_photo_date/gui/small_widgets.py:26
+#: tri_photo_date/gui/main_window_ui.py:956
+msgid "toutes"
+msgstr ""
+
+#: tri_photo_date/gui/small_widgets.py:26
+#: tri_photo_date/gui/main_window_ui.py:958
+msgid "en commun"
+msgstr ""
+
+#: tri_photo_date/gui/small_widgets.py:26
+#: tri_photo_date/gui/main_window_ui.py:952
+#: tri_photo_date/gui/main_window_ui.py:960
+msgid "utiles"
+msgstr ""
+
+#: tri_photo_date/gui/small_widgets.py:76
+msgid "Interrompre"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:15
+msgid ""
+"Attention, les paramètres de la section 'options' ne seront plus\n"
+"accessibles mais garderont leur effets.\n"
+"\n"
+"Vous pouvez garder les paramètres actuels ou revenir aux paramètres par "
+"défaut."
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:20
+msgid "Résolution des noms de rue, ville, region, pays :"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:22
+msgid "Ajoute la localisation à partir des données GPS à toutes les photos"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:23
+msgid "définies par les paramètres de l'onglet 'Main', section 'Source'. "
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:25
+msgid "/!\\ envoie les coordonnées GPS au site openstreetmap"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:26
+msgid "La résolution des noms peut prendre du temps : 3-4 sec par photos"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:32 tri_photo_date/gui/human_text.py:89
+#: tri_photo_date/gui/human_text.py:130
+#, python-brace-format
+msgid "{media_photos}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:35 tri_photo_date/gui/human_text.py:90
+#: tri_photo_date/gui/human_text.py:131
+#, python-brace-format
+msgid "{media_videos}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:38 tri_photo_date/gui/human_text.py:91
+#, python-brace-format
+msgid "{media_videos_n_photos}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:43 tri_photo_date/gui/human_text.py:172
+msgid "{Année/Année-Mois}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:44 tri_photo_date/gui/human_text.py:173
+msgid "{Année/Mois}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:45 tri_photo_date/gui/human_text.py:174
+#, python-brace-format
+msgid "{Appareil}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:46 tri_photo_date/gui/human_text.py:175
+msgid "{Appareil/Année-Mois}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:47 tri_photo_date/gui/human_text.py:176
+msgid "{Année-Mois - Pays}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:48 tri_photo_date/gui/human_text.py:177
+msgid "{Année-Mois - Ville}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:49 tri_photo_date/gui/human_text.py:187
+msgid "{Année-Mois-Jour}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:50 tri_photo_date/gui/human_text.py:188
+msgid "{Année-Mois-Jour - Ville}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:52 tri_photo_date/gui/human_text.py:189
+msgid "{Année-Mois-Jour - Pays - Ville}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:54 tri_photo_date/gui/human_text.py:190
+#, python-brace-format
+msgid "{Ville}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:55 tri_photo_date/gui/human_text.py:191
+#, python-brace-format
+msgid "{Pays}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:56 tri_photo_date/gui/human_text.py:186
+msgid "{Garder le nom de fichier}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:57 tri_photo_date/gui/human_text.py:178
+msgid "{Grouper par date}"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:72
+msgid "Dossier source"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:73
+msgid ""
+"Chemin du dossier à analyser, Ajustez le chemin dans la section 'Source'"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:74
+msgid "D:\\CleUsb"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:77
+msgid "Dossier destination"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:78
+msgid ""
+"Chemin du dossier à analyser, Ajuster le chemin dans la section 'Destination'"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:79
+msgid "D:\\User\\Images"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:82 tri_photo_date/gui/human_text.py:123
+#: tri_photo_date/gui/main_window_ui.py:846
+msgid "Extensions"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:83
+msgid ""
+"Liste des extentions de fichiers à scanner.\n"
+"Liste des extention séparées par des virgules\n"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:95 tri_photo_date/gui/human_text.py:143
+msgid "Récursif"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:96 tri_photo_date/gui/human_text.py:144
+msgid "Cherche dans les sous dossier du dossier 'Source'"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:99
+msgid "metadonnées"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:100
+msgid "Obtient les métadonnées des fichiers"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:103
+msgid "empreinte fichier"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:104
+msgid "Calcule l'empreinte md5 du fichier"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:107
+msgid "empreinte des données"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:108
+msgid "Calcule l'empreinte md5 des données"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:111
+msgid "données du cache"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:112
+msgid ""
+"Ne recalcule pas les empreintes des fichiers,\n"
+"utilise directement les données du cache associées au chemin du fichier.\n"
+"/!\\ N'activez uniquement si les données n'ont pas été modifiées depuis le "
+"dernier lancement du programme."
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:118
+msgid "Chemin du dossier contenant les photos"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:119
+msgid "D:\\CleUsb\\Images"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:124
+msgid ""
+"Liste des extentions séparées par des virgules\n"
+"\n"
+"  1. Definissez les dossiers à analyser\n"
+"  2. Scannez : bouton '1. Scanner'\n"
+"  3. Selectionnez les extentions via 'Outils >  Extentions'\n"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:136
+msgid "Exclure les appareils"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:137
+msgid "Inclure les appareils"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:139
+msgid ""
+"Liste des appareils photos séparés par des virgules\n"
+"Ne copie que les photos prises par ces appareils\n"
+"\n"
+"Si le champs est laissé vide, le paramètre est ignoré\n"
+"\n"
+"  1. Definissez les dossiers à analyser\n"
+"  2. Scannez : bouton '1. Scanner'\n"
+"  3. Selectionnez les appareils via 'Outils >  Appareils'\n"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:148
+msgid "Exclure"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:149
+msgid "Inclure"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:151
+msgid ""
+"Liste d'éléments à inclure ou exclure séparés par des virgules.\n"
+"Les chemins précisés sont relatifs au dossier 'Source'"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:152
+msgid "chemin/relatif/à/source"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:157
+msgid "Utiliser des expressions régulière plutôt que des chemins relatifs"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:163
+msgid "Chemin du dossier où copier les photos"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:164
+msgid "C:\\Users\\_Mon_Nom_\\Images"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:168
+msgid "Chemin relatif"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:169
+#, python-format, python-brace-format
+msgid ""
+" Format du chemin relatif au dossier précédent! \n"
+" Ce chemin peut être personnalisté via des tags de métadonnés \n"
+"ou des codes de formatage des dates\n"
+"\n"
+"Formats:\n"
+"  - métadonnées : {tag} ou <tag>\n"
+"  - date : %x\n"
+"\n"
+"Voir 'Outils > Métadonnées' et 'Outils > Date' pour la liste\n"
+"complète et les définitions des chaines de remplacement possibles\n"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:182
+msgid "Nom du fichier"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:183
+msgid ""
+"Nom à donner aux fichiers, supporte les mêmes formats que 'Chemin relatif'"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:197
+msgid "1. Scanner"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:198
+msgid ""
+"A utliser lors du changement des repertoires <b>source</b> et/ou "
+"<b>destination</b> ou si les fichiers ont été modifiés/déplacés par un autre "
+"programme.<br>Scanne les dossier, calcule les empreintes, recupère les "
+"metadonnées et met à jour l'onglet <b>outils</b>"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:201
+msgid "2. Pré-calculer"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:202
+msgid ""
+"A utiliser après un changement de paramètre.\n"
+"A partir des fichiers trouvés pendant le scan, \n"
+"genere les nouveaux chemins pour les images et affiche un aperçu"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:205
+msgid "3. Executer"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:206
+msgid ""
+"A partir des chemins pré-calculés , déplace/copie les fichiers,\n"
+"inscrit les nouvelles métadonnées si besoin\n"
+"(pensez bien a executer '2. Pré-calculer' après tout changement de paramètre)"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:212
+msgid ""
+"Activez pour ne pas déplacer les doubles.\n"
+"Ignore simplement les fichiers si un a déjà été déplacé"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:216
+msgid "Compare les sommes md5 des fichiers"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:219
+msgid "Données"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:220
+msgid ""
+"Compare les md5 des données brutes à l'interieur des fichiers média.\n"
+"Utile pour les fichiers dont les métanonnées ont changées"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:224
+msgid "Compare la date des fichiers pour reperer les doubles"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:227
+#: tri_photo_date/gui/main_window_ui.py:345
+msgid "Destination"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:228
+msgid ""
+"Scanne aussi le dossier destination à la recherche de fichiers dupliqués"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:232
+msgid "Déplacer tout dans un dossier"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:233
+msgid "Déplacer un seul fichier et ignorer les autres"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:235
+msgid ""
+"Déplace tout les fichiers dupliqués dans un dossier séparé\n"
+"Sinon, ne conserve qu'un seul de fichiers et le traite normalement"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:241
+msgid "Effacer metadonnées"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:242
+msgid "Supprimer les métadonnées dans le fichier copié"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:245
+msgid "Date fichier"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:246
+msgid ""
+"Cherche aussi la date de création de fichier à défaut\n"
+"d'informations trouvées dans les métadonnées"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:249
+msgid "Forcer"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:250
+msgid ""
+"Prendre la date de création du fichier plutôt\n"
+" que de chercher dans les métadonnées"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:253
+msgid "Inscrire date"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:254
+msgid ""
+"Inscrit les métadonnées de date dans fichier. Attention ecrase la valeur "
+"existante."
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:260
+msgid "Date depuis nom"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:261
+msgid ""
+"Essaie d'abord d'obtenir la date de prise de vue depuis le nom de fichier.\n"
+"Tente d'identifier dans le nom de fichier une date suivant le format "
+"précisé.\n"
+"Utilisez les formats definis dans l'onglet 'Date'"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:273
+msgid "jours"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:274
+msgid "Grouper | format"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:275
+#, python-brace-format
+msgid ""
+"Groupe les photos par une fenetre de <b>jours</b> glissants selon le "
+"<b>format</b> défini.<br>Utiliser le texte de remplacement <b>{group}</b> "
+"pour ajuster le chemin relatif et le nom du fichier"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:276
+msgid "Sortie du %Y%m%d"
+msgstr ""
+
+#: tri_photo_date/gui/human_text.py:288
+msgid ""
+"Essaie de determiner le lieu de prise de vue à partir des metadonnées gps\n"
+"Bécessite une connection internet\n"
+"/!\\ Peut grandement ralentir l'execution du prgramme"
+msgstr ""
+
+#: tri_photo_date/gui/main_window_ui.py:203
+msgid " Afficher un aperçu"
+msgstr ""
+
+#: tri_photo_date/gui/main_window_ui.py:226
+msgid "Main"
+msgstr ""
+
+#: tri_photo_date/gui/main_window_ui.py:320
+msgid "Source"
+msgstr ""
+
+#: tri_photo_date/gui/main_window_ui.py:375
+msgid "Options"
+msgstr ""
+
+#: tri_photo_date/gui/main_window_ui.py:665
+msgid "Selectionner le dossier"
+msgstr ""
+
+#: tri_photo_date/gui/main_window_ui.py:753
+msgid "Simuler"
+msgstr ""
+
+#: tri_photo_date/gui/main_window_ui.py:754
+msgid "Copier"
+msgstr ""
+
+#: tri_photo_date/gui/main_window_ui.py:755
+msgid "Déplacer"
+msgstr ""
+
+#: tri_photo_date/gui/main_window_ui.py:769
+msgid "tags GPS"
+msgstr ""
+
+#: tri_photo_date/gui/main_window_ui.py:795
+msgid "Executer"
+msgstr ""
+
+#: tri_photo_date/gui/main_window_ui.py:828
+msgid "Copier la propriété"
+msgstr ""
+
+#: tri_photo_date/gui/main_window_ui.py:929
+msgid "Métadonnées"
+msgstr ""
+
+#: tri_photo_date/gui/main_window_ui.py:970
+msgid "Codes de formatage des dates"
+msgstr ""
+
+#: tri_photo_date/utils/human_texts.py:17
+msgid "Simulation du déplacement de {} vers {}"
+msgstr ""
+
+#: tri_photo_date/utils/human_texts.py:18
+msgid "Copie du fichier {} vers {}"
+msgstr ""
+
+#: tri_photo_date/utils/human_texts.py:19
+msgid "Déplacement du fichier {} vers {}"
+msgstr ""
+
+#: tri_photo_date/utils/human_texts.py:23
+msgid "Fin de simulation! {} fichiers, {}"
+msgstr ""
+
+#: tri_photo_date/utils/human_texts.py:24
+msgid "Fait! {} fichiers ont été copiés, soit un total de {}"
+msgstr ""
+
+#: tri_photo_date/utils/human_texts.py:25
+msgid "Fait! {} fichiers ont été déplacés soit un total de {}"
+msgstr ""
+
+#: tri_photo_date/utils/human_texts.py:29
+msgid "Recherche des fichiers dans {} ..."
+msgstr ""
+
+#: tri_photo_date/utils/human_texts.py:30
+msgid "Calcul de l'empreinte et chargement des métadonnées..."
+msgstr ""
+
+#: tri_photo_date/utils/human_texts.py:31
+msgid "Scan des fichiers dans le dossier de destination..."
+msgstr ""
+
+#: tri_photo_date/utils/human_texts.py:32
+msgid "{} - Résolution des nouveaux chemins..."
+msgstr ""
+
+#: tri_photo_date/utils/human_texts.py:33
+msgid "Fait!"
+msgstr ""
+
+#: tri_photo_date/utils/human_texts.py:34
+msgid "Fait! Tri des fichiers pour groupement par date..."
+msgstr ""
+
+#: tri_photo_date/utils/human_texts.py:35
+msgid "{} - Groupement des fichiers par date"
+msgstr ""
