@@ -8,23 +8,23 @@ readme = "README.md"
 packages = [{include = "tri_photo_date"}]
 # Include license and readme files in the distribution package
 include = [
-    "resources/en/acknowledgments.md",
-    "resources/en/help.md",
-    "resources/en/about.md",
-    "resources/fr/acknowledgments.md",
-    "resources/fr/help.md",
-    "resources/fr/about.md",
-    "resources/icon.ico",
+    "tri_photo_date/messages/en/acknowledgments.md",
+    "tri_photo_date/messages/en/help.md",
+    "tri_photo_date/messages/en/about.md",
+    "tri_photo_date/messages/fr/acknowledgments.md",
+    "tri_photo_date/messages/fr/help.md",
+    "tri_photo_date/messages/fr/about.md",
+    "tri_photo_date/resources/icon.ico",
     "LICENSE",
     "README.md",
-    "resources/strftime_help.html"
+    "tri_photo_date/messages/strftime_help.html"
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<=3.13.9"
+python = ">=3.9,<3.14"
 PyQt6 = "^6.10.0"
-geopy = "^2.3.0"
-pyexiv2 = "^2.8.1"
+geopy = "^2.4.1"
+pyexiv2 = "^2.15.5"
 certifi = "^2025.10.5"
 tomlkit = "^0.13.3"
 

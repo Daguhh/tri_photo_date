@@ -828,7 +828,7 @@ class CopyableListWidget(QListWidget):
             copy_action = QAction(_("Copier la propriété"), self)
             copy_action.triggered.connect(lambda: self.copy_to_clipboard(item))
             menu.addAction(copy_action)
-            menu.exec_(self.mapToGlobal(pos))
+            menu.exec(self.mapToGlobal(pos))
 
     def keyPressEvent(self, event):
         if event.matches(QKeySequence.Copy):
