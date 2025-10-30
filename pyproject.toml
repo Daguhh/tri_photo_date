@@ -26,14 +26,13 @@ PyQt6 = "^6.10.0"
 geopy = "^2.3.0"
 pyexiv2 = "^2.8.1"
 certifi = "^2025.10.5"
-pyqtchart = "^5.15.6"
 tomlkit = "^0.13.3"
 
-[tool.poetry.group.speedbar]
-optional = true
-
-[tool.poetry.group.speedbar.dependencies]
-pyqtgraph = "^0.13.3"
+# [tool.poetry.group.speedbar]
+# optional = true
+# 
+# [tool.poetry.group.speedbar.dependencies]
+# pyqtgraph = "^0.13.3"
 
 [tool.poetry.group.build_bin]
 optional = true

@@ -10,55 +10,57 @@ IS_SPEEDBAR = CONFIG['interface']['is_speedbar']
 PROG_SPEED_BAR = 0
 PROG_NORMAL = 1
 
-try:
-    import pyqtgraph as pg
-    from tri_photo_date.gui.speedprogressbar import SpeedProgressBar
-    progress_bar_mode = PROG_SPEED_BAR
-except ModuleNotFoundError:
+#try:
+#    import pyqtgraph as pg
+#    from tri_photo_date.gui.speedprogressbar import SpeedProgressBar
+#    progress_bar_mode = PROG_SPEED_BAR
+#except ModuleNotFoundError:
+if 1:
     progress_bar_mode = PROG_NORMAL
 
-if progress_bar_mode == PROG_SPEED_BAR and IS_SPEEDBAR:
+# ff progress_bar_mode == PROG_SPEED_BAR and IS_SPEEDBAR:
 
-    class MyProgressBar(SpeedProgressBar):
+ #    class MyProgressBar(SpeedProgressBar):
 
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
+ #        def __init__(self, *args, **kwargs):
+ #            super().__init__(*args, **kwargs)
 
-            self.label = self.add_label()
+ #            self.label = self.add_label()
 
-            fake_layout = QVBoxLayout()
-            fake_layout.addWidget(self.label)
-            fake_layout.addWidget(self)
-            self.prev_layout = fake_layout
+ #            fake_layout = QVBoxLayout()
+ #            fake_layout.addWidget(self.label)
+ #            fake_layout.addWidget(self)
+ #            self.prev_layout = fake_layout
 
-        def update(self, v, text="", text2=""):
-            super().update(v)
-            QApplication.processEvents()  # keep the GUI responsive
-            self.text_label.setText(limited_string(text,limit=40) + '-' + text2)
+ #        def update(self, v, text="", text2=""):
+ #            super().update(v)
+ #            QApplication.processEvents()  # keep the GUI responsive
+ #            self.text_label.setText(limited_string(text,limit=40) + '-' + text2)
 
-        def add_label(self):
+ #        def add_label(self):
 
-            self.text_label = QLabel("")
-            return self.text_label
+ #            self.text_label = QLabel("")
+ #            return self.text_label
 
-        def move_to_layout(self, new_layout):
+ #        def move_to_layout(self, new_layout):
 
-            self.prev_layout.removeWidget(self)
-            self.prev_layout.removeWidget(self.label)
+ #            self.prev_layout.removeWidget(self)
+ #            self.prev_layout.removeWidget(self.label)
 
-            self.setParent(new_layout.parentWidget())
-            self.label.setParent(new_layout.parentWidget())
+ #            self.setParent(new_layout.parentWidget())
+ #            self.label.setParent(new_layout.parentWidget())
 
-            new_layout.addWidget(self.label)
-            new_layout.addWidget(self)
+ #            new_layout.addWidget(self.label)
+ #            new_layout.addWidget(self)
 
-            new_layout.update()
-            self.prev_layout.update()
+ #            new_layout.update()
+ #            self.prev_layout.update()
 
-            self.prev_layout = new_layout
+ #            self.prev_layout = new_layout
 
-else:
+# else:
 
+if 1:
     class MyProgressBar(QProgressBar):
         def __init__(self, *args, **kwargs):
             super().__init__()
